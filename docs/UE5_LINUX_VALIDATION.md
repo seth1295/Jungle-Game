@@ -55,7 +55,7 @@ Yellow / blocked evidence:
 |---|---|---|
 | UE editor path | No `UnrealEditor` found under `$HOME` in the quick search | Gate 001 cannot pass yet |
 | Editor launch | Not tested | Gate 001 cannot pass yet |
-| Disk space | Root filesystem roughly 255 GB total, 188 GB used, 55–59 GB free, 78% used after cleanup | Warning / improved, but still not ideal for full UE install, Derived Data Cache, build, and package workflow |
+| Disk space | Root filesystem reported by `df -h` as 255G size, 188G used, 55G available, 78% used; `df` available space excludes reserved filesystem blocks and is rounded | Warning / improved, but not the preferred full UE install, Derived Data Cache, build, or package workflow target |
 | Windows storage partition | `/dev/sda1`, NTFS, label `WIN_STORAGE` | Recorded / Windows storage requirement restored |
 | UE workspace partition | `/dev/sda2`, ext4, label `UE5_WORKSPACE`, mounted at `/mnt/ue5`, 652 GB total and 619 GB free | Recorded / green for Linux UE source/build/cache/project workspace |
 | UE workspace folders | `/mnt/ue5/UnrealEngine`, `/mnt/ue5/UE-Downloads`, `/mnt/ue5/UE-Installs`, `/mnt/ue5/DerivedDataCache`, and `/mnt/ue5/JungleGame` created | Recorded / staging path available |
@@ -104,7 +104,7 @@ For engine development, Epic documents Ubuntu 22.04 / Rocky Linux 8 and clang/to
 | Vulkan instance | 1.4.341 | Recorded |
 | Vulkan device | NVIDIA GeForce RTX 2080 | Recorded |
 | Vulkan atomic int64 | `VK_KHR_shader_atomic_int64` present | Recorded |
-| Disk | 55–59 GB free on root after cleanup | Warning / improved, but still not preferred for full UE install/build/cache |
+| Disk | Root filesystem reported by `df -h` as 255G size, 188G used, 55G available, 78% used; `df` available space excludes reserved filesystem blocks and is rounded | Warning / improved, but still not preferred for full UE install/build/cache |
 | Windows storage | `/dev/sda1`, NTFS, label `WIN_STORAGE` | Recorded / Windows storage requirement restored |
 | UE workspace | `/dev/sda2`, ext4, label `UE5_WORKSPACE`, mounted at `/mnt/ue5`, 652 GB total and 619 GB free | Recorded / green for Linux UE source/build/cache/project workspace |
 | UE workspace folders | `/mnt/ue5/UnrealEngine`, `/mnt/ue5/UE-Downloads`, `/mnt/ue5/UE-Installs`, `/mnt/ue5/DerivedDataCache`, `/mnt/ue5/JungleGame` | Recorded |
