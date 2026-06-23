@@ -24,7 +24,7 @@ Gate 001 should answer:
 - Can the editor launch?
 - Is the Linux build/cook/package path understood enough to proceed to Gate 002?
 
-## Local Validation Snapshot — 2026-06-24
+## Local Validation Snapshot — 2026-06-24 AEST
 
 Current Gate 001 light status: **Yellow**.
 
@@ -90,23 +90,30 @@ For engine development, Epic documents Ubuntu 22.04 / Rocky Linux 8 and clang/to
 
 ## Local Target Baseline
 
+### Verified measurements
+
 | Item | Known value | Gate 001 status |
 |---|---|---|
 | OS | Ubuntu 26.04 Resolute Raccoon | Recorded / warning because newer than Epic's Ubuntu 22.04 recommendation |
 | Kernel | 7.0.0-22-generic | Recorded |
 | glibc | 2.43 | Recorded / above Epic minimum |
-| CPU | Ryzen 9 5950X | Plausible / above minimum |
 | GPU | NVIDIA RTX 2080 8 GB | Recorded / matches Epic's GeForce 2080 / 8 GB recommendation class |
 | NVIDIA driver | 595.71.05 | Recorded / above Epic's 570+ target |
 | Vulkan instance | 1.4.341 | Recorded |
 | Vulkan device | NVIDIA GeForce RTX 2080 | Recorded |
 | Vulkan atomic int64 | `VK_KHR_shader_atomic_int64` present | Recorded |
-| RAM | 32 GB | Matches Epic's recommended RAM |
 | Disk | 28 GB free on root after cache cleanup | Warning / still tight for UE install/build/cache |
 | Large storage | 2 TB `sda1` mounted at `/run/media/seth/Steam hard drive_storage`, NTFS, 1.5 TB free | Available for UE archive/download staging; not ideal for Linux UE source/build tree |
 | UE staging folders | `UE/Downloads`, `UE/Installs`, `UE/DerivedDataCache` created on mounted 2 TB drive | Recorded |
-| Target RHI | Vulkan | NVIDIA Vulkan path recorded |
 | UE editor | Not found in quick `$HOME` search | Blocking Gate 001 pass |
+
+### Known project / hardware context not remeasured in this gate snapshot
+
+| Item | Known value | Gate 001 status |
+|---|---|---|
+| CPU | Ryzen 9 5950X | Plausible / above minimum; not remeasured in this snapshot |
+| RAM | 32 GB | Matches Epic's recommended RAM; not remeasured in this snapshot |
+| Target RHI | Vulkan | NVIDIA Vulkan path recorded |
 | Development stance | Linux-first | Confirmed project constraint |
 | Windows stance | Later secondary validation only | Not a substitute for Gate 001 |
 
