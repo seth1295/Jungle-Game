@@ -1,4 +1,4 @@
-# Start DevSpace for New Project
+# Start DevSpace for Jungle Game
 
 Use this when you want ChatGPT/DevSpace to advertise this project's local skills.
 
@@ -33,4 +33,4 @@ DEVSPACE_SKILL_PATHS=/home/seth/projects/new-project/.agents/skills
 
 ## Current boundary
 
-This folder is not a git repository yet. Starting DevSpace does not create git, commits, PRs, or remotes.
+This folder is a git repository connected to the Jungle Game remote. Starting DevSpace does not create commits, PRs, pushes, or merges.
