@@ -85,6 +85,27 @@ DEVSPACE_SKILL_PATHS="$HOME/projects/new-project/.agents/skills"
 
 Full startup instructions are in `START_DEVSPACE.md`.
 
+## Research and gate docs
+
+Start here for the permanent research set:
+
+```text
+docs/RESEARCH_INDEX.md
+```
+
+Current core docs:
+
+```text
+docs/UE5_LINUX_VALIDATION.md
+docs/UE_VERSION_DECISION.md
+docs/UE_PROJECT_BOOTSTRAP_RESEARCH.md
+docs/FIRST_PLAYABLE_SLICE_RESEARCH.md
+docs/JUNGLE_CELL_0_IMPLEMENTATION_SCOPE.md
+docs/PR_WORKFLOW.md
+docs/GREEN_TO_GO.md
+docs/gates/
+```
+
 ## Included workflow files
 
 ```text
