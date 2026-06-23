@@ -45,7 +45,7 @@ Green evidence recorded:
 | Clang 18 | `clang-18` and `clang++-18` installed and verified | Recorded / green |
 | Clang 20 | `clang-20` and `clang++-20` installed and verified | Recorded / useful for UE5.7/UE5.8 fallback comparison |
 | Ninja | `ninja` installed and verified | Recorded / green |
-| Linker/debug tools | `lld-18`, `llvm-config-18`, `gdb`, `valgrind`, `ccache`, `mold` installed and verified | Recorded / green enough for Gate 001 |
+| Linker/debug tools | `lld-18`, `llvm-config-18`, `lldb-18`, `gdb`, `valgrind`, `ccache`, `mold` installed and verified | Recorded / green |
 | Vulkan shader tools | `glslangValidator`, `spirv-val`, Vulkan validation layers installed and verified | Recorded / green |
 | Source/archive helpers | `git-lfs`, `curl`, `wget`, `rsync`, `unzip`, `zip`, `7zip`, `patchelf` installed or available | Recorded / green |
 
@@ -55,8 +55,7 @@ Yellow / blocked evidence:
 |---|---|---|
 | UE editor path | No `UnrealEditor` found under `$HOME` in the quick search | Gate 001 cannot pass yet |
 | Editor launch | Not tested | Gate 001 cannot pass yet |
-| `lldb-18` | Missing from 002–005 verification output | Noncritical debugger warning; not a hard Gate 001 blocker because `gdb` and other tooling are present |
-| Disk space | Root filesystem roughly 255 GB total, 215 GB used, 28 GB free, 89% used after cache cleanup | Warning / still tight for UE install, Derived Data Cache, build, and package workflow |
+| Disk space | Root filesystem roughly 255 GB total, 188 GB used, 55–59 GB free, 78% used after cleanup | Warning / improved, but still not ideal for full UE install, Derived Data Cache, build, and package workflow |
 | Large storage | 2 TB `sda1` mounted at `/run/media/seth/Steam hard drive_storage`, NTFS, 1.5 TB free | Good for UE archive/download staging; still not ideal for a Linux UE source/build tree |
 | UE staging folders | Created `UE/Downloads`, `UE/Installs`, and `UE/DerivedDataCache` on the mounted 2 TB drive | Recorded / staging path available |
 | Heroic/Legendary Epic access | Heroic bundled Legendary is authenticated enough to list 5 Epic library items | Recorded / Unreal Engine not present in listed library |
@@ -65,8 +64,9 @@ Yellow / blocked evidence:
 
 Gate 001 conclusion from this snapshot:
 
-- GPU, NVIDIA driver, Vulkan, atomic-int64, Clang 18, Clang 20, Ninja, linker tooling, Vulkan shader tooling, and source/archive helpers are **green**.
-- UE editor availability, editor launch, storage location, and disk headroom are still **yellow/blocking**.
+- GPU, NVIDIA driver, Vulkan, atomic-int64, Clang 18, Clang 20, Ninja, LLDB 18, linker tooling, Vulkan shader tooling, and source/archive helpers are **green**.
+- UE editor availability, editor launch, and UE install/source access are still **yellow/blocking**.
+- Root disk headroom is improved but still should not be treated as the preferred UE install/build/cache target.
 - Gate 001 should remain active until UE editor and storage/editor launch evidence are recorded.
 - Gate 002 should not select UE 5.8 or fallback to UE 5.7 yet.
 
@@ -102,7 +102,7 @@ For engine development, Epic documents Ubuntu 22.04 / Rocky Linux 8 and clang/to
 | Vulkan instance | 1.4.341 | Recorded |
 | Vulkan device | NVIDIA GeForce RTX 2080 | Recorded |
 | Vulkan atomic int64 | `VK_KHR_shader_atomic_int64` present | Recorded |
-| Disk | 28 GB free on root after cache cleanup | Warning / still tight for UE install/build/cache |
+| Disk | 55–59 GB free on root after cleanup | Warning / improved, but still not preferred for full UE install/build/cache |
 | Large storage | 2 TB `sda1` mounted at `/run/media/seth/Steam hard drive_storage`, NTFS, 1.5 TB free | Available for UE archive/download staging; not ideal for Linux UE source/build tree |
 | UE staging folders | `UE/Downloads`, `UE/Installs`, `UE/DerivedDataCache` created on mounted 2 TB drive | Recorded |
 | UE editor | Not found in quick `$HOME` search | Blocking Gate 001 pass |
