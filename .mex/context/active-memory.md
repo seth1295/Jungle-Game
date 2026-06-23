@@ -48,3 +48,14 @@ reason: User selected the current game direction through discussion.
 review_by: 2026-07-23
 
 Current lead concept: a first-person UE5/Linux-first 3D survival-simulation set around 1000 CE in a dense tropical jungle. The world state should be physically/ecologically normal. The player gradually uncovers a quiet relict hominin presence that observes, tests, and changes the player's environment from distance. No 2D, no gore horror, no modern-current setting, no generic pine woodland.
+
+## 2026-06-23-pr-gate-workflow
+
+status: active-unreviewed
+created: 2026-06-23
+source: user
+target: .mex/context/pr-gates.md
+reason: User asked to make planning gates into a PR-by-PR workflow where each completed PR points agents to the next documented gate.
+review_by: 2026-07-23
+
+Future PR work must load `.mex/context/pr-gates.md`, `docs/PR_WORKFLOW.md`, and the active `docs/gates/*.md` file before changing files. Each PR must identify its active gate, stay inside that gate's allowed scope, run the gate's validation, and stop if the requested work conflicts with the active gate. After a gate merges, read the next gate before starting more work.

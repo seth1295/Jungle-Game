@@ -20,6 +20,8 @@ After reading this file, read `.mex/ROUTER.md` for current project state, routed
 
 Load `.mex/context/active-memory.md` first, then only the additional `.mex/context/*`, `.mex/patterns/*`, or `.agents/skills/*/SKILL.md` files relevant to the current task.
 
+Before any PR lifecycle, load `.mex/context/pr-gates.md`, `docs/PR_WORKFLOW.md`, and the active gate file listed in `.mex/context/pr-gates.md`.
+
 ## Current Project State
 
 This folder is the local workspace for Jungle Game. Git has been initialized and connected to `https://github.com/seth1295/Jungle-Game.git`.
@@ -63,10 +65,11 @@ Load the matching skill before work that falls under it.
 Only after explicit user approval:
 
 1. Branch from clean updated `main` before modifying files when normal PR workflow is possible.
-2. Keep each commit coherent and scoped.
-3. Open ready PRs only; no draft PRs unless requested.
-4. Add `@coderabbitai ignore` to PR bodies if using a manual CodeRabbit loop.
-5. Do not merge unless explicitly authorized.
+2. Identify and follow the active PR gate.
+3. Keep each commit coherent and scoped.
+4. Open ready PRs only; no draft PRs unless requested.
+5. Add `@coderabbitai ignore` to PR bodies if using a manual CodeRabbit loop.
+6. Do not merge unless explicitly authorized.
 
 ## Final Summary
 

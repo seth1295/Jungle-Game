@@ -12,6 +12,16 @@ Load this file after `AGENTS.md`.
 - `.mex/context/active-memory.md` — current confirmed workflow memory and recent decisions.
 - `.mex/context/project.md` — current project identity, scope, and non-goals.
 
+## PR Gate Workflow
+
+Before any PR lifecycle, also load:
+
+- `.mex/context/pr-gates.md` — active gate pointer and gate enforcement rules.
+- `docs/PR_WORKFLOW.md` — standard PR-by-PR gate workflow.
+- the active gate file listed in `.mex/context/pr-gates.md`.
+
+If the requested task conflicts with the active gate, stop and ask whether to change gates before editing files.
+
 ## Skills
 
 Project-local skills live under `.agents/skills/`:
@@ -33,4 +43,4 @@ Project-local skills live under `.agents/skills/`:
 - For local file edits, follow `AGENTS.md` and `.mex/patterns/local-devspace-workflow.md`.
 - For memory/skill/workflow edits, load `.agents/skills/project-memory-maintenance/SKILL.md`.
 - For git initialization, load `.agents/skills/local-git-bootstrap/SKILL.md` only after explicit user approval.
-- For PR/CodeRabbit/merge work, stop unless the user explicitly authorizes creating or using git for this project.
+- For PR/CodeRabbit/merge work, stop unless the user explicitly authorizes creating or using git for this project, then follow the active PR gate.
