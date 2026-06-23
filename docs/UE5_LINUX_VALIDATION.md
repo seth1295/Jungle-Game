@@ -24,6 +24,52 @@ Gate 001 should answer:
 - Can the editor launch?
 - Is the Linux build/cook/package path understood enough to proceed to Gate 002?
 
+## Local Validation Snapshot — 2026-06-24
+
+Current Gate 001 light status: **Yellow**.
+
+Green evidence recorded:
+
+| Evidence | Result | Status |
+|---|---|---|
+| OS | Ubuntu 26.04 Resolute Raccoon | Recorded / warning because newer than Epic's Ubuntu 22.04 recommendation |
+| Kernel | 7.0.0-22-generic | Recorded |
+| glibc | 2.43 | Recorded / above Epic minimum |
+| GPU | NVIDIA GeForce RTX 2080 | Recorded |
+| GPU memory | 8192 MiB | Recorded / matches Epic's 8 GB+ recommendation class |
+| NVIDIA driver | 595.71.05 | Recorded / above Epic's 570+ target |
+| Vulkan instance | 1.4.341 | Recorded |
+| Vulkan NVIDIA device | RTX 2080, NVIDIA driver 595.71.05 | Recorded |
+| Vulkan atomic int64 extension | `VK_KHR_shader_atomic_int64` present | Recorded / green for Nanite/VSM prerequisite tracking |
+| Core tools | `gcc`, `g++`, `cmake`, `make`, `git` present | Recorded |
+| Clang 18 | `clang-18` and `clang++-18` installed and verified | Recorded / green |
+| Clang 20 | `clang-20` and `clang++-20` installed and verified | Recorded / useful for UE5.7/UE5.8 fallback comparison |
+| Ninja | `ninja` installed and verified | Recorded / green |
+| Linker/debug tools | `lld-18`, `llvm-config-18`, `gdb`, `valgrind`, `ccache`, `mold` installed and verified | Recorded / green enough for Gate 001 |
+| Vulkan shader tools | `glslangValidator`, `spirv-val`, Vulkan validation layers installed and verified | Recorded / green |
+| Source/archive helpers | `git-lfs`, `curl`, `wget`, `rsync`, `unzip`, `zip`, `7zip`, `patchelf` installed or available | Recorded / green |
+
+Yellow / blocked evidence:
+
+| Evidence | Result | Gate impact |
+|---|---|---|
+| UE editor path | No `UnrealEditor` found under `$HOME` in the quick search | Gate 001 cannot pass yet |
+| Editor launch | Not tested | Gate 001 cannot pass yet |
+| `lldb-18` | Missing from 002–005 verification output | Noncritical debugger warning; not a hard Gate 001 blocker because `gdb` and other tooling are present |
+| Disk space | Root filesystem roughly 255 GB total, 215 GB used, 28 GB free, 89% used after cache cleanup | Warning / still tight for UE install, Derived Data Cache, build, and package workflow |
+| Large storage | 2 TB `sda1` mounted at `/run/media/seth/Steam hard drive_storage`, NTFS, 1.5 TB free | Good for UE archive/download staging; still not ideal for a Linux UE source/build tree |
+| UE staging folders | Created `UE/Downloads`, `UE/Installs`, and `UE/DerivedDataCache` on the mounted 2 TB drive | Recorded / staging path available |
+| Heroic/Legendary Epic access | Heroic bundled Legendary is authenticated enough to list 5 Epic library items | Recorded / Unreal Engine not present in listed library |
+| EpicGames/UnrealEngine GitHub access | `gh repo view EpicGames/UnrealEngine` cannot resolve the repository | Source build blocked until Epic-GitHub access is linked/visible |
+| Linux cook/package smoke | Not tested | Blocked until UE editor/project path exists |
+
+Gate 001 conclusion from this snapshot:
+
+- GPU, NVIDIA driver, Vulkan, atomic-int64, Clang 18, Clang 20, Ninja, linker tooling, Vulkan shader tooling, and source/archive helpers are **green**.
+- UE editor availability, editor launch, storage location, and disk headroom are still **yellow/blocking**.
+- Gate 001 should remain active until UE editor and storage/editor launch evidence are recorded.
+- Gate 002 should not select UE 5.8 or fallback to UE 5.7 yet.
+
 ## Sources and Confidence
 
 | Source type | Confidence | Notes |
@@ -46,11 +92,21 @@ For engine development, Epic documents Ubuntu 22.04 / Rocky Linux 8 and clang/to
 
 | Item | Known value | Gate 001 status |
 |---|---|---|
-| OS | Ubuntu Linux, user reports Ubuntu 26.04 LTS | Must verify from `/etc/os-release` |
+| OS | Ubuntu 26.04 Resolute Raccoon | Recorded / warning because newer than Epic's Ubuntu 22.04 recommendation |
+| Kernel | 7.0.0-22-generic | Recorded |
+| glibc | 2.43 | Recorded / above Epic minimum |
 | CPU | Ryzen 9 5950X | Plausible / above minimum |
-| GPU | NVIDIA RTX 2080 8 GB | Matches Epic's GeForce 2080 / 8 GB recommendation class |
+| GPU | NVIDIA RTX 2080 8 GB | Recorded / matches Epic's GeForce 2080 / 8 GB recommendation class |
+| NVIDIA driver | 595.71.05 | Recorded / above Epic's 570+ target |
+| Vulkan instance | 1.4.341 | Recorded |
+| Vulkan device | NVIDIA GeForce RTX 2080 | Recorded |
+| Vulkan atomic int64 | `VK_KHR_shader_atomic_int64` present | Recorded |
 | RAM | 32 GB | Matches Epic's recommended RAM |
-| Target RHI | Vulkan | Must verify Vulkan device/features locally |
+| Disk | 28 GB free on root after cache cleanup | Warning / still tight for UE install/build/cache |
+| Large storage | 2 TB `sda1` mounted at `/run/media/seth/Steam hard drive_storage`, NTFS, 1.5 TB free | Available for UE archive/download staging; not ideal for Linux UE source/build tree |
+| UE staging folders | `UE/Downloads`, `UE/Installs`, `UE/DerivedDataCache` created on mounted 2 TB drive | Recorded |
+| Target RHI | Vulkan | NVIDIA Vulkan path recorded |
+| UE editor | Not found in quick `$HOME` search | Blocking Gate 001 pass |
 | Development stance | Linux-first | Confirmed project constraint |
 | Windows stance | Later secondary validation only | Not a substitute for Gate 001 |
 
