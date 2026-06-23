@@ -56,18 +56,20 @@ Yellow / blocked evidence:
 | UE editor path | No `UnrealEditor` found under `$HOME` in the quick search | Gate 001 cannot pass yet |
 | Editor launch | Not tested | Gate 001 cannot pass yet |
 | Disk space | Root filesystem roughly 255 GB total, 188 GB used, 55–59 GB free, 78% used after cleanup | Warning / improved, but still not ideal for full UE install, Derived Data Cache, build, and package workflow |
-| Large storage | 2 TB `sda1` mounted at `/run/media/seth/Steam hard drive_storage`, NTFS, 1.5 TB free | Good for UE archive/download staging; still not ideal for a Linux UE source/build tree |
-| UE staging folders | Created `UE/Downloads`, `UE/Installs`, and `UE/DerivedDataCache` on the mounted 2 TB drive | Recorded / staging path available |
+| Windows storage partition | `/dev/sda1`, NTFS, label `WIN_STORAGE` | Recorded / Windows storage requirement restored |
+| UE workspace partition | `/dev/sda2`, ext4, label `UE5_WORKSPACE`, mounted at `/mnt/ue5`, 652 GB total and 619 GB free | Recorded / green for Linux UE source/build/cache/project workspace |
+| UE workspace folders | `/mnt/ue5/UnrealEngine`, `/mnt/ue5/UE-Downloads`, `/mnt/ue5/UE-Installs`, `/mnt/ue5/DerivedDataCache`, and `/mnt/ue5/JungleGame` created | Recorded / staging path available |
 | Heroic/Legendary Epic access | Heroic bundled Legendary is authenticated enough to list 5 Epic library items | Recorded / Unreal Engine not present in listed library |
-| EpicGames/UnrealEngine GitHub access | `gh repo view EpicGames/UnrealEngine` cannot resolve the repository | Source build blocked until Epic-GitHub access is linked/visible |
+| EpicGames/UnrealEngine GitHub access | `gh repo view EpicGames/UnrealEngine` resolves with `viewerPermission: READ` and default branch `release` | Recorded / source access green |
 | Linux cook/package smoke | Not tested | Blocked until UE editor/project path exists |
 
 Gate 001 conclusion from this snapshot:
 
 - GPU, NVIDIA driver, Vulkan, atomic-int64, Clang 18, Clang 20, Ninja, LLDB 18, linker tooling, Vulkan shader tooling, and source/archive helpers are **green**.
-- UE editor availability, editor launch, and UE install/source access are still **yellow/blocking**.
-- Root disk headroom is improved but still should not be treated as the preferred UE install/build/cache target.
-- Gate 001 should remain active until UE editor and storage/editor launch evidence are recorded.
+- UE workspace storage and Epic source access are **green**.
+- UE editor availability and editor launch are still **yellow/blocking**.
+- Root disk headroom is improved but `/mnt/ue5` should be treated as the preferred UE install/build/cache/project target.
+- Gate 001 should remain active until UE editor path and editor launch evidence are recorded.
 - Gate 002 should not select UE 5.8 or fallback to UE 5.7 yet.
 
 ## Sources and Confidence
@@ -103,9 +105,11 @@ For engine development, Epic documents Ubuntu 22.04 / Rocky Linux 8 and clang/to
 | Vulkan device | NVIDIA GeForce RTX 2080 | Recorded |
 | Vulkan atomic int64 | `VK_KHR_shader_atomic_int64` present | Recorded |
 | Disk | 55–59 GB free on root after cleanup | Warning / improved, but still not preferred for full UE install/build/cache |
-| Large storage | 2 TB `sda1` mounted at `/run/media/seth/Steam hard drive_storage`, NTFS, 1.5 TB free | Available for UE archive/download staging; not ideal for Linux UE source/build tree |
-| UE staging folders | `UE/Downloads`, `UE/Installs`, `UE/DerivedDataCache` created on mounted 2 TB drive | Recorded |
-| UE editor | Not found in quick `$HOME` search | Blocking Gate 001 pass |
+| Windows storage | `/dev/sda1`, NTFS, label `WIN_STORAGE` | Recorded / Windows storage requirement restored |
+| UE workspace | `/dev/sda2`, ext4, label `UE5_WORKSPACE`, mounted at `/mnt/ue5`, 652 GB total and 619 GB free | Recorded / green for Linux UE source/build/cache/project workspace |
+| UE workspace folders | `/mnt/ue5/UnrealEngine`, `/mnt/ue5/UE-Downloads`, `/mnt/ue5/UE-Installs`, `/mnt/ue5/DerivedDataCache`, `/mnt/ue5/JungleGame` | Recorded |
+| Epic source access | `EpicGames/UnrealEngine` resolves with read access and default branch `release` | Recorded / green for source access |
+| UE editor | Not found under `/mnt/ue5` or quick `$HOME` search | Blocking Gate 001 pass |
 
 ### Known project / hardware context not remeasured in this gate snapshot
 
