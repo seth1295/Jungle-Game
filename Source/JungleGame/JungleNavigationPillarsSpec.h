@@ -220,21 +220,48 @@ struct FJungleNavigationPillarsSpec
 		return ClampCueSignal(Multiplier);
 	}
 
-	static EJungleNavigationCueReadability ResolveReadability(float RawSignal, const FJungleNavigationEnvironmentalState& Environment)
+	static EJungleNavigationCueReadability ResolveCueSignal(float Signal)
 	{
-		const float Signal = ClampCueSignal(RawSignal) * EnvironmentalVisibilityMultiplier(Environment);
+		const float ClampedSignal = ClampCueSignal(Signal);
 
-		if (Signal >= MinimumReadableCueSignal)
+		if (ClampedSignal >= MinimumReadableCueSignal)
 		{
 			return EJungleNavigationCueReadability::Readable;
 		}
 
-		if (Signal >= MinimumDegradedCueSignal)
+		if (ClampedSignal >= MinimumDegradedCueSignal)
 		{
 			return EJungleNavigationCueReadability::Degraded;
 		}
 
 		return EJungleNavigationCueReadability::Unavailable;
+	}
+
+	static EJungleNavigationCueReadability ResolveReadability(float RawSignal, const FJungleNavigationEnvironmentalState& Environment)
+	{
+		return ResolveCueSignal(ClampCueSignal(RawSignal) * EnvironmentalVisibilityMultiplier(Environment));
+	}
+
+	static float EnvironmentalAudioMultiplier(const FJungleNavigationEnvironmentalState& Environment)
+	{
+		float Multiplier = 1.0f;
+
+		if (Environment.bRain)
+		{
+			Multiplier *= 0.68f;
+		}
+
+		if (Environment.bInsideGorge)
+		{
+			Multiplier *= 0.76f;
+		}
+
+		return ClampCueSignal(Multiplier);
+	}
+
+	static EJungleNavigationCueReadability ResolveAuditoryReadability(float RawSignal, const FJungleNavigationEnvironmentalState& Environment)
+	{
+		return ResolveCueSignal(ClampCueSignal(RawSignal) * EnvironmentalAudioMultiplier(Environment));
 	}
 
 	static EJungleNavigationCueReadability ResolveSunPositionCue(const FJungleNavigationCueSample& Sample)
@@ -300,7 +327,7 @@ struct FJungleNavigationPillarsSpec
 		const bool bInsideCoastalTransition = Sample.TerrainSample.CoastDistanceMeters <= FJunglePCGBiomeFrameworkSpec::CoastEdgeMeters;
 		const float CoastDistanceSignal = bInsideCoastalTransition ? 1.0f : 0.0f;
 		const float OceanSoundSignal = Sample.Environment.bOceanAudible ? FMath::Max(Sample.OceanSoundAudibility, MinimumAudibleNavigationSignal) : Sample.OceanSoundAudibility;
-		return ResolveReadability(FMath::Max(CoastDistanceSignal, OceanSoundSignal), Sample.Environment);
+		return ResolveAuditoryReadability(FMath::Max(CoastDistanceSignal, OceanSoundSignal), Sample.Environment);
 	}
 
 	static EJungleNavigationCueReadability ResolveRidgeLandmarkCue(const FJungleNavigationCueSample& Sample)
@@ -343,7 +370,7 @@ struct FJungleNavigationPillarsSpec
 			? Sample.TerrainSample.GetMaskValue(TEXT("sound_propagation"))
 			: 0.0f;
 		const float OceanSound = Sample.Environment.bOceanAudible ? Sample.OceanSoundAudibility : 0.0f;
-		return ResolveReadability(FMath::Max3(CreekSound, GorgeSound, OceanSound), Sample.Environment);
+		return ResolveAuditoryReadability(FMath::Max3(CreekSound, GorgeSound, OceanSound), Sample.Environment);
 	}
 
 	static EJungleNavigationCueReadability ResolveTraversalAffordanceCue(const FJungleNavigationCueSample& Sample)
@@ -377,10 +404,12 @@ struct FJungleNavigationPillarsSpec
 			TEXT("wetness"),
 			TEXT("ridge_valley"),
 			TEXT("canopy"),
+			TEXT("disturbance"),
 			TEXT("sound_propagation"),
 			TEXT("visibility"),
 			TEXT("sky_window"),
 			TEXT("footing_risk"),
+			TEXT("night_danger"),
 			TEXT("hard_blocker"),
 			TEXT("soft_blocker"),
 			TEXT("affordance_zone"),
