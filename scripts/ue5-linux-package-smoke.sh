@@ -37,7 +37,15 @@ if [[ "$MAP_COUNT" == "0" ]]; then
 fi
 
 if [[ ! -f "$UE5_ROOT/Engine/Binaries/Linux/ShaderCompileWorker.modules" ]]; then
-  printf 'WARNING: ShaderCompileWorker.modules is missing; cook may fail when shader compilation starts.\n'
+  printf 'WARNING: ShaderCompileWorker.modules is missing; cook may fail when shader compilation starts. Run scripts/ue5-linux-package-preflight.sh first.\n'
+fi
+
+if [[ ! -f "$UE5_ROOT/Engine/Binaries/Linux/UnrealPak.modules" ]]; then
+  printf 'WARNING: UnrealPak.modules is missing; pak/archive may fail. Run scripts/ue5-linux-package-preflight.sh first.\n'
+fi
+
+if [[ ! -f "$PROJECT_ROOT/Binaries/Linux/JungleGame.target" ]]; then
+  printf 'WARNING: JungleGame.target receipt is missing; stage may fail. Run scripts/ue5-linux-package-preflight.sh first or run without JUNGLE_SKIP_BUILD=1.\n'
 fi
 
 CMD=(

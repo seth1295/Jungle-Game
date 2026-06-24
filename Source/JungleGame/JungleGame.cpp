@@ -7,4 +7,4 @@ class FJungleGameModule final : public FDefaultGameModuleImpl
 {
 };
 
-IMPLEMENT_GAME_MODULE(FJungleGameModule, JungleGame);
+IMPLEMENT_PRIMARY_GAME_MODULE(FJungleGameModule, JungleGame, "JungleGame");
