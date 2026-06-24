@@ -10,6 +10,13 @@ class AJungleMarkerActor;
 class AJungleWatcherCueActor;
 class UStaticMesh;
 
+UENUM(BlueprintType)
+enum class EJungleCell0AnchorMode : uint8
+{
+	PlacedWorldLocation,
+	PlayerRelativeDebug,
+};
+
 UCLASS()
 class JUNGLEGAME_API AJungleCell0Director : public AActor
 {
@@ -17,6 +24,8 @@ class JUNGLEGAME_API AJungleCell0Director : public AActor
 
 public:
 	AJungleCell0Director();
+
+	void ConfigureLargeWorldPlacement(const FVector& NewCellOrigin, const FRotator& NewCellRotation, bool bMovePlayerToEntryPoint);
 
 protected:
 	virtual void BeginPlay() override;
@@ -26,7 +35,10 @@ private:
 	void StartRain();
 	void ChangeCrossing();
 	void ShowCue();
+	void ResolveCellAnchor();
 	void CapturePlayerAnchor();
+	void CapturePlacedWorldAnchor();
+	void MovePlayerToCellEntryPoint();
 	FVector ToWorld(const FVector& LocalLocation) const;
 	FRotator ToWorldRotation(float LocalYawDegrees = 0.0f) const;
 	void AddCube(const FVector& LocalLocation, const FVector& Scale, const FName Name);
@@ -46,6 +58,16 @@ private:
 	UPROPERTY()
 	TObjectPtr<UStaticMesh> CubeMesh;
 
+	UPROPERTY(EditAnywhere, Category = "Jungle|Cell 0 Integration")
+	EJungleCell0AnchorMode AnchorMode = EJungleCell0AnchorMode::PlacedWorldLocation;
+
+	UPROPERTY(EditAnywhere, Category = "Jungle|Cell 0 Integration")
+	bool bMovePlayerToEntryOnBeginPlay = true;
+
+	UPROPERTY(EditAnywhere, Category = "Jungle|Cell 0 Integration")
+	FVector PlayerEntryLocalLocation = FVector(-180.0f, -180.0f, 0.0f);
+
 	FVector CellOrigin = FVector::ZeroVector;
 	FRotator CellRotation = FRotator::ZeroRotator;
+	bool bHasConfiguredPlacement = false;
 };

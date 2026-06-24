@@ -34,9 +34,19 @@ void AJungleCell0Director::BeginPlay()
 	GetWorldTimerManager().SetTimer(CueTimer, this, &AJungleCell0Director::ShowCue, 14.0f, false);
 }
 
+void AJungleCell0Director::ConfigureLargeWorldPlacement(const FVector& NewCellOrigin, const FRotator& NewCellRotation, bool bMovePlayerToEntryPoint)
+{
+	CellOrigin = NewCellOrigin;
+	CellRotation = FRotator(0.0f, NewCellRotation.Yaw, 0.0f);
+	AnchorMode = EJungleCell0AnchorMode::PlacedWorldLocation;
+	bMovePlayerToEntryOnBeginPlay = bMovePlayerToEntryPoint;
+	bHasConfiguredPlacement = true;
+}
+
 void AJungleCell0Director::BuildCell()
 {
-	CapturePlayerAnchor();
+	ResolveCellAnchor();
+	MovePlayerToCellEntryPoint();
 
 	FireActor = GetWorld()->SpawnActor<AJungleFireActor>(AJungleFireActor::StaticClass(), ToWorld(FVector(320.0f, 0.0f, -40.0f)), ToWorldRotation());
 	CrossingActor = GetWorld()->SpawnActor<AJungleCrossingActor>(AJungleCrossingActor::StaticClass(), ToWorld(FVector(920.0f, 0.0f, -10.0f)), ToWorldRotation());
@@ -49,7 +59,7 @@ void AJungleCell0Director::BuildCell()
 	AddCube(FVector(700.0f, 0.0f, 90.0f), FVector(0.25f, 5.0f, 1.8f), TEXT("Cell0VisibilityWall"));
 	AddCube(FVector(1050.0f, 0.0f, -90.0f), FVector(5.0f, 1.6f, 0.08f), TEXT("Cell0CreekBed"));
 
-	UE_LOG(LogJungleGame, Display, TEXT("Jungle Cell 0 runtime blockout spawned near player at %s facing %.1f degrees."), *CellOrigin.ToString(), CellRotation.Yaw);
+	UE_LOG(LogJungleGame, Display, TEXT("Jungle Cell 0 integrated world location spawned at %s facing %.1f degrees using %s anchor."), *CellOrigin.ToString(), CellRotation.Yaw, AnchorMode == EJungleCell0AnchorMode::PlacedWorldLocation ? TEXT("placed-world") : TEXT("player-relative-debug"));
 }
 
 void AJungleCell0Director::StartRain()
@@ -81,6 +91,17 @@ void AJungleCell0Director::ShowCue()
 	}
 }
 
+void AJungleCell0Director::ResolveCellAnchor()
+{
+	if (AnchorMode == EJungleCell0AnchorMode::PlayerRelativeDebug)
+	{
+		CapturePlayerAnchor();
+		return;
+	}
+
+	CapturePlacedWorldAnchor();
+}
+
 void AJungleCell0Director::CapturePlayerAnchor()
 {
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
@@ -96,6 +117,40 @@ void AJungleCell0Director::CapturePlayerAnchor()
 
 	CellOrigin = GetActorLocation();
 	CellRotation = FRotator(0.0f, GetActorRotation().Yaw, 0.0f);
+}
+
+void AJungleCell0Director::CapturePlacedWorldAnchor()
+{
+	if (!bHasConfiguredPlacement)
+	{
+		CellOrigin = GetActorLocation();
+		CellRotation = FRotator(0.0f, GetActorRotation().Yaw, 0.0f);
+	}
+}
+
+void AJungleCell0Director::MovePlayerToCellEntryPoint()
+{
+	if (!bMovePlayerToEntryOnBeginPlay || AnchorMode != EJungleCell0AnchorMode::PlacedWorldLocation)
+	{
+		return;
+	}
+
+	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
+	if (!PlayerPawn)
+	{
+		return;
+	}
+
+	const FVector EntryLocation = ToWorld(PlayerEntryLocalLocation);
+	const FRotator EntryRotation = ToWorldRotation(0.0f);
+	PlayerPawn->SetActorLocationAndRotation(EntryLocation, EntryRotation, false, nullptr, ETeleportType::TeleportPhysics);
+
+	if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0))
+	{
+		PlayerController->SetControlRotation(EntryRotation);
+	}
+
+	UE_LOG(LogJungleGame, Display, TEXT("Player moved to Cell 0 large-world entry at %s."), *EntryLocation.ToString());
 }
 
 FVector AJungleCell0Director::ToWorld(const FVector& LocalLocation) const
