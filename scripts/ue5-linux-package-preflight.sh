@@ -8,9 +8,11 @@ BUILD_SH="$UE5_ROOT/Engine/Build/BatchFiles/Linux/Build.sh"
 UE_BIN="$UE5_ROOT/Engine/Binaries/Linux"
 DRY_RUN=0
 
-if [[ "${1:-}" == "--dry-run" ]]; then
-  DRY_RUN=1
-fi
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=1 ;;
+  esac
+done
 
 fail() {
   printf 'ERROR: %s\n' "$1" >&2
@@ -31,13 +33,22 @@ build_target() {
   printf ' %q' "${cmd[@]}"
   printf '\n'
   if [[ "$DRY_RUN" == "0" ]]; then
-    "${cmd[@]}" || return $?
+    "${cmd[@]}" || fail "Build failed for target: $target"
   fi
+}
+
+require_file() {
+  local path="$1"
+  local label="$2"
+  [[ -f "$path" ]] || fail "$label was not produced: $path"
 }
 
 if [[ ! -f "$UE_BIN/ShaderCompileWorker.modules" ]]; then
   printf 'Missing ShaderCompileWorker.modules; building ShaderCompileWorker.\n'
   build_target ShaderCompileWorker
+  if [[ "$DRY_RUN" == "0" ]]; then
+    require_file "$UE_BIN/ShaderCompileWorker.modules" "ShaderCompileWorker manifest"
+  fi
 else
   printf 'OK: ShaderCompileWorker.modules exists.\n'
 fi
@@ -45,6 +56,9 @@ fi
 if [[ ! -f "$UE_BIN/UnrealPak.modules" ]]; then
   printf 'Missing UnrealPak.modules; building UnrealPak.\n'
   build_target UnrealPak
+  if [[ "$DRY_RUN" == "0" ]]; then
+    require_file "$UE_BIN/UnrealPak.modules" "UnrealPak manifest"
+  fi
 else
   printf 'OK: UnrealPak.modules exists.\n'
 fi
@@ -52,6 +66,9 @@ fi
 if [[ ! -f "$PROJECT_ROOT/Binaries/Linux/JungleGame.target" ]]; then
   printf 'Missing JungleGame.target receipt; building standalone game target.\n'
   build_target JungleGame "$PROJECT_FILE"
+  if [[ "$DRY_RUN" == "0" ]]; then
+    require_file "$PROJECT_ROOT/Binaries/Linux/JungleGame.target" "JungleGame target receipt"
+  fi
 else
   printf 'OK: JungleGame.target exists.\n'
 fi
