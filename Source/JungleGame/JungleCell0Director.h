@@ -32,6 +32,7 @@ protected:
 
 private:
 	void BuildCell();
+	void BuildFirstPlayableTerrain();
 	void StartRain();
 	void ChangeCrossing();
 	void ShowCue();
@@ -41,7 +42,7 @@ private:
 	void MovePlayerToCellEntryPoint();
 	FVector ToWorld(const FVector& LocalLocation) const;
 	FRotator ToWorldRotation(float LocalYawDegrees = 0.0f) const;
-	void AddCube(const FVector& LocalLocation, const FVector& Scale, const FName Name);
+	void AddCube(const FVector& LocalLocation, const FVector& Scale, const FName Name, float LocalYawDegrees = 0.0f);
 
 	UPROPERTY()
 	TObjectPtr<AJungleFireActor> FireActor;
