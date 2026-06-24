@@ -116,7 +116,7 @@ For engine development, Epic documents Ubuntu 22.04 / Rocky Linux 8 and clang/to
 | Vulkan atomic int64 | `VK_KHR_shader_atomic_int64` present | Recorded |
 | Disk | Root filesystem reported by `df -h` as 255G size, 188G used, 55G available, 78% used; `df` available space excludes reserved filesystem blocks and is rounded | Warning / improved, but still not preferred for full UE install/build/cache |
 | Windows storage | `/dev/sda1`, NTFS, label `WIN_STORAGE` | Recorded / Windows storage requirement restored |
-| UE workspace | `/dev/sda2`, ext4, label `UE5_WORKSPACE`, mounted at `/mnt/ue5`, 652 GB total and 619 GB free | Recorded / green for Linux UE source/build/cache/project workspace |
+| UE workspace | `/dev/sda2`, ext4, label `UE5_WORKSPACE`, mounted at `/mnt/ue5`; initial empty workspace reported about 619 GB free, later UE source checkout snapshot reported about 459 GB free | Recorded / green for Linux UE source/build/cache/project workspace |
 | UE workspace folders | `/mnt/ue5/UnrealEngine`, `/mnt/ue5/UE-Downloads`, `/mnt/ue5/UE-Installs`, `/mnt/ue5/DerivedDataCache`, `/mnt/ue5/JungleGame` | Recorded |
 | Epic source access | `EpicGames/UnrealEngine` resolves with read access and default branch `release` | Recorded / green for source access |
 | UE editor | `/mnt/ue5/UnrealEngine/Engine/Binaries/Linux/UnrealEditor`; process confirmed running as PID `27998` | Recorded / green |

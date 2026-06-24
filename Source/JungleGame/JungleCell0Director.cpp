@@ -77,13 +77,21 @@ void AJungleCell0Director::ShowCue()
 
 void AJungleCell0Director::AddCube(const FVector& Location, const FVector& Scale, const FName Name)
 {
+	if (!CubeMesh)
+	{
+		UE_LOG(LogJungleGame, Warning, TEXT("CubeMesh missing; skipping blockout actor '%s'."), *Name.ToString());
+		return;
+	}
+
 	AStaticMeshActor* MeshActor = GetWorld()->SpawnActor<AStaticMeshActor>(AStaticMeshActor::StaticClass(), Location, FRotator::ZeroRotator);
-	if (!MeshActor || !CubeMesh)
+	if (!MeshActor)
 	{
 		return;
 	}
 
+#if WITH_EDITOR
 	MeshActor->SetActorLabel(Name.ToString());
+#endif
 	MeshActor->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
 	MeshActor->SetActorScale3D(Scale);
 }

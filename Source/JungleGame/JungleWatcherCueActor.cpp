@@ -28,12 +28,14 @@ AJungleWatcherCueActor::AJungleWatcherCueActor()
 	CueLight->SetIntensity(0.0f);
 
 	SetActorHiddenInGame(true);
+	SetActorEnableCollision(false);
 }
 
 void AJungleWatcherCueActor::RevealCue()
 {
 	bRevealed = true;
 	SetActorHiddenInGame(false);
+	SetActorEnableCollision(true);
 	CueLight->SetIntensity(900.0f);
 	UE_LOG(LogJungleGame, Display, TEXT("Distant watcher cue revealed without confrontation."));
 }
