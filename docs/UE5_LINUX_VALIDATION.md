@@ -2,13 +2,13 @@
 
 ## Executive Summary
 
-Gate 001 should remain **active / pending local evidence** until the repo records actual local Linux, NVIDIA, Vulkan, and Unreal Editor evidence from Seth's machine.
+Gate 001 now has local evidence that Seth's Linux workstation can launch the selected UE5 source editor path. The local UE source checkout at `/mnt/ue5/UnrealEngine` reports UE 5.8.0, has the required editor and `ShaderCompileWorker` binaries, and `UnrealEditor` reached engine initialization with the OpenWorld template loaded.
 
 Epic's UE 5.8 Linux documentation gives this gate a concrete target: Ubuntu 22.04 is the recommended Linux OS, 32 GB RAM is recommended, GeForce 2080 and 8 GB+ graphics RAM are named as the recommended GPU class, and Vulkan on NVIDIA is documented with a 570+ driver target. Epic also documents two Linux editor paths: a precompiled installed build and a source build, with the editor launched from `Engine/Binaries/Linux/UnrealEditor`.
 
-Seth's known machine class is close to Epic's recommended Linux baseline: Ryzen 9 5950X, RTX 2080 8 GB, 32 GB RAM, Linux-first workflow. The unresolved part is not the broad hardware class; it is the exact local OS, driver, Vulkan, extension, and UE install state.
+Seth's machine has recorded local evidence for the required Gate 001 decision points: Ubuntu 26.04, kernel/glibc, RTX 2080 8 GB, NVIDIA 595.71.05, Vulkan 1.4.341, `VK_KHR_shader_atomic_int64`, UE workspace storage, Epic source access, UE 5.8 source checkout, editor launch, shader compilation, and template map load.
 
-This document is research and PR scope only. It is not engine installation, not a UE project creation step, and not approval to add `.uproject`, `Source/`, `Config/`, or `Content/` files.
+This document is validation scope only. It does not add a UE project, game code, or assets. Cook/package validation remains deferred until a UE project exists.
 
 ## Gate 001 Goal
 
@@ -26,7 +26,7 @@ Gate 001 should answer:
 
 ## Local Validation Snapshot — 2026-06-24 AEST
 
-Current Gate 001 light status: **Yellow**.
+Current Gate 001 light status: **Green for editor/source validation; cook/package deferred until project bootstrap**.
 
 Green evidence recorded:
 
@@ -49,28 +49,38 @@ Green evidence recorded:
 | Vulkan shader tools | `glslangValidator`, `spirv-val`, Vulkan validation layers installed and verified | Recorded / green |
 | Source/archive helpers | `git-lfs`, `curl`, `wget`, `rsync`, `unzip`, `zip`, `7zip`, `patchelf` installed or available | Recorded / green |
 
-Yellow / blocked evidence:
+Resolved / deferred evidence:
 
 | Evidence | Result | Gate impact |
 |---|---|---|
-| UE editor path | No `UnrealEditor` found under `$HOME` in the quick search | Gate 001 cannot pass yet |
-| Editor launch | Not tested | Gate 001 cannot pass yet |
+| UE editor path | `/mnt/ue5/UnrealEngine/Engine/Binaries/Linux/UnrealEditor` exists and is executable | Recorded / green |
+| UE source version | `Engine/Build/Build.version` reports MajorVersion `5`, MinorVersion `8`, PatchVersion `0`; source checkout branch `release`, commit `7deeb413d` | Recorded / green for Gate 002 decision |
+| `ShaderCompileWorker` | Initially missing at launch, then built; `/mnt/ue5/UnrealEngine/Engine/Binaries/Linux/ShaderCompileWorker` exists and is executable | Resolved blocker |
+| Editor launch | `UnrealEditor` process confirmed running as PID `27998`; log shows `Engine is initialized. Leaving FEngineLoop::Init()` | Recorded / green |
+| Template map load | Editor loaded `../../../Engine/Content/Maps/Templates/OpenWorld.umap` as template | Recorded / green |
+| Map check | `Map check complete: 0 Error(s), 0 Warning(s)` | Recorded / green |
+| Shader compilation | `Shaders Compiled: 6,802`; `Jobs assigned 6,802, completed 6,802 (100%)` | Recorded / green |
+| Vulkan editor path | Log records `LogVulkanRHI` creating a Vulkan swapchain with `VK_PRESENT_MODE_MAILBOX_KHR` | Recorded / green for editor Vulkan startup |
+| CEF / embedded browser GPU process | CEF GPU acceleration repeatedly logs GLX/ANGLE/EGL initialization failures and GPU process exits | Warning; not a core editor launch blocker unless browser-backed UI becomes required or unstable |
+| Local Zen DDC | Zen local readiness timed out/fell back earlier, while local DDC path remained writable | Warning/fallback; not a launch blocker |
 | Disk space | Root filesystem reported by `df -h` as 255G size, 188G used, 55G available, 78% used; `df` available space excludes reserved filesystem blocks and is rounded | Warning / improved, but not the preferred full UE install, Derived Data Cache, build, or package workflow target |
 | Windows storage partition | `/dev/sda1`, NTFS, label `WIN_STORAGE` | Recorded / Windows storage requirement restored |
-| UE workspace partition | `/dev/sda2`, ext4, label `UE5_WORKSPACE`, mounted at `/mnt/ue5`, 652 GB total and 619 GB free | Recorded / green for Linux UE source/build/cache/project workspace |
+| UE workspace partition | `/dev/sda2`, ext4, label `UE5_WORKSPACE`, mounted at `/mnt/ue5`; after UE source checkout, `/mnt/ue5/UnrealEngine` uses about 160 GB and `/mnt/ue5` has about 459 GB free | Recorded / green for Linux UE source/build/cache/project workspace |
 | UE workspace folders | `/mnt/ue5/UnrealEngine`, `/mnt/ue5/UE-Downloads`, `/mnt/ue5/UE-Installs`, `/mnt/ue5/DerivedDataCache`, and `/mnt/ue5/JungleGame` created | Recorded / staging path available |
 | Heroic/Legendary Epic access | Heroic bundled Legendary is authenticated enough to list 5 Epic library items | Recorded / Unreal Engine not present in listed library |
 | EpicGames/UnrealEngine GitHub access | `gh repo view EpicGames/UnrealEngine` resolves with `viewerPermission: READ` and default branch `release` | Recorded / source access green |
-| Linux cook/package smoke | Not tested | Blocked until UE editor/project path exists |
+| Linux cook/package smoke | Not tested | Deferred until Gate 003 creates a project |
 
 Gate 001 conclusion from this snapshot:
 
 - GPU, NVIDIA driver, Vulkan, atomic-int64, Clang 18, Clang 20, Ninja, LLDB 18, linker tooling, Vulkan shader tooling, and source/archive helpers are **green**.
 - UE workspace storage and Epic source access are **green**.
-- UE editor availability and editor launch are still **yellow/blocking**.
-- Root disk headroom is improved but `/mnt/ue5` should be treated as the preferred UE install/build/cache/project target.
-- Gate 001 should remain active until UE editor path and editor launch evidence are recorded.
-- Gate 002 should not select UE 5.8 or fallback to UE 5.7 yet.
+- UE 5.8 source editor availability, `ShaderCompileWorker`, editor launch, OpenWorld template load, map check, shader compilation, and Vulkan swapchain creation are **green**.
+- CEF/ANGLE embedded browser GPU-process failures are a **warning**, not a core editor launch blocker.
+- Local Zen DDC timeout/fallback is a **warning**, not a core editor launch blocker.
+- Root disk headroom is improved but `/mnt/ue5` should remain the preferred UE install/build/cache/project target.
+- Linux cook/package validation is **deferred** until Gate 003 creates a minimal UE project.
+- Gate 001 has enough evidence to pass and activate Gate 002.
 
 ## Sources and Confidence
 
@@ -109,7 +119,7 @@ For engine development, Epic documents Ubuntu 22.04 / Rocky Linux 8 and clang/to
 | UE workspace | `/dev/sda2`, ext4, label `UE5_WORKSPACE`, mounted at `/mnt/ue5`, 652 GB total and 619 GB free | Recorded / green for Linux UE source/build/cache/project workspace |
 | UE workspace folders | `/mnt/ue5/UnrealEngine`, `/mnt/ue5/UE-Downloads`, `/mnt/ue5/UE-Installs`, `/mnt/ue5/DerivedDataCache`, `/mnt/ue5/JungleGame` | Recorded |
 | Epic source access | `EpicGames/UnrealEngine` resolves with read access and default branch `release` | Recorded / green for source access |
-| UE editor | Not found under `/mnt/ue5` or quick `$HOME` search | Blocking Gate 001 pass |
+| UE editor | `/mnt/ue5/UnrealEngine/Engine/Binaries/Linux/UnrealEditor`; process confirmed running as PID `27998` | Recorded / green |
 
 ### Known project / hardware context not remeasured in this gate snapshot
 
@@ -287,15 +297,15 @@ These are examples for manual validation. They are not commands this document ha
 | NVIDIA | RTX 2080 visible, driver 570+ | Driver below Epic's UE 5.8 NVIDIA target | NVIDIA device unavailable |
 | Vulkan | Vulkan reports RTX 2080 device | Vulkan tooling missing package | Vulkan cannot enumerate NVIDIA GPU |
 | Atomic int64 | `VK_KHR_shader_atomic_int64` present | Not checked yet | Missing if Nanite/VSM required |
-| UE editor | Editor binary found and launches | Installed but not launched | No UE install and manual download required |
-| Build/cook | Future path documented | Not runnable until project exists | Toolchain blocks even trivial project later |
+| UE editor | Editor binary found, launches, reaches `FEngineLoop::Init()`, loads OpenWorld template, and completes map check | CEF/browser-backed UI GPU-process warnings | No UE install or editor launch failure |
+| Build/cook | Future path documented and deferred until Gate 003 project exists | Not runnable until project exists | Toolchain blocks even trivial project later |
 | Scope hygiene | Docs only | Extra notes need cleanup | `.uproject`, `Source/`, `Config/`, `Content/`, binaries, generated files added |
 
 ## Fallback Triggers
 
 Gate 001 should trigger a fallback/blocked path if:
 
-- UE 5.8 editor cannot launch on the local Linux environment.
+- UE 5.8 editor stops launching on the local Linux environment.
 - NVIDIA driver cannot reach Epic's recommended 570+ path or Vulkan fails.
 - `VK_KHR_shader_atomic_int64` is missing and the project intends to rely on Nanite/VSM immediately.
 - Ubuntu 26.04 causes editor/toolchain/library failures.
@@ -320,7 +330,7 @@ The PR should include:
 - Fallback triggers.
 - Explicit no-UE-project boundary.
 
-The PR should not mark Gate 001 passed until real local results are inserted.
+The PR may mark Gate 001 passed because real local Linux, UE source, editor launch, shader compilation, and template map evidence has been inserted.
 
 ## PR Scope Recommendation
 
@@ -347,11 +357,11 @@ Forbidden PR changes:
 
 Gate recommendation:
 
-- Gate 001 status: **Pending local evidence / remains active.**
-- Next active gate: **Gate 001 remains active until local evidence is recorded.**
-- Blockers: UE editor missing/manual install required; Vulkan/NVIDIA device missing; driver below required path with no upgrade; Ubuntu/toolchain incompatibility.
-- Warnings: Ubuntu 26.04 is newer than Epic's Ubuntu 22.04 baseline; RTX 2080 8 GB is viable but tight for dense jungle/Lumen/Nanite/VSM.
-- Manual local checks required: OS/kernel/glibc, NVIDIA driver, Vulkan summary, atomic int64 extension, UE editor path/launch.
+- Gate 001 status: **Passed by local evidence.**
+- Next active gate: **Gate 002 — Engine Version Decision.**
+- Blockers: none for editor/source validation at time of recording.
+- Warnings: Ubuntu 26.04 is newer than Epic's Ubuntu 22.04 baseline; RTX 2080 8 GB is viable but tight for dense jungle/Lumen/Nanite/VSM; CEF/ANGLE embedded-browser GPU process logs GLX/EGL/Vulkan initialization failures; Local Zen DDC timed out and fell back earlier.
+- Deferred checks: Linux cook/package smoke remains deferred until a UE project exists under Gate 003.
 
 ## Sources
 

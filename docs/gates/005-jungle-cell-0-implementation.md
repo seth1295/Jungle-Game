@@ -2,7 +2,7 @@
 
 ## Status
 
-planned
+active
 
 ## Purpose
 
@@ -61,6 +61,8 @@ Run or document:
 ## Exit criteria
 
 This gate passes when the repo contains a minimal spatial 3D playable slice that demonstrates the lane without relying on menus, lore-only content, gore, combat, or asset bloat.
+
+Initial Gate 005 implementation was added on 2026-06-24 AEST. The repo contains a C++-owned runtime prototype for first-person control, ember/fire pressure, rain pressure, crossing state change, marker clue, watcher cue, and runtime blockout spawning without committed binary map/content assets. `JungleGameEditor` builds, commandlet validation passes, and a headless game-run smoke loads `JungleGameMode` and initializes the Cell 0 runtime blockout. Manual visual PIE validation remains recommended before marking the slice polished or creating the next post-Cell-0 gate.
 
 ## CodeRabbit handling
 

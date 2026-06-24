@@ -2,7 +2,7 @@
 
 ## Status
 
-planned
+passed
 
 ## Purpose
 
@@ -60,6 +60,8 @@ The slice plan must specify:
 ## Exit criteria
 
 This gate passes when Gate 005 can implement the slice from the docs without inventing architecture or expanding scope.
+
+Gate 004 passed on 2026-06-24 AEST. `docs/FIRST_PLAYABLE_SLICE.md` defines the implementation-ready plan for `Jungle Cell 0: Embers`, including player spawn/control baseline, jungle traversal, ember/fire pressure, rain state, camp persistence, crossing state change, evidence-of-hands moment, distant nonviolent watcher cue, pass/fail criteria, expected Gate 005 file areas, and explicit out-of-scope boundaries.
 
 ## CodeRabbit handling
 
