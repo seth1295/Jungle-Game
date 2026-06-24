@@ -70,4 +70,5 @@ private:
 	FVector CellOrigin = FVector::ZeroVector;
 	FRotator CellRotation = FRotator::ZeroRotator;
 	bool bHasConfiguredPlacement = false;
+	int32 PlayerEntryMoveAttemptsRemaining = 30;
 };

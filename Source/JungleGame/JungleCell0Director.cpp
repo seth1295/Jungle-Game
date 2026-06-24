@@ -40,6 +40,7 @@ void AJungleCell0Director::ConfigureLargeWorldPlacement(const FVector& NewCellOr
 	CellRotation = FRotator(0.0f, NewCellRotation.Yaw, 0.0f);
 	AnchorMode = EJungleCell0AnchorMode::PlacedWorldLocation;
 	bMovePlayerToEntryOnBeginPlay = bMovePlayerToEntryPoint;
+	PlayerEntryMoveAttemptsRemaining = 30;
 	bHasConfiguredPlacement = true;
 }
 
@@ -138,6 +139,17 @@ void AJungleCell0Director::MovePlayerToCellEntryPoint()
 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
 	if (!PlayerPawn)
 	{
+		if (PlayerEntryMoveAttemptsRemaining > 0)
+		{
+			--PlayerEntryMoveAttemptsRemaining;
+			FTimerHandle RetryTimer;
+			GetWorldTimerManager().SetTimer(RetryTimer, this, &AJungleCell0Director::MovePlayerToCellEntryPoint, 0.1f, false);
+		}
+		else
+		{
+			bMovePlayerToEntryOnBeginPlay = false;
+			UE_LOG(LogJungleGame, Warning, TEXT("Cell 0 entry move skipped because player pawn was not available after retries."));
+		}
 		return;
 	}
 
@@ -150,6 +162,8 @@ void AJungleCell0Director::MovePlayerToCellEntryPoint()
 		PlayerController->SetControlRotation(EntryRotation);
 	}
 
+	bMovePlayerToEntryOnBeginPlay = false;
+	PlayerEntryMoveAttemptsRemaining = 0;
 	UE_LOG(LogJungleGame, Display, TEXT("Player moved to Cell 0 large-world entry at %s."), *EntryLocation.ToString());
 }
 
