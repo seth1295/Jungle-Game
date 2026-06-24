@@ -26,7 +26,10 @@ private:
 	void StartRain();
 	void ChangeCrossing();
 	void ShowCue();
-	void AddCube(const FVector& Location, const FVector& Scale, const FName Name);
+	void CapturePlayerAnchor();
+	FVector ToWorld(const FVector& LocalLocation) const;
+	FRotator ToWorldRotation(float LocalYawDegrees = 0.0f) const;
+	void AddCube(const FVector& LocalLocation, const FVector& Scale, const FName Name);
 
 	UPROPERTY()
 	TObjectPtr<AJungleFireActor> FireActor;
@@ -42,4 +45,7 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UStaticMesh> CubeMesh;
+
+	FVector CellOrigin = FVector::ZeroVector;
+	FRotator CellRotation = FRotator::ZeroRotator;
 };

@@ -1,11 +1,14 @@
 #include "JungleCell0Director.h"
 
 #include "Engine/StaticMeshActor.h"
+#include "GameFramework/Pawn.h"
+#include "GameFramework/PlayerController.h"
 #include "JungleCrossingActor.h"
 #include "JungleFireActor.h"
 #include "JungleGame.h"
 #include "JungleMarkerActor.h"
 #include "JungleWatcherCueActor.h"
+#include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -33,17 +36,20 @@ void AJungleCell0Director::BeginPlay()
 
 void AJungleCell0Director::BuildCell()
 {
-	FireActor = GetWorld()->SpawnActor<AJungleFireActor>(AJungleFireActor::StaticClass(), FVector(180.0f, 0.0f, 40.0f), FRotator::ZeroRotator);
-	CrossingActor = GetWorld()->SpawnActor<AJungleCrossingActor>(AJungleCrossingActor::StaticClass(), FVector(980.0f, 0.0f, 70.0f), FRotator::ZeroRotator);
-	MarkerActor = GetWorld()->SpawnActor<AJungleMarkerActor>(AJungleMarkerActor::StaticClass(), FVector(1080.0f, 170.0f, 55.0f), FRotator(0.0f, 25.0f, 0.0f));
-	CueActor = GetWorld()->SpawnActor<AJungleWatcherCueActor>(AJungleWatcherCueActor::StaticClass(), FVector(1500.0f, -520.0f, 220.0f), FRotator::ZeroRotator);
+	CapturePlayerAnchor();
 
-	AddCube(FVector(350.0f, 0.0f, -25.0f), FVector(9.0f, 5.0f, 0.1f), TEXT("CampGround"));
-	AddCube(FVector(700.0f, -260.0f, 90.0f), FVector(0.45f, 0.45f, 2.4f), TEXT("DenseTrunkA"));
-	AddCube(FVector(740.0f, 260.0f, 90.0f), FVector(0.45f, 0.45f, 2.4f), TEXT("DenseTrunkB"));
-	AddCube(FVector(1110.0f, 0.0f, -10.0f), FVector(5.0f, 1.6f, 0.08f), TEXT("CreekBed"));
+	FireActor = GetWorld()->SpawnActor<AJungleFireActor>(AJungleFireActor::StaticClass(), ToWorld(FVector(320.0f, 0.0f, -40.0f)), ToWorldRotation());
+	CrossingActor = GetWorld()->SpawnActor<AJungleCrossingActor>(AJungleCrossingActor::StaticClass(), ToWorld(FVector(920.0f, 0.0f, -10.0f)), ToWorldRotation());
+	MarkerActor = GetWorld()->SpawnActor<AJungleMarkerActor>(AJungleMarkerActor::StaticClass(), ToWorld(FVector(1040.0f, 170.0f, -25.0f)), ToWorldRotation(25.0f));
+	CueActor = GetWorld()->SpawnActor<AJungleWatcherCueActor>(AJungleWatcherCueActor::StaticClass(), ToWorld(FVector(1300.0f, -420.0f, 130.0f)), ToWorldRotation());
 
-	UE_LOG(LogJungleGame, Display, TEXT("Jungle Cell 0 runtime blockout spawned."));
+	AddCube(FVector(320.0f, 0.0f, -95.0f), FVector(9.0f, 5.0f, 0.1f), TEXT("Cell0CampGround"));
+	AddCube(FVector(520.0f, -260.0f, 40.0f), FVector(0.55f, 0.55f, 3.2f), TEXT("Cell0TrunkLeft"));
+	AddCube(FVector(520.0f, 260.0f, 40.0f), FVector(0.55f, 0.55f, 3.2f), TEXT("Cell0TrunkRight"));
+	AddCube(FVector(700.0f, 0.0f, 90.0f), FVector(0.25f, 5.0f, 1.8f), TEXT("Cell0VisibilityWall"));
+	AddCube(FVector(1050.0f, 0.0f, -90.0f), FVector(5.0f, 1.6f, 0.08f), TEXT("Cell0CreekBed"));
+
+	UE_LOG(LogJungleGame, Display, TEXT("Jungle Cell 0 runtime blockout spawned near player at %s facing %.1f degrees."), *CellOrigin.ToString(), CellRotation.Yaw);
 }
 
 void AJungleCell0Director::StartRain()
@@ -75,7 +81,34 @@ void AJungleCell0Director::ShowCue()
 	}
 }
 
-void AJungleCell0Director::AddCube(const FVector& Location, const FVector& Scale, const FName Name)
+void AJungleCell0Director::CapturePlayerAnchor()
+{
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
+
+	if (PlayerPawn)
+	{
+		CellOrigin = PlayerPawn->GetActorLocation();
+		const float Yaw = PlayerController ? PlayerController->GetControlRotation().Yaw : PlayerPawn->GetActorRotation().Yaw;
+		CellRotation = FRotator(0.0f, Yaw, 0.0f);
+		return;
+	}
+
+	CellOrigin = GetActorLocation();
+	CellRotation = FRotator(0.0f, GetActorRotation().Yaw, 0.0f);
+}
+
+FVector AJungleCell0Director::ToWorld(const FVector& LocalLocation) const
+{
+	return CellOrigin + CellRotation.RotateVector(LocalLocation);
+}
+
+FRotator AJungleCell0Director::ToWorldRotation(float LocalYawDegrees) const
+{
+	return FRotator(0.0f, CellRotation.Yaw + LocalYawDegrees, 0.0f);
+}
+
+void AJungleCell0Director::AddCube(const FVector& LocalLocation, const FVector& Scale, const FName Name)
 {
 	if (!CubeMesh)
 	{
@@ -83,7 +116,7 @@ void AJungleCell0Director::AddCube(const FVector& Location, const FVector& Scale
 		return;
 	}
 
-	AStaticMeshActor* MeshActor = GetWorld()->SpawnActor<AStaticMeshActor>(AStaticMeshActor::StaticClass(), Location, FRotator::ZeroRotator);
+	AStaticMeshActor* MeshActor = GetWorld()->SpawnActor<AStaticMeshActor>(AStaticMeshActor::StaticClass(), ToWorld(LocalLocation), ToWorldRotation());
 	if (!MeshActor)
 	{
 		return;
