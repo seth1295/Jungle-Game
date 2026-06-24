@@ -386,10 +386,12 @@ struct FJungleNavigationPillarsSpec
 			return EJungleNavigationCueReadability::Unavailable;
 		}
 
-		const float TraversalSignal = FMath::Max3(
-			Sample.TerrainSample.GetMaskValue(TEXT("soft_blocker")),
-			Sample.TerrainSample.GetMaskValue(TEXT("affordance_zone")),
-			Sample.TerrainSample.GetMaskValue(TEXT("false_affordance")));
+		const float TraversalSignal = FMath::Max(
+			Sample.TerrainSample.GetMaskValue(TEXT("hard_blocker")),
+			FMath::Max3(
+				Sample.TerrainSample.GetMaskValue(TEXT("soft_blocker")),
+				Sample.TerrainSample.GetMaskValue(TEXT("affordance_zone")),
+				Sample.TerrainSample.GetMaskValue(TEXT("false_affordance"))));
 		return ResolveReadability(TraversalSignal, Sample.Environment);
 	}
 
