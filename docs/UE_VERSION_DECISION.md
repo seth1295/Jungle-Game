@@ -1,17 +1,17 @@
 # UE5 Engine Version Decision Research
 
-Gate 002 is blocked pending Gate 001 local Linux evidence.
+Gate 002 is complete based on Gate 001 local Linux evidence.
 
-Recommended candidate: UE 5.8.
+Selected version: UE 5.8.
 Fallback candidate: UE 5.7.
 
 ## Executive Summary
 
-Gate 002 should stay blocked until Gate 001 records OS, kernel, glibc, NVIDIA driver, Vulkan summary, atomic-int64 support, Unreal Editor path/version, and editor launch evidence.
+Gate 001 now records OS, kernel, glibc, NVIDIA driver, Vulkan summary, atomic-int64 support, Unreal Editor path/version, editor launch evidence, shader compilation completion, and OpenWorld template load evidence.
 
-UE 5.8 is the first candidate because Epic's current Linux documentation is UE 5.8 and its recommended Linux hardware class includes GeForce 2080, 8 GB+ graphics RAM, 32 GB RAM, Vulkan, and NVIDIA 570+ drivers. UE 5.7 remains the fallback if 5.8 fails local Linux validation.
+UE 5.8 is selected because the local UE source checkout at `/mnt/ue5/UnrealEngine` reports UE 5.8.0, the source branch is `release` at commit `7deeb413d`, the Linux editor launches, `ShaderCompileWorker` is built and executable, shaders compile to completion, and the editor reaches template map load with a clean map check. UE 5.7 remains the fallback only if UE 5.8 later fails project bootstrap, compile, cook/package, or Vulkan/editor stability validation for engine-version reasons.
 
-This is research/scope only. It does not approve project creation, code, assets, plugins, or implementation.
+This is version-decision scope only. It does not approve game implementation, assets, plugins, or broad feature scope. It does approve Gate 003 using the selected UE 5.8 source path to create a minimal C++ project.
 
 ## Required Inputs From Gate 001
 
@@ -22,10 +22,25 @@ This is research/scope only. It does not approve project creation, code, assets,
 | NVIDIA driver | Yes | Epic documents NVIDIA 570+ for Vulkan. |
 | Vulkan summary | Yes | Linux rendering path. |
 | `VK_KHR_shader_atomic_int64` | Yes | Required before relying on Nanite/VSM. |
-| UE editor path/version | Yes | Version decision must match a real install. |
-| Editor launch result | Yes | Without launch, the decision is theoretical. |
+| UE editor path/version | Yes | `/mnt/ue5/UnrealEngine`, UE 5.8.0, branch `release`, commit `7deeb413d`. |
+| Editor launch result | Yes | `UnrealEditor` launches, reaches `FEngineLoop::Init()`, loads OpenWorld template, completes clean map check. |
 
-## UE 5.8 Candidate
+## UE 5.8 Selection
+
+Decision: **selected for the first implementation phase**.
+
+Local selected path:
+
+| Item | Value |
+|---|---|
+| UE root | `/mnt/ue5/UnrealEngine` |
+| Version file | UE 5.8.0 |
+| Source branch | `release` |
+| Source commit | `7deeb413d` |
+| Editor binary | `Engine/Binaries/Linux/UnrealEditor` |
+| Shader worker | `Engine/Binaries/Linux/ShaderCompileWorker` |
+| Editor launch | Passed Gate 001 local validation |
+| Cook/package | Deferred until Gate 003 project exists |
 
 Strengths:
 
@@ -41,7 +56,7 @@ Risks:
 - NVIDIA/Vulkan must prove clean locally.
 - New UE 5.8 systems should not be mandatory for Cell 0.
 
-Policy: choose UE 5.8 only if editor launch and basic Linux workflow validate.
+Policy: use UE 5.8 for Gate 003 minimal project bootstrap. Do not require UE 5.8-only experimental systems for the first playable slice. Treat CEF/ANGLE embedded-browser GPU-process failures and Zen DDC fallback as warnings unless they block project bootstrap or editor stability.
 
 ## UE 5.7 Fallback
 
@@ -57,7 +72,7 @@ Risks:
 - May lack useful 5.8 terrain/vegetation/lighting improvements.
 - Requires extra work if 5.7 is not already installed.
 
-Policy: use UE 5.7 only if UE 5.8 fails or is unavailable. Do not fallback just because UE 5.8 is new if UE 5.8 works locally.
+Policy: use UE 5.7 only if UE 5.8 fails project bootstrap, compile, cook/package, or Vulkan/editor stability validation for engine-version reasons. Do not fallback just because UE 5.8 is new; UE 5.8 works locally enough to proceed.
 
 ## Feature Policy For First Playable
 
@@ -80,21 +95,23 @@ Policy: use UE 5.7 only if UE 5.8 fails or is unavailable. Do not fallback just 
 
 | Criterion | UE 5.8 | UE 5.7 | Effect |
 |---|---|---|---|
-| Current docs | Strong | Older fallback | Favors 5.8 if local path works |
-| Fresh-release risk | Higher | Lower | Favors 5.7 if 5.8 fails |
+| Current docs | Strong | Older fallback | Favors 5.8 |
+| Local availability | Source checkout exists and launches | Not installed/tested locally | Strongly favors 5.8 |
+| Fresh-release risk | Higher | Lower | Keep 5.7 fallback policy |
 | Linux requirements clarity | Strong | Good via version history | Neutral |
-| RTX 2080 viability | Must profile | Must profile | Neutral |
+| RTX 2080 viability | Locally validated enough for editor path; must still profile game content | Must profile if used | Favors current 5.8 path |
 | Jungle tooling | Better long-term candidate | Still viable | Slight 5.8 advantage |
-| First playable needs | Enough | Enough | Either works if validated |
+| First playable needs | Enough and locally available | Enough but not needed yet | Favors 5.8 |
 
 ## Fallback Triggers
 
 Fallback from UE 5.8 to UE 5.7 if:
 
-- UE 5.8 editor cannot launch locally.
-- UE 5.8 build/cook path fails for engine-version reasons.
-- UE 5.8 Vulkan/NVIDIA behavior is broken.
-- UE 5.8 is not installed and 5.7 is the available local path.
+- UE 5.8 editor stops launching locally.
+- UE 5.8 minimal C++ project bootstrap fails for engine-version reasons.
+- UE 5.8 build/cook/package path fails for engine-version reasons.
+- UE 5.8 Vulkan/NVIDIA behavior becomes a core editor/project blocker.
+- UE 5.8 source checkout becomes unavailable or corrupted and 5.7 is the available local path.
 - 5.8-only feature temptation delays minimal bootstrap.
 
 ## PR Scope Recommendation
@@ -121,10 +138,10 @@ Forbidden PR changes:
 
 Gate recommendation:
 
-- Gate 002 status: **Blocked pending Gate 001 evidence.**
-- Recommended version: **UE 5.8 provisional candidate.**
-- Fallback: **UE 5.7.**
-- Next gate: **Gate 003 only after version selected.**
+- Gate 002 status: **Passed.**
+- Selected version: **UE 5.8 using `/mnt/ue5/UnrealEngine`.**
+- Fallback: **UE 5.7 only on concrete project/bootstrap/build/cook/editor-stability failure.**
+- Next gate: **Gate 003 — UE Project Bootstrap.**
 
 ## Sources
 

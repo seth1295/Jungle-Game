@@ -2,7 +2,7 @@
 
 ## Status
 
-active
+passed
 
 ## Purpose
 
@@ -55,6 +55,8 @@ Record results for:
 ## Exit criteria
 
 This gate passes when the repo contains a clear Linux validation record showing whether UE5.8 can proceed or whether testing must fall back to UE5.7.
+
+Gate 001 passed on 2026-06-24 AEST. The repo records local Ubuntu/NVIDIA/Vulkan evidence, UE 5.8 source checkout evidence, `ShaderCompileWorker` resolution, editor launch through `FEngineLoop::Init()`, OpenWorld template load, map check with 0 errors/0 warnings, shader compilation completion, and deferred cook/package scope for Gate 003.
 
 ## CodeRabbit handling
 

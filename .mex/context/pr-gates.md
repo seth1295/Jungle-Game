@@ -7,7 +7,7 @@ description: PR gate workflow routing and active gate pointer.
 
 ## Active gate
 
-`docs/gates/001-ue5-linux-validation.md`
+`docs/gates/005-jungle-cell-0-implementation.md`
 
 ## Gate chain
 

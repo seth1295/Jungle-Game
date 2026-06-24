@@ -2,7 +2,7 @@
 
 ## Status
 
-planned
+passed
 
 ## Purpose
 
@@ -53,6 +53,8 @@ Run or document:
 ## Exit criteria
 
 This gate passes when a minimal UE5 C++ project exists on `main`, builds locally, and does not include asset bloat or gameplay scope creep.
+
+Gate 003 passed on 2026-06-24 AEST. The repo now contains a minimal UE 5.8 C++ project (`JungleGame.uproject`, `Source/`, and minimal `Config/`), no `Content/`, no large binary assets, and no gameplay systems. `JungleGameEditor` builds locally, and `UnrealEditor-Cmd -run=CompileAllBlueprints` completes with 0 errors and 0 blueprint failures. Full Linux package/cook smoke is recorded as a warning/deferred validation because the timeboxed DevSpace run exceeded 300 seconds and produced no package output.
 
 ## CodeRabbit handling
 

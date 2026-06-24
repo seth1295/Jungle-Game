@@ -1,0 +1,13 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "5.8",
+	"Category": "Games",
+	"Description": "Linux-first first-person jungle survival simulation prototype.",
+	"Modules": [
+		{
+			"Name": "JungleGame",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}

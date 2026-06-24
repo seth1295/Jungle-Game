@@ -2,7 +2,7 @@
 
 ## Status
 
-planned
+passed
 
 ## Purpose
 
@@ -52,6 +52,8 @@ The decision document must answer:
 ## Exit criteria
 
 This gate passes when the engine version and fallback policy are recorded clearly enough for Gate 003 to create a minimal UE C++ project without guessing.
+
+Gate 002 passed on 2026-06-24 AEST. UE 5.8 is selected for the first implementation phase using the local source checkout at `/mnt/ue5/UnrealEngine` (`release`, commit `7deeb413d`, `Build.version` 5.8.0). UE 5.7 remains the fallback only if UE 5.8 later fails project bootstrap, compile, cook/package, or Vulkan/editor stability validation for engine-version reasons.
 
 ## CodeRabbit handling
 
