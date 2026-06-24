@@ -80,4 +80,17 @@ target: Docs/PRPlan/006_ImplementationPRSequence.md
 reason: User approved moving from Cell 0 visibility/docs into the large-world implementation lane.
 review_by: 2026-07-24
 
-The active implementation source of truth is `Docs/PRPlan/006_ImplementationPRSequence.md`, supported by the large-world design docs under `Docs/PRPlan/`. Roadmap PR labels inside those docs are planning labels; actual GitHub PR numbers may differ. The next implementation target is the first roadmap implementation item: `16x16 World Partition landscape foundation`, preserving island-first world framing, ocean boundary, terrain-first traversal, and hard no-map/no-compass/no-clock navigation rules.
+The active implementation source of truth is `Docs/PRPlan/006_ImplementationPRSequence.md`, supported by the large-world design docs under `Docs/PRPlan/`. Roadmap PR labels inside those docs are planning labels; actual GitHub PR numbers may differ. Preserve island-first world framing, ocean boundary, terrain-first traversal, and hard no-map/no-compass/no-clock navigation rules across every roadmap PR.
+
+## 2026-06-24-large-world-batch-1-complete
+
+status: confirmed
+created: 2026-06-24
+source: user
+target: handoffs/2026-06-24-large-world-batch-1-complete.md
+reason: User clarified that `.mex` is live project memory and the handoff is only backup; record completed large-world batch before continuing PR #12.
+review_by: 2026-07-24
+
+Large-world batch 1 is complete and merged. Completed GitHub PRs: #10 roadmap PR #7 `16x16 World Partition landscape foundation`, #11 roadmap PR #8 `Landscape generation/import/tooling scaffold`, #12 roadmap PR #9 `Macro terrain island landform scaffold`, #13 roadmap PR #10 `Ecosystem mask system`, #14 roadmap PR #11 `Ecosystem debug visualisation and validation`, and #15 tracked handoff document. Completed branches were cleaned. Do not restart or redo this batch.
+
+The next sequential implementation target is roadmap PR #12: `PCG biome framework`, branch `pr12-pcg-biome-framework`. It must consume or align with `FJungleWorldPartitionSpec`, `FJungleTerrainSourceSpec`, `FJungleMacroTerrainSpec`, `FJungleEcosystemMaskSpec`, and `FJungleEcosystemDebugSpec`. Scope is source/docs scaffold only unless later explicitly expanded: PCG framework contracts, placeholder spawn rules, deterministic biome/mask input interfaces, terrain-friction rules, density budget notes/contracts, and developer-only debug outputs/docs.
