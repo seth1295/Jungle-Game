@@ -7,9 +7,9 @@ description: PR gate workflow routing and active gate pointer.
 
 ## Active gate
 
-`docs/gates/005-jungle-cell-0-implementation.md`
+`Docs/PRPlan/006_ImplementationPRSequence.md`
 
-## Gate chain
+## Completed setup gate chain
 
 1. `docs/gates/000-green-to-go.md`
 2. `docs/gates/001-ue5-linux-validation.md`
@@ -17,6 +17,13 @@ description: PR gate workflow routing and active gate pointer.
 4. `docs/gates/003-ue-project-bootstrap.md`
 5. `docs/gates/004-first-playable-slice-plan.md`
 6. `docs/gates/005-jungle-cell-0-implementation.md`
+
+## Active implementation plan
+
+- `Docs/PRPlan/000_FirstPlayableImplementationRoadmap.md`
+- `Docs/PRPlan/006_ImplementationPRSequence.md`
+
+The active implementation plan defines the next sequential four-PR batch. The roadmap PR labels inside `Docs/PRPlan/` are planning labels; actual GitHub PR numbers may differ.
 
 ## Routing rule
 

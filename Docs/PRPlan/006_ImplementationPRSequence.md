@@ -1,5 +1,9 @@
 # Implementation PR Sequence
 
+## Numbering Note
+
+The PR numbers in this document are roadmap labels for the implementation sequence. Actual GitHub pull request numbers may differ if workflow/documentation activation PRs are inserted before implementation work.
+
 ## Global Rules For Every Implementation PR
 
 Every PR in this sequence must preserve the hard navigation rule:

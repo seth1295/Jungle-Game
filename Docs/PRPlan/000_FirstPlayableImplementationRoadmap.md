@@ -4,7 +4,9 @@
 
 This document defines the implementation chain from the current visible Cell 0 runtime blockout toward a packaged large-world first playable. The large world is the primary object. The plan must not frame the game as "spawn at camp and explore outward."
 
-PR #6 is this docs-only planning PR. It must not implement gameplay, maps, assets, C++, Blueprints, project settings, generated files, or editor output. Its only output is Markdown documentation under `Docs/PRPlan/`.
+PR #6 is this docs-only planning PR in the roadmap sequence. It must not implement gameplay, maps, assets, C++, Blueprints, project settings, generated files, or editor output. Its only output is Markdown documentation under `Docs/PRPlan/`.
+
+The PR numbers in this document are roadmap labels, not guaranteed GitHub pull request numbers. Actual GitHub PR numbers may differ if workflow/documentation activation PRs are inserted.
 
 ## Final Target
 

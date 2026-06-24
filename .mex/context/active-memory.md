@@ -70,3 +70,14 @@ reason: User clarified that future work should plan four PRs ahead but execute s
 review_by: 2026-07-24
 
 Plan up to four PRs ahead, but execute one PR at a time. Do not run normal UE implementation PRs in parallel. After completing the fourth PR in a sequential batch, create a tracked Markdown handoff under `handoffs/` for the next fresh DevSpace chat before starting the next batch. If work stops early because of a blocker, context reset, tool limit, or user pause, create an interim handoff under `handoffs/` and mark it incomplete.
+
+## 2026-06-24-large-world-plan-active
+
+status: confirmed
+created: 2026-06-24
+source: user
+target: Docs/PRPlan/006_ImplementationPRSequence.md
+reason: User approved moving from Cell 0 visibility/docs into the large-world implementation lane.
+review_by: 2026-07-24
+
+The active implementation source of truth is `Docs/PRPlan/006_ImplementationPRSequence.md`, supported by the large-world design docs under `Docs/PRPlan/`. Roadmap PR labels inside those docs are planning labels; actual GitHub PR numbers may differ. The next implementation target is the first roadmap implementation item: `16x16 World Partition landscape foundation`, preserving island-first world framing, ocean boundary, terrain-first traversal, and hard no-map/no-compass/no-clock navigation rules.
