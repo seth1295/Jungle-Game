@@ -59,3 +59,14 @@ reason: User asked to make planning gates into a PR-by-PR workflow where each co
 review_by: 2026-07-23
 
 Future PR work must load `.mex/context/pr-gates.md`, `docs/PR_WORKFLOW.md`, and the active `docs/gates/*.md` file before changing files. Each PR must identify its active gate, stay inside that gate's allowed scope, run the gate's validation, and stop if the requested work conflicts with the active gate. After a gate merges, read the next gate before starting more work.
+
+## 2026-06-24-sequential-four-pr-handoffs
+
+status: confirmed
+created: 2026-06-24
+source: user
+target: docs/PR_WORKFLOW.md
+reason: User clarified that future work should plan four PRs ahead but execute sequentially, and that fresh DevSpace chats need handoff files after each four-PR batch.
+review_by: 2026-07-24
+
+Plan up to four PRs ahead, but execute one PR at a time. Do not run normal UE implementation PRs in parallel. After completing the fourth PR in a sequential batch, create a tracked Markdown handoff under `handoffs/` for the next fresh DevSpace chat before starting the next batch. If work stops early because of a blocker, context reset, tool limit, or user pause, create an interim handoff under `handoffs/` and mark it incomplete.

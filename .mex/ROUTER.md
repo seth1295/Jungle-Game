@@ -22,6 +22,8 @@ Before any PR lifecycle, also load:
 
 If the requested task conflicts with the active gate, stop and ask whether to change gates before editing files.
 
+PR execution is sequential. Plan up to four PRs ahead, execute one PR at a time, and create a tracked fresh-chat handoff under `handoffs/` after the fourth PR in each batch before starting the next batch.
+
 ## Skills
 
 Project-local skills live under `.agents/skills/`:

@@ -34,7 +34,8 @@ If the active gate is unclear, missing, or conflicts with the user's current ins
 14. Rerun required validation and CodeRabbit after fixes.
 15. Merge only when explicitly authorized and all gates pass.
 16. After merge, sync local `main` and confirm clean status.
-17. Read the next gate before starting the next PR.
+17. If this PR completes the fourth PR in the current sequential planning batch, create a fresh-chat handoff file under `handoffs/` before starting the next batch.
+18. Read the next gate before starting the next PR.
 
 ## Gate states
 
@@ -45,7 +46,54 @@ Each gate has one status:
 - `passed` — completed and merged.
 - `blocked` — cannot proceed without user decision or external validation.
 
-Only one gate should be `active` at a time unless the user explicitly approves parallel work.
+Only one gate should be `active` at a time. This project uses sequential PR execution; do not run parallel implementation PRs.
+
+## Sequential 4-PR planning batches
+
+Plan work in batches of four upcoming PRs, but execute only one PR at a time:
+
+1. Define the next four PRs at a high level.
+2. Implement the first PR from clean updated `main`.
+3. Validate, review, and merge that PR when authorized and clean.
+4. Sync local `main`.
+5. Implement the next PR in the batch.
+6. Repeat until all four PRs in the batch are complete.
+7. Create a handoff file under `handoffs/`.
+8. Then reassess and define the next four-PR batch.
+
+This is not parallel execution. Multiple active implementation branches should not be used for normal UE work because maps, config, World Partition assets, PCG graphs, and generated editor files are merge-conflict-prone.
+
+Each PR in a four-PR batch must state:
+
+- its batch position, for example `1/4`, `2/4`, `3/4`, or `4/4`;
+- dependency on prior PRs in the same batch;
+- allowed scope;
+- forbidden scope;
+- validation expectations;
+- whether it must update the batch handoff.
+
+## Fresh-chat handoff requirement
+
+After completing the fourth PR in any sequential batch, create a tracked Markdown handoff under `handoffs/` before starting the next batch.
+
+Use this naming pattern unless the user gives a better one:
+
+```text
+handoffs/YYYY-MM-DD-prNN-prMM-short-topic.md
+```
+
+The handoff must be written for a fresh DevSpace chat with no local conversation context. It must include:
+
+- current repo/branch/PR state;
+- the four PRs just completed;
+- what was validated and how;
+- known warnings/deferred risks;
+- generated/cache/config files to avoid;
+- current game/design direction needed for the next batch;
+- next four proposed PRs, if known;
+- exact next action for the next DevSpace chat.
+
+If a batch stops early because of a blocker, external dependency, context reset, tool limit, or user pause, create an interim handoff under `handoffs/` with the same structure and clearly mark it as incomplete.
 
 ## Scope rules
 
