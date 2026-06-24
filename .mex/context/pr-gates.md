@@ -39,7 +39,10 @@ Before any PR lifecycle, load:
 - Do not expand a PR beyond its gate.
 - Do not silently implement useful adjacent ideas; record them as next-gate notes instead.
 - After a gate merges, read the next gate before starting the next PR.
-- Only one gate should be active at a time unless the user explicitly approves parallel work.
+- Only one gate should be active at a time.
+- Execute PRs sequentially; do not run normal UE implementation PRs in parallel.
+- Plan up to four PRs ahead, but implement and merge one PR at a time.
+- After the fourth PR in a sequential planning batch is complete, create a tracked fresh-chat handoff under `handoffs/` before starting the next batch.
 
 ## Completion policy
 
