@@ -130,11 +130,7 @@ Reviewers should confirm:
 
 ## UE Validation Notes
 
-The UE binaries are available when the UE5 workspace disk is mounted and PATH includes:
-
-```text
-/run/media/seth/UE5_WORKSPACE/UnrealEngine/Engine/Binaries/Linux
-```
+The UE binaries are available when the UE5 workspace disk is mounted and `PATH` includes the local UE5 binaries directory, for example `UE5_ROOT/Engine/Binaries/Linux`.
 
 Headless commandlet validation should use safe non-rendering flags where possible because plain editor/version invocations can initialize CEF/Vulkan/GLX.
 
