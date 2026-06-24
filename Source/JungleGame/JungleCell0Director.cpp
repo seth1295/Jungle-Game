@@ -52,15 +52,38 @@ void AJungleCell0Director::BuildCell()
 	FireActor = GetWorld()->SpawnActor<AJungleFireActor>(AJungleFireActor::StaticClass(), ToWorld(FVector(320.0f, 0.0f, -40.0f)), ToWorldRotation());
 	CrossingActor = GetWorld()->SpawnActor<AJungleCrossingActor>(AJungleCrossingActor::StaticClass(), ToWorld(FVector(920.0f, 0.0f, -10.0f)), ToWorldRotation());
 	MarkerActor = GetWorld()->SpawnActor<AJungleMarkerActor>(AJungleMarkerActor::StaticClass(), ToWorld(FVector(1040.0f, 170.0f, -25.0f)), ToWorldRotation(25.0f));
-	CueActor = GetWorld()->SpawnActor<AJungleWatcherCueActor>(AJungleWatcherCueActor::StaticClass(), ToWorld(FVector(1300.0f, -420.0f, 130.0f)), ToWorldRotation());
+	CueActor = GetWorld()->SpawnActor<AJungleWatcherCueActor>(AJungleWatcherCueActor::StaticClass(), ToWorld(FVector(1560.0f, -420.0f, 130.0f)), ToWorldRotation());
 
+	BuildFirstPlayableTerrain();
+
+	UE_LOG(LogJungleGame, Display, TEXT("Jungle Cell 0 playable source-authored slice spawned at %s facing %.1f degrees using %s anchor."), *CellOrigin.ToString(), CellRotation.Yaw, AnchorMode == EJungleCell0AnchorMode::PlacedWorldLocation ? TEXT("placed-world") : TEXT("player-relative-debug"));
+}
+
+void AJungleCell0Director::BuildFirstPlayableTerrain()
+{
+	// Source-authored first-playable geometry. This deliberately avoids committing a binary .umap while still giving
+	// packaged builds a physical loop to walk, read, and validate: shelter -> creek -> marker -> watcher cue -> exit ridge.
 	AddCube(FVector(320.0f, 0.0f, -95.0f), FVector(9.0f, 5.0f, 0.1f), TEXT("Cell0CampGround"));
+	AddCube(FVector(960.0f, 0.0f, -96.0f), FVector(8.0f, 3.5f, 0.08f), TEXT("Cell0CreekApproachGround"));
+	AddCube(FVector(1480.0f, -140.0f, -86.0f), FVector(6.0f, 3.0f, 0.16f), TEXT("Cell0FarBankGround"), -10.0f);
+	AddCube(FVector(1880.0f, -420.0f, -62.0f), FVector(5.5f, 2.4f, 0.22f), TEXT("Cell0ExitRidgeGround"), -18.0f);
+
 	AddCube(FVector(520.0f, -260.0f, 40.0f), FVector(0.55f, 0.55f, 3.2f), TEXT("Cell0TrunkLeft"));
 	AddCube(FVector(520.0f, 260.0f, 40.0f), FVector(0.55f, 0.55f, 3.2f), TEXT("Cell0TrunkRight"));
-	AddCube(FVector(700.0f, 0.0f, 90.0f), FVector(0.25f, 5.0f, 1.8f), TEXT("Cell0VisibilityWall"));
-	AddCube(FVector(1050.0f, 0.0f, -90.0f), FVector(5.0f, 1.6f, 0.08f), TEXT("Cell0CreekBed"));
+	AddCube(FVector(450.0f, -470.0f, 70.0f), FVector(0.45f, 0.45f, 2.8f), TEXT("Cell0ShelterTreeA"), 8.0f);
+	AddCube(FVector(610.0f, 430.0f, 75.0f), FVector(0.5f, 0.5f, 3.0f), TEXT("Cell0ShelterTreeB"), -15.0f);
+	AddCube(FVector(880.0f, -360.0f, 85.0f), FVector(0.45f, 0.45f, 3.1f), TEXT("Cell0CreekTreeA"), 4.0f);
+	AddCube(FVector(1260.0f, 280.0f, 90.0f), FVector(0.45f, 0.45f, 3.4f), TEXT("Cell0FarBankTreeA"), -12.0f);
+	AddCube(FVector(1710.0f, -610.0f, 95.0f), FVector(0.5f, 0.5f, 3.6f), TEXT("Cell0ExitRidgeTreeA"), 18.0f);
 
-	UE_LOG(LogJungleGame, Display, TEXT("Jungle Cell 0 integrated world location spawned at %s facing %.1f degrees using %s anchor."), *CellOrigin.ToString(), CellRotation.Yaw, AnchorMode == EJungleCell0AnchorMode::PlacedWorldLocation ? TEXT("placed-world") : TEXT("player-relative-debug"));
+	AddCube(FVector(700.0f, 0.0f, 90.0f), FVector(0.25f, 5.0f, 1.8f), TEXT("Cell0VisibilityWall"));
+	AddCube(FVector(1120.0f, -10.0f, -92.0f), FVector(5.4f, 1.6f, 0.08f), TEXT("Cell0CreekBed"));
+	AddCube(FVector(1140.0f, -215.0f, -66.0f), FVector(4.7f, 0.28f, 0.18f), TEXT("Cell0NearCreekBank"), -5.0f);
+	AddCube(FVector(1140.0f, 215.0f, -66.0f), FVector(4.7f, 0.28f, 0.18f), TEXT("Cell0FarCreekBank"), 5.0f);
+
+	AddCube(FVector(1380.0f, -430.0f, 22.0f), FVector(2.0f, 0.28f, 1.4f), TEXT("Cell0WatcherSightlineBreak"), -22.0f);
+	AddCube(FVector(1760.0f, -170.0f, 18.0f), FVector(0.35f, 2.4f, 1.1f), TEXT("Cell0ExitRidgeShoulder"), 28.0f);
+	AddCube(FVector(2100.0f, -620.0f, 110.0f), FVector(0.8f, 0.8f, 4.2f), TEXT("Cell0DistantLandmarkTrunk"), 0.0f);
 }
 
 void AJungleCell0Director::StartRain()
@@ -177,7 +200,7 @@ FRotator AJungleCell0Director::ToWorldRotation(float LocalYawDegrees) const
 	return FRotator(0.0f, CellRotation.Yaw + LocalYawDegrees, 0.0f);
 }
 
-void AJungleCell0Director::AddCube(const FVector& LocalLocation, const FVector& Scale, const FName Name)
+void AJungleCell0Director::AddCube(const FVector& LocalLocation, const FVector& Scale, const FName Name, float LocalYawDegrees)
 {
 	if (!CubeMesh)
 	{
@@ -185,7 +208,7 @@ void AJungleCell0Director::AddCube(const FVector& LocalLocation, const FVector& 
 		return;
 	}
 
-	AStaticMeshActor* MeshActor = GetWorld()->SpawnActor<AStaticMeshActor>(AStaticMeshActor::StaticClass(), ToWorld(LocalLocation), ToWorldRotation());
+	AStaticMeshActor* MeshActor = GetWorld()->SpawnActor<AStaticMeshActor>(AStaticMeshActor::StaticClass(), ToWorld(LocalLocation), ToWorldRotation(LocalYawDegrees));
 	if (!MeshActor)
 	{
 		return;
