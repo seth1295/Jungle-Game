@@ -37,8 +37,9 @@ The C++ contract is recorded in `Source/JungleGame/JungleTerrainSourceSpec.h` so
 
 1. Run `git diff --check` on touched files.
 2. Inspect `git diff --stat` and the full diff.
-3. Confirm the layer contract matches `FJungleWorldPartitionSpec`.
-4. Confirm no generated or cache output is staged.
+3. Confirm required layer names match `FJungleTerrainSourceSpec`.
+4. Confirm terrain dimensions and alignment match `FJungleWorldPartitionSpec`.
+5. Confirm no generated or cache output is staged.
 
 ## Acceptance
 
