@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+set -u
+
+PROJECT_ROOT="${PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+PROJECT_FILE="${PROJECT_FILE:-$PROJECT_ROOT/JungleGame.uproject}"
+UE5_ROOT="${UE5_ROOT:-/run/media/seth/UE5_WORKSPACE/UnrealEngine}"
+ARCHIVE_DIR="${ARCHIVE_DIR:-$PROJECT_ROOT/PackagedBuilds/PR20Smoke}"
+CLIENT_CONFIG="${CLIENT_CONFIG:-Development}"
+TARGET_PLATFORM="${TARGET_PLATFORM:-Linux}"
+RUN_UAT="$UE5_ROOT/Engine/Build/BatchFiles/RunUAT.sh"
+
+if [[ "${1:-}" == "--dry-run" ]]; then
+  DRY_RUN=1
+else
+  DRY_RUN=0
+fi
+
+fail() {
+  printf 'ERROR: %s\n' "$1" >&2
+  exit 1
+}
+
+[[ -f "$PROJECT_FILE" ]] || fail "Project file not found: $PROJECT_FILE"
+[[ -x "$RUN_UAT" ]] || fail "RunUAT.sh not found or not executable. Set UE5_ROOT to your UnrealEngine root."
+
+printf 'Project: %s\n' "$PROJECT_FILE"
+printf 'UE5_ROOT: %s\n' "$UE5_ROOT"
+printf 'Archive: %s\n' "$ARCHIVE_DIR"
+printf 'Platform: %s\n' "$TARGET_PLATFORM"
+printf 'Config: %s\n' "$CLIENT_CONFIG"
+
+MAP_COUNT=$(find "$PROJECT_ROOT/Content" -type f -name '*.umap' 2>/dev/null | wc -l | tr -d ' ')
+if [[ "$MAP_COUNT" == "0" ]]; then
+  printf 'WARNING: No project .umap files found under Content/. Current DefaultEngine.ini uses engine template maps.\n'
+fi
+
+if [[ ! -f "$UE5_ROOT/Engine/Binaries/Linux/ShaderCompileWorker.modules" ]]; then
+  printf 'WARNING: ShaderCompileWorker.modules is missing; cook may fail when shader compilation starts.\n'
+fi
+
+CMD=(
+  "$RUN_UAT"
+  BuildCookRun
+  "-project=$PROJECT_FILE"
+  -noP4
+  "-platform=$TARGET_PLATFORM"
+  "-clientconfig=$CLIENT_CONFIG"
+  -cook
+  -stage
+  -pak
+  -archive
+  "-archivedirectory=$ARCHIVE_DIR"
+  -skipbuild
+  -nocompile
+  -nocompileeditor
+  -unattended
+  -utf8output
+  -nullrhi
+  -ddc=InstalledNoZenLocalFallback
+  '-AdditionalCookerOptions=-skipzenstore'
+)
+
+printf 'Command:\n'
+printf ' %q' "${CMD[@]}"
+printf '\n'
+
+if [[ "$DRY_RUN" == "1" ]]; then
+  printf 'Dry run only. No package command executed.\n'
+  exit 0
+fi
+
+exec "${CMD[@]}"
