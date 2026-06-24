@@ -36,6 +36,7 @@ private:
 	void StartRain();
 	void ChangeCrossing();
 	void ShowCue();
+	void LogPlayableVisibilityDiagnostics();
 	void ResolveCellAnchor();
 	void CapturePlayerAnchor();
 	void CapturePlacedWorldAnchor();
@@ -66,7 +67,7 @@ private:
 	bool bMovePlayerToEntryOnBeginPlay = true;
 
 	UPROPERTY(EditAnywhere, Category = "Jungle|Cell 0 Integration")
-	FVector PlayerEntryLocalLocation = FVector(-180.0f, -180.0f, 0.0f);
+	FVector PlayerEntryLocalLocation = FVector(160.0f, 0.0f, 0.0f);
 
 	FVector CellOrigin = FVector::ZeroVector;
 	FRotator CellRotation = FRotator::ZeroRotator;

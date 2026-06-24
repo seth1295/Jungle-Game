@@ -28,6 +28,8 @@ void AJungleCell0Director::BeginPlay()
 	BuildCell();
 
 	GetWorldTimerManager().SetTimerForNextTick(this, &AJungleCell0Director::StartRain);
+	FTimerHandle DiagnosticTimer;
+	GetWorldTimerManager().SetTimer(DiagnosticTimer, this, &AJungleCell0Director::LogPlayableVisibilityDiagnostics, 1.0f, false);
 	FTimerHandle CrossingTimer;
 	GetWorldTimerManager().SetTimer(CrossingTimer, this, &AJungleCell0Director::ChangeCrossing, 8.0f, false);
 	FTimerHandle CueTimer;
@@ -47,14 +49,13 @@ void AJungleCell0Director::ConfigureLargeWorldPlacement(const FVector& NewCellOr
 void AJungleCell0Director::BuildCell()
 {
 	ResolveCellAnchor();
+	BuildFirstPlayableTerrain();
 	MovePlayerToCellEntryPoint();
 
 	FireActor = GetWorld()->SpawnActor<AJungleFireActor>(AJungleFireActor::StaticClass(), ToWorld(FVector(320.0f, 0.0f, -40.0f)), ToWorldRotation());
 	CrossingActor = GetWorld()->SpawnActor<AJungleCrossingActor>(AJungleCrossingActor::StaticClass(), ToWorld(FVector(920.0f, 0.0f, -10.0f)), ToWorldRotation());
 	MarkerActor = GetWorld()->SpawnActor<AJungleMarkerActor>(AJungleMarkerActor::StaticClass(), ToWorld(FVector(1040.0f, 170.0f, -25.0f)), ToWorldRotation(25.0f));
 	CueActor = GetWorld()->SpawnActor<AJungleWatcherCueActor>(AJungleWatcherCueActor::StaticClass(), ToWorld(FVector(1560.0f, -420.0f, 130.0f)), ToWorldRotation());
-
-	BuildFirstPlayableTerrain();
 
 	UE_LOG(LogJungleGame, Display, TEXT("Jungle Cell 0 playable source-authored slice spawned at %s facing %.1f degrees using %s anchor."), *CellOrigin.ToString(), CellRotation.Yaw, AnchorMode == EJungleCell0AnchorMode::PlacedWorldLocation ? TEXT("placed-world") : TEXT("player-relative-debug"));
 }
@@ -113,6 +114,42 @@ void AJungleCell0Director::ShowCue()
 	{
 		CueActor->RevealCue();
 	}
+}
+
+void AJungleCell0Director::LogPlayableVisibilityDiagnostics()
+{
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
+	if (!PlayerController || !PlayerPawn)
+	{
+		UE_LOG(LogJungleGame, Warning, TEXT("Cell 0 visibility diagnostic skipped: missing player controller or pawn."));
+		return;
+	}
+
+	FVector ViewLocation = FVector::ZeroVector;
+	FRotator ViewRotation = FRotator::ZeroRotator;
+	PlayerController->GetPlayerViewPoint(ViewLocation, ViewRotation);
+
+	const FVector DownStart = PlayerPawn->GetActorLocation() + FVector(0.0f, 0.0f, 120.0f);
+	const FVector DownEnd = DownStart - FVector(0.0f, 0.0f, 2000.0f);
+	const FVector ForwardEnd = ViewLocation + ViewRotation.Vector() * 4000.0f;
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(Cell0VisibilityDiagnostic), false, PlayerPawn);
+
+	FHitResult DownHit;
+	const bool bDownHit = GetWorld()->LineTraceSingleByChannel(DownHit, DownStart, DownEnd, ECC_Visibility, Params);
+	FHitResult ForwardHit;
+	const bool bForwardHit = GetWorld()->LineTraceSingleByChannel(ForwardHit, ViewLocation, ForwardEnd, ECC_Visibility, Params);
+
+	UE_LOG(LogJungleGame, Display, TEXT("Cell 0 visibility diagnostic: pawn=%s view=%s rot=%s down_hit=%s down_actor=%s down_loc=%s forward_hit=%s forward_actor=%s forward_loc=%s"),
+		*PlayerPawn->GetActorLocation().ToString(),
+		*ViewLocation.ToString(),
+		*ViewRotation.ToString(),
+		bDownHit ? TEXT("true") : TEXT("false"),
+		DownHit.GetActor() ? *DownHit.GetActor()->GetName() : TEXT("none"),
+		*DownHit.Location.ToString(),
+		bForwardHit ? TEXT("true") : TEXT("false"),
+		ForwardHit.GetActor() ? *ForwardHit.GetActor()->GetName() : TEXT("none"),
+		*ForwardHit.Location.ToString());
 }
 
 void AJungleCell0Director::ResolveCellAnchor()
