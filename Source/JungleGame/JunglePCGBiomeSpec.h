@@ -49,8 +49,8 @@ struct FJunglePCGBiomeInputSample
 	FVector2D WorldMeters = FVector2D::ZeroVector;
 	float HeightMeters = 0.0f;
 	float SlopeDegrees = 0.0f;
-	float CoastDistanceMeters = 0.0f;
-	float CreekDistanceMeters = 0.0f;
+	float CoastDistanceMeters = MAX_flt;
+	float CreekDistanceMeters = MAX_flt;
 	TMap<FName, float> NormalizedMasks;
 
 	float GetMaskValue(const FName MaskName, float DefaultValue = 0.0f) const
@@ -180,6 +180,8 @@ struct FJunglePCGBiomeFrameworkSpec
 			TEXT("pcg_canopy_placeholder"),
 			TEXT("pcg_understory_placeholder"),
 			TEXT("pcg_ground_clutter_placeholder"),
+			TEXT("pcg_deadfall_placeholder"),
+			TEXT("pcg_rock_root_placeholder"),
 			TEXT("pcg_plant_friction_placeholder"),
 			TEXT("pcg_affordance_cue_placeholder"),
 			TEXT("pcg_false_affordance_cue_placeholder"),
