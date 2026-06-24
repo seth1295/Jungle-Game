@@ -7,6 +7,7 @@ UE5_ROOT="${UE5_ROOT:-/run/media/seth/UE5_WORKSPACE/UnrealEngine}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-$PROJECT_ROOT/PackagedBuilds/PR20Smoke}"
 CLIENT_CONFIG="${CLIENT_CONFIG:-Development}"
 TARGET_PLATFORM="${TARGET_PLATFORM:-Linux}"
+JUNGLE_SKIP_BUILD="${JUNGLE_SKIP_BUILD:-0}"
 RUN_UAT="$UE5_ROOT/Engine/Build/BatchFiles/RunUAT.sh"
 
 if [[ "${1:-}" == "--dry-run" ]]; then
@@ -28,6 +29,7 @@ printf 'UE5_ROOT: %s\n' "$UE5_ROOT"
 printf 'Archive: %s\n' "$ARCHIVE_DIR"
 printf 'Platform: %s\n' "$TARGET_PLATFORM"
 printf 'Config: %s\n' "$CLIENT_CONFIG"
+printf 'Skip build: %s\n' "$JUNGLE_SKIP_BUILD"
 
 MAP_COUNT=$(find "$PROJECT_ROOT/Content" -type f -name '*.umap' 2>/dev/null | wc -l | tr -d ' ')
 if [[ "$MAP_COUNT" == "0" ]]; then
@@ -50,15 +52,26 @@ CMD=(
   -pak
   -archive
   "-archivedirectory=$ARCHIVE_DIR"
-  -skipbuild
-  -nocompile
-  -nocompileeditor
+  -build
   -unattended
   -utf8output
   -nullrhi
   -ddc=InstalledNoZenLocalFallback
   '-AdditionalCookerOptions=-skipzenstore'
 )
+
+if [[ "$JUNGLE_SKIP_BUILD" == "1" ]]; then
+  for index in "${!CMD[@]}"; do
+    if [[ "${CMD[$index]}" == "-build" ]]; then
+      CMD[$index]="-skipbuild"
+      break
+    fi
+  done
+  CMD+=(
+    -nocompile
+    -nocompileeditor
+  )
+fi
 
 printf 'Command:\n'
 printf ' %q' "${CMD[@]}"

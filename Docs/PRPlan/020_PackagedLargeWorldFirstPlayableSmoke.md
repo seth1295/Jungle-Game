@@ -19,6 +19,8 @@ The script:
 - locates the project root and `JungleGame.uproject`;
 - uses `UE5_ROOT` if provided, with the current Linux default fallback;
 - runs UAT `BuildCookRun` for Linux Development;
+- builds by default so the smoke path is valid from a clean checkout;
+- supports `JUNGLE_SKIP_BUILD=1` only for already-built local workspaces;
 - uses headless-safe smoke flags: `-unattended`, `-utf8output`, and `-nullrhi`;
 - routes output to ignored `PackagedBuilds/PR20Smoke` by default;
 - uses `-ddc=InstalledNoZenLocalFallback` and forwards `-skipzenstore` through additional cooker options based on PR #20 validation findings;
@@ -42,6 +44,12 @@ Optional environment overrides:
 
 ```bash
 UE5_ROOT=/path/to/UnrealEngine ARCHIVE_DIR=/tmp/JungleGameSmoke bash scripts/ue5-linux-package-smoke.sh
+```
+
+Already-built local workspace smoke:
+
+```bash
+JUNGLE_SKIP_BUILD=1 bash scripts/ue5-linux-package-smoke.sh
 ```
 
 ## Validation Attempts
@@ -263,5 +271,5 @@ Before another packaging pass, fix or validate these in order:
 1. Produce or commit an authored project map for the first playable, or intentionally document engine-template-map packaging as a temporary smoke mode.
 2. Build/regenerate `ShaderCompileWorker` and confirm `Engine/Binaries/Linux/ShaderCompileWorker.modules` exists.
 3. Reset or repair local Zen project-store state, or confirm a fully supported non-Zen cook path for UE 5.8 on this install.
-4. Rerun `bash scripts/ue5-linux-package-smoke.sh`.
+4. Rerun `bash scripts/ue5-linux-package-smoke.sh` for a clean reproducible smoke, or `JUNGLE_SKIP_BUILD=1 bash scripts/ue5-linux-package-smoke.sh` only after local build products are known-good.
 5. Only after a package exists, run packaged executable smoke and record FPS/memory/load behavior.
