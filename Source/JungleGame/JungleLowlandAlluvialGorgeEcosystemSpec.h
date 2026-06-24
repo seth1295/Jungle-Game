@@ -123,7 +123,8 @@ struct FJungleLowlandAlluvialGorgeEcosystemSpec
 
 	static bool IsDenseLowlandPerformanceRisk(const FJungleLowlandGorgeRuleContract& Contract)
 	{
-		return Contract.MaxInstancesPerHectare >= DensePerformanceRiskInstancesPerHectare;
+		return Contract.bNotesDensePerformanceRisk
+			|| Contract.MaxInstancesPerHectare >= DensePerformanceRiskInstancesPerHectare;
 	}
 
 	static EJungleLowlandAlluvialGorgeZone ClassifyLowlandGorgeZone(const FJunglePCGBiomeInputSample& Sample)
