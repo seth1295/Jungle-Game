@@ -86,7 +86,8 @@ struct FJungleDayNightSkySample
 
 	bool HasNightSkyNavigation() const
 	{
-		return Phase == EJungleDayNightPhase::NightMoonOrStars && (bMoonAboveHorizon || bSouthernSkyVisible || StarVisibilitySignal > 0.0f);
+		return Phase == EJungleDayNightPhase::NightMoonOrStars
+			&& ((bMoonAboveHorizon && MoonAltitudeSignal > 0.0f) || (bSouthernSkyVisible && StarVisibilitySignal > 0.0f));
 	}
 };
 
@@ -115,6 +116,7 @@ struct FJungleDayNightWeatherDangerInput
 	float ShelterProximitySignal = 0.0f;
 	float FireSmokeLineOfSightSignal = 0.0f;
 	float BodyExposureSignal = 0.0f;
+	bool bHasRuntimeTrailMarks = false;
 	bool bInsideKnownShelter = false;
 	bool bUnderDenseCanopy = false;
 	bool bInsideGorge = false;
@@ -254,7 +256,7 @@ struct FJungleDayNightWeatherDangerSpec
 			return 0.0f;
 		}
 
-		return ClampSignal(FMath::Max3(Sky.MoonAltitudeSignal, Sky.StarVisibilitySignal, Sky.SkyGlowSignal));
+		return ClampSignal(FMath::Max(Sky.MoonAltitudeSignal, Sky.StarVisibilitySignal));
 	}
 
 	static float ResolveSkyOcclusionPressure(const FJungleWeatherPrototypeSample& Weather, bool bUnderDenseCanopy, bool bInsideGorge)
@@ -321,6 +323,11 @@ struct FJungleDayNightWeatherDangerSpec
 
 	static float ResolveTrailMarkWeatherLoss(const FJungleDayNightWeatherDangerInput& Input)
 	{
+		if (!Input.bHasRuntimeTrailMarks)
+		{
+			return 0.0f;
+		}
+
 		const float RainWashout = FMath::Max(Input.WeatherSample.RainIntensity, Input.WeatherSample.TrailWashoutSignal);
 		const float VisibilityLoss = 1.0f - ClampSignal(Input.LostStateSample.TrailMarkVisibility);
 		return ClampSignal(FMath::Max(RainWashout, VisibilityLoss));
@@ -465,6 +472,13 @@ struct FJungleDayNightWeatherDangerSpec
 		ShadowFlattened.EngineHooks = { EJungleAtmosphereImplementationHook::SkyAtmosphere, EJungleAtmosphereImplementationHook::SunDirectionalLight, EJungleAtmosphereImplementationHook::VolumetricCloud };
 		ShadowFlattened.bCanIncreaseLostPressure = true;
 		Rules.Add(ShadowFlattened);
+
+		FJungleDayNightWeatherRuleContract LightColour;
+		LightColour.Attack = EJungleWeatherNavigationAttack::LightColourAmbiguous;
+		LightColour.RequiredMaskNames = { TEXT("sky_window"), TEXT("visibility"), TEXT("canopy"), TEXT("night_danger") };
+		LightColour.EngineHooks = { EJungleAtmosphereImplementationHook::SkyAtmosphere, EJungleAtmosphereImplementationHook::SunDirectionalLight, EJungleAtmosphereImplementationHook::VolumetricCloud };
+		LightColour.bCanIncreaseLostPressure = true;
+		Rules.Add(LightColour);
 
 		FJungleDayNightWeatherRuleContract SkyBlocked;
 		SkyBlocked.Attack = EJungleWeatherNavigationAttack::SkyWindowBlocked;

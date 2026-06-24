@@ -50,7 +50,7 @@ It consumes:
 - `EJungleWeatherDangerPhase` for internal/debug danger classification.
 - `FJungleDayNightSkySample` for sky phase, sun/moon/star signals, shadow length, light warmth, and southern-sky visibility.
 - `FJungleWeatherPrototypeSample` for cloud opacity, rain intensity, fog density, wind exposure, sound muffling, creek swelling, trail washout, lightning/storm gust prototype flags.
-- `FJungleDayNightWeatherDangerInput` for full weather danger scoring input.
+- `FJungleDayNightWeatherDangerInput` for full weather danger scoring input and trail mark presence.
 - `FJungleDayNightWeatherDangerOutput` for developer-only danger scores.
 - `FJungleDayNightWeatherRuleContract` for reviewable pressure/recovery rules with explicit forbidden scope guards.
 - `FJungleDayNightWeatherDangerSpec` for cue loss, weather pressure, night pressure, terrain amplification, trail-mark loss, known-safety relief, final danger output, engine hook names, rule contracts, and validation outputs.
@@ -107,7 +107,7 @@ Known safety must never become a GPS point, objective marker, minimap icon, comp
 
 Player-made trail marks remain runtime interactions. Weather can degrade them through rain washout, visibility loss, wetness, canopy cover, disturbance, and line-of-sight constraints. They remain useful only if the world still supports seeing/interpreting them.
 
-They must not become stable PCG generation inputs.
+They must not become stable PCG generation inputs. No trail mark means no trail-mark weather loss.
 
 ## Engine-Aligned Prototype Plan
 
