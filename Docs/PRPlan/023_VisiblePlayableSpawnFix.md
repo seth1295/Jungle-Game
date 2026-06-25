@@ -40,7 +40,7 @@ This puts the player on the camp ground instead of just outside its edge.
 
 ## Runtime Diagnostic Guard
 
-A one-shot startup diagnostic logs the player position, view point, downward trace, and forward trace after spawn. This is not player-facing UI. It exists to catch exactly this class of packaged-spawn regression.
+A one-shot startup diagnostic logs the player position, view point, downward trace, and radial visibility traces after spawn. This is not player-facing UI. It exists to catch exactly this class of packaged-spawn regression, including the user looking around rather than only facing the initial forward direction.
 
 ## Validation
 
@@ -70,7 +70,7 @@ BUILD SUCCESSFUL
 AutomationTool exiting with ExitCode=0 (Success)
 ```
 
-After the fix, the packaged diagnostic run reported valid floor and forward hits:
+After the initial spawn fix, the packaged diagnostic run reported valid floor and forward hits:
 
 ```text
 Player moved to Cell 0 large-world entry at X=204932.646 Y=-96678.529 Z=1200.000.
@@ -91,6 +91,17 @@ PackagedBuilds/PR20Smoke/Linux/JungleGame/Saved/Screenshots/Linux/HighresScreens
 ```
 
 That generated screenshot is validation evidence only and is not committed.
+
+## User Screenshot Follow-up
+
+The first follow-up screenshot showed the spawn was no longer sky-only, but the second screenshot showed the player could still turn toward a thin side/rear edge and see mostly ocean/sky with floating blockout silhouettes.
+
+Follow-up fix:
+
+- widened the source-authored camp ground and connected approach/far-bank/exit-ridge ground plates;
+- added left, right, and rear jungle-edge blockout silhouettes around the entry area;
+- added rear tree silhouettes so turning around from spawn still shows nearby source-authored Cell 0 geometry;
+- expanded the diagnostic guard from forward-only visibility to forward/right/back/left traces.
 
 ## Generated Output Notes
 
