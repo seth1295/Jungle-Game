@@ -36,6 +36,11 @@ private:
 	void StartRain();
 	void ChangeCrossing();
 	void ShowCue();
+	void LogPlayableVisibilityDiagnostics();
+	void ScheduleVisualSmokeIfRequested();
+	void MovePlayerToVisualSmokeView();
+	void TakeVisualSmokeShot();
+	void ExitAfterVisualSmokeShot();
 	void ResolveCellAnchor();
 	void CapturePlayerAnchor();
 	void CapturePlacedWorldAnchor();
