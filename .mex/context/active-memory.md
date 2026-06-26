@@ -313,4 +313,15 @@ target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/
 reason: PR5 Batch 003 requires radial volcanic drainage structure where ridges define catchment divides, gullies incise catchment centers, lahar-capable corridors follow selected valleys, and outlet/fan terrain resolves toward the sea-level coast.
 review_by: 2026-07-26
 
-PR5 Batch 003 / 003 is being implemented on branch `pr5-batch003-003-ridges-catchments`. It extends `FJungleVolcanicIslandTerrainModel` with 14 primary catchments, catchment IDs, ridge masks, gully masks, selected lahar corridor masks, coastal fan masks, ridge height contribution, gully incision, fan deposition, and `JG_VOLCANIC_TERRAIN_003` metrics. Validation so far: `git diff --check` passed during local editing; next lifecycle step is staged diff validation, PR creation, CodeRabbit/GitHub check review, merge, and local `main` sync. Next target after this PR lands is PR5 Batch 003 / 004: active crater, lava crust, terrain hazard masks, and hard-blocker terrain geometry.
+PR5 Batch 003 / 003 was GitHub PR #43 on branch `pr5-batch003-003-ridges-catchments`. It extended `FJungleVolcanicIslandTerrainModel` with 14 primary catchments, catchment IDs, ridge masks, gully masks, selected lahar corridor masks, coastal fan masks, ridge height contribution, gully incision, fan deposition, and `JG_VOLCANIC_TERRAIN_003` metrics. Validation: `git diff --check` and `git diff --cached --check` passed; forbidden navigation UI scan produced only existing deny-rule documentation matches; documented local Unreal Build.sh paths were missing, so UBT validation was environment-blocked rather than source-failed; GitHub CodeRabbit checks passed. PR #43 landed on `main` as `a5de98b`. Next target is PR5 Batch 003 / 004: active crater, lava crust, terrain hazard masks, and hard-blocker terrain geometry.
+
+## 2026-06-26-pr5-batch003-004-crater-lava-hazards
+
+status: confirmed
+created: 2026-06-26
+source: pr5lifecycle-runtimefiles/003/004_active_crater_lava_crust_terrain_hazards_research.md
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, Docs/World/ActiveCraterLavaCrustTerrainHazards.md
+reason: PR5 Batch 003 requires terrain-only active volcano structure before any later VFX/gameplay systems: broken summit crater, nested vent, breach, lava-crust masks, unstable-crust masks, and hard-blocker terrain evidence.
+review_by: 2026-07-26
+
+PR5 Batch 003 / 004 is being implemented on branch `pr5-batch003-004-crater-lava-hazards`. It extends `FJungleVolcanicIslandTerrainModel` with crater interior, broken rim, nested vent, breach, fissure, lava-crust, unstable-crust, and hard-blocker masks plus crater depression/rim-raise terrain contributions. Runtime metrics advance to `JG_VOLCANIC_TERRAIN_004` with crater, vent, and hard-blocker mask maxima. Validation so far: local edit completed; next lifecycle step is diff validation, forbidden UI scan, commit, PR creation, CodeRabbit/GitHub check review, merge, and local `main` sync. Next target after this PR lands is PR5 Batch 003 / 005: sea-level beach ring and coastal shelf hardening plus batch handoff.

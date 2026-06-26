@@ -103,11 +103,33 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 	const float GullyIncisionM = GullyMask * (FMath::Lerp(18.0f, 72.0f, SmoothStep(2200.0f, 5100.0f, MassifDistanceM)) + LaharCorridorMask * 46.0f);
 	const float FanDepositM = CoastalFanMask * FMath::Lerp(8.0f, 26.0f, SmoothStep(380.0f, 900.0f, LandwardDistanceM));
 
+	const FVector2D CraterCenterM = MassifCenterM + FVector2D(115.0f, -80.0f);
+	const FVector2D CraterDeltaM = WorldXY - CraterCenterM;
+	const float CraterYawRadians = 0.42f;
+	const float CraterU = CraterDeltaM.X * FMath::Cos(CraterYawRadians) + CraterDeltaM.Y * FMath::Sin(CraterYawRadians);
+	const float CraterV = -CraterDeltaM.X * FMath::Sin(CraterYawRadians) + CraterDeltaM.Y * FMath::Cos(CraterYawRadians);
+	const float CraterNorm = FMath::Sqrt(FMath::Square(CraterU / 390.0f) + FMath::Square(CraterV / 285.0f));
+	const float CraterInteriorMask = (1.0f - SmoothStep(0.72f, 1.02f, CraterNorm)) * MassifMask;
+	const float RimMask = RingMask(CraterNorm, 1.0f, 0.24f) * MassifMask;
+	const FVector2D VentCenterM = CraterCenterM + FVector2D(-75.0f, 95.0f);
+	const float VentDistanceM = (WorldXY - VentCenterM).Size();
+	const float VentMask = (1.0f - SmoothStep(70.0f, 175.0f, VentDistanceM)) * CraterInteriorMask;
+	const float BreachTheta = -0.82f;
+	const float BreachAngularDelta = FMath::Abs(FMath::Atan2(FMath::Sin(MassifTheta - BreachTheta), FMath::Cos(MassifTheta - BreachTheta)));
+	const float BreachMask = (1.0f - SmoothStep(0.050f, 0.155f, BreachAngularDelta)) * SmoothStep(390.0f, 720.0f, MassifDistanceM) * (1.0f - SmoothStep(2100.0f, 2850.0f, MassifDistanceM)) * MassifMask;
+	const float FissureMask = (1.0f - SmoothStep(0.018f, 0.052f, BreachAngularDelta)) * SmoothStep(1050.0f, 1450.0f, MassifDistanceM) * (1.0f - SmoothStep(2400.0f, 3150.0f, MassifDistanceM)) * MassifMask;
+	const float BrokenRimMask = RimMask * (1.0f - BreachMask);
+	const float LavaCrustMask = FMath::Clamp(CraterInteriorMask * 0.70f + VentMask + BreachMask * 0.45f + FissureMask * 0.60f, 0.0f, 1.0f);
+	const float UnstableCrustMask = FMath::Clamp(VentMask + FissureMask + LavaCrustMask * 0.45f, 0.0f, 1.0f);
+	const float HardBlockerMask = FMath::Clamp(BrokenRimMask * 0.75f + VentMask + FissureMask * 0.85f + BreachMask * 0.35f, 0.0f, 1.0f);
+	const float RimRaiseM = BrokenRimMask * 82.0f;
+	const float CraterDepressionM = CraterInteriorMask * 128.0f + VentMask * 78.0f + BreachMask * 58.0f + FissureMask * 32.0f;
+
 	const float LongWaveUndulationM =
 		FMath::Sin(WorldXM * 0.0018f + WorldYM * 0.0011f) * 8.0f +
 		FMath::Sin(WorldXM * 0.0027f - WorldYM * 0.0016f) * 5.0f;
 
-	const float TerrainProcessHeightM = MassifHeightM + LongWaveUndulationM * LandMask + RidgeHeightM - GullyIncisionM + FanDepositM;
+	const float TerrainProcessHeightM = MassifHeightM + LongWaveUndulationM * LandMask + RidgeHeightM - GullyIncisionM + FanDepositM + RimRaiseM - CraterDepressionM;
 	const float LandHeightM = FMath::Max(CoastalLandHeightM - GullyIncisionM * 0.18f, CoastalLandHeightM + TerrainProcessHeightM);
 
 	Sample.HeightM = FMath::Lerp(OceanHeightM, LandHeightM, LandMask);
@@ -126,8 +148,16 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 	Sample.GullyMask = GullyMask;
 	Sample.LaharCorridorMask = LaharCorridorMask;
 	Sample.CoastalFanMask = CoastalFanMask;
+	Sample.CraterMask = CraterInteriorMask;
+	Sample.RimMask = BrokenRimMask;
+	Sample.VentMask = VentMask;
+	Sample.BreachMask = BreachMask;
+	Sample.LavaCrustMask = LavaCrustMask;
+	Sample.UnstableCrustMask = UnstableCrustMask;
+	Sample.HardBlockerMask = HardBlockerMask;
 	Sample.RidgeHeightM = RidgeHeightM;
 	Sample.GullyIncisionM = GullyIncisionM;
+	Sample.CraterDepressionM = CraterDepressionM;
 	Sample.CatchmentId = LandMask > 0.5f ? CatchmentId : INDEX_NONE;
 
 	return Sample;
@@ -161,6 +191,9 @@ FJGTerrainMetrics FJungleVolcanicIslandTerrainModel::BuildMetrics(int32 SamplesP
 			Metrics.MaxRidgeMask = FMath::Max(Metrics.MaxRidgeMask, Sample.RidgeMask);
 			Metrics.MaxGullyMask = FMath::Max(Metrics.MaxGullyMask, Sample.GullyMask);
 			Metrics.MaxLaharCorridorMask = FMath::Max(Metrics.MaxLaharCorridorMask, Sample.LaharCorridorMask);
+			Metrics.MaxCraterMask = FMath::Max(Metrics.MaxCraterMask, Sample.CraterMask);
+			Metrics.MaxVentMask = FMath::Max(Metrics.MaxVentMask, Sample.VentMask);
+			Metrics.MaxHardBlockerMask = FMath::Max(Metrics.MaxHardBlockerMask, Sample.HardBlockerMask);
 			++Metrics.SampleCount;
 
 			const bool bSquareEdgeSample = X == 0 || Y == 0 || X == ClampedSamplesPerSide - 1 || Y == ClampedSamplesPerSide - 1;
@@ -179,7 +212,7 @@ FJGTerrainMetrics FJungleVolcanicIslandTerrainModel::BuildMetrics(int32 SamplesP
 FString FJungleVolcanicIslandTerrainModel::BuildMetricsLogLine(const FJGTerrainMetrics& Metrics)
 {
 	return FString::Printf(
-		TEXT("id=JG_VOLCANIC_TERRAIN_003 world_m=%.0f sea_level_m=%.1f samples=%d height_min_m=%.1f height_max_m=%.1f island_radius_min_m=%.1f island_radius_max_m=%.1f ocean_margin_min_m=%.1f square_edge_height_min_m=%.1f square_edge_height_max_m=%.1f target_peak_m=%.1f catchments=%d ridge_mask_max=%.2f gully_mask_max=%.2f lahar_mask_max=%.2f"),
+		TEXT("id=JG_VOLCANIC_TERRAIN_004 world_m=%.0f sea_level_m=%.1f samples=%d height_min_m=%.1f height_max_m=%.1f island_radius_min_m=%.1f island_radius_max_m=%.1f ocean_margin_min_m=%.1f square_edge_height_min_m=%.1f square_edge_height_max_m=%.1f target_peak_m=%.1f catchments=%d ridge_mask_max=%.2f gully_mask_max=%.2f lahar_mask_max=%.2f crater_mask_max=%.2f vent_mask_max=%.2f hard_blocker_mask_max=%.2f"),
 		WorldSizeM,
 		SeaLevelM,
 		Metrics.SampleCount,
@@ -194,5 +227,8 @@ FString FJungleVolcanicIslandTerrainModel::BuildMetricsLogLine(const FJGTerrainM
 		Metrics.CatchmentCount,
 		Metrics.MaxRidgeMask,
 		Metrics.MaxGullyMask,
-		Metrics.MaxLaharCorridorMask);
+		Metrics.MaxLaharCorridorMask,
+		Metrics.MaxCraterMask,
+		Metrics.MaxVentMask,
+		Metrics.MaxHardBlockerMask);
 }
