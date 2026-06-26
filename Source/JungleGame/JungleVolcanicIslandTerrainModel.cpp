@@ -131,8 +131,11 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 
 	const float TerrainProcessHeightM = MassifHeightM + LongWaveUndulationM * LandMask + RidgeHeightM - GullyIncisionM + FanDepositM + RimRaiseM - CraterDepressionM;
 	const float LandHeightM = FMath::Max(CoastalLandHeightM - GullyIncisionM * 0.18f, CoastalLandHeightM + TerrainProcessHeightM);
+	const float RawHeightM = FMath::Lerp(OceanHeightM, LandHeightM, LandMask);
+	const float ShorelineConstraintMask = 1.0f - SmoothStep(12.0f, 85.0f, FMath::Abs(SignedShorelineDistanceM));
+	const float CoastLockedHeightM = FMath::Lerp(RawHeightM, SeaLevelM, ShorelineConstraintMask);
 
-	Sample.HeightM = FMath::Lerp(OceanHeightM, LandHeightM, LandMask);
+	Sample.HeightM = CoastLockedHeightM;
 	Sample.BaseHeightM = FMath::Lerp(OceanHeightM, CoastalLandHeightM, LandMask);
 	Sample.RadiusM = RadiusM;
 	Sample.OrganicIslandRadiusM = IslandRadiusM;
@@ -142,6 +145,9 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 	Sample.CoastalShelfMask = RingMask(SignedShorelineDistanceM, -350.0f, 420.0f);
 	Sample.BeachRingMask = RingMask(SignedShorelineDistanceM, 55.0f, 145.0f);
 	Sample.CoastalLowlandMask = FMath::Clamp(SmoothStep(180.0f, 1200.0f, LandwardDistanceM) * (1.0f - SmoothStep(1250.0f, 2350.0f, LandwardDistanceM)) * LandMask, 0.0f, 1.0f);
+	Sample.ShorelineConstraintMask = ShorelineConstraintMask;
+	Sample.ShorelineErrorM = ShorelineConstraintMask > 0.0f ? FMath::Abs(Sample.HeightM - SeaLevelM) : 0.0f;
+	Sample.BeachWidthM = Sample.BeachRingMask > 0.1f ? 180.0f : 0.0f;
 	Sample.MassifMask = MassifMask;
 	Sample.MassifHeightM = MassifHeightM;
 	Sample.RidgeMask = RidgeMask;
@@ -194,6 +200,19 @@ FJGTerrainMetrics FJungleVolcanicIslandTerrainModel::BuildMetrics(int32 SamplesP
 			Metrics.MaxCraterMask = FMath::Max(Metrics.MaxCraterMask, Sample.CraterMask);
 			Metrics.MaxVentMask = FMath::Max(Metrics.MaxVentMask, Sample.VentMask);
 			Metrics.MaxHardBlockerMask = FMath::Max(Metrics.MaxHardBlockerMask, Sample.HardBlockerMask);
+			if (Sample.ShorelineConstraintMask > 0.1f)
+			{
+				Metrics.MaxShorelineAbsErrorM = FMath::Max(Metrics.MaxShorelineAbsErrorM, Sample.ShorelineErrorM);
+				++Metrics.ShorelineSampleCount;
+			}
+			if (Sample.SignedShorelineDistanceM >= 20.0f && Sample.SignedShorelineDistanceM <= 190.0f)
+			{
+				++Metrics.BeachSampleCount;
+				if (Sample.HeightM >= -0.25f && Sample.HeightM <= 10.0f)
+				{
+					++Metrics.BeachContinuitySampleCount;
+				}
+			}
 			++Metrics.SampleCount;
 
 			const bool bSquareEdgeSample = X == 0 || Y == 0 || X == ClampedSamplesPerSide - 1 || Y == ClampedSamplesPerSide - 1;
@@ -201,10 +220,18 @@ FJGTerrainMetrics FJungleVolcanicIslandTerrainModel::BuildMetrics(int32 SamplesP
 			{
 				Metrics.MinSquareEdgeHeightM = FMath::Min(Metrics.MinSquareEdgeHeightM, Sample.HeightM);
 				Metrics.MaxSquareEdgeHeightM = FMath::Max(Metrics.MaxSquareEdgeHeightM, Sample.HeightM);
+				if (Sample.HeightM > SeaLevelM - 0.5f)
+				{
+					++Metrics.SquareEdgeOceanViolationCount;
+				}
 				++Metrics.OceanEdgeSampleCount;
 			}
 		}
 	}
+
+	Metrics.BeachContinuityPercent = Metrics.BeachSampleCount > 0
+		? 100.0f * static_cast<float>(Metrics.BeachContinuitySampleCount) / static_cast<float>(Metrics.BeachSampleCount)
+		: 0.0f;
 
 	return Metrics;
 }
@@ -212,7 +239,7 @@ FJGTerrainMetrics FJungleVolcanicIslandTerrainModel::BuildMetrics(int32 SamplesP
 FString FJungleVolcanicIslandTerrainModel::BuildMetricsLogLine(const FJGTerrainMetrics& Metrics)
 {
 	return FString::Printf(
-		TEXT("id=JG_VOLCANIC_TERRAIN_004 world_m=%.0f sea_level_m=%.1f samples=%d height_min_m=%.1f height_max_m=%.1f island_radius_min_m=%.1f island_radius_max_m=%.1f ocean_margin_min_m=%.1f square_edge_height_min_m=%.1f square_edge_height_max_m=%.1f target_peak_m=%.1f catchments=%d ridge_mask_max=%.2f gully_mask_max=%.2f lahar_mask_max=%.2f crater_mask_max=%.2f vent_mask_max=%.2f hard_blocker_mask_max=%.2f"),
+		TEXT("id=JG_VOLCANIC_TERRAIN_005 world_m=%.0f sea_level_m=%.1f samples=%d height_min_m=%.1f height_max_m=%.1f island_radius_min_m=%.1f island_radius_max_m=%.1f ocean_margin_min_m=%.1f square_edge_height_min_m=%.1f square_edge_height_max_m=%.1f target_peak_m=%.1f catchments=%d ridge_mask_max=%.2f gully_mask_max=%.2f lahar_mask_max=%.2f crater_mask_max=%.2f vent_mask_max=%.2f hard_blocker_mask_max=%.2f shoreline_error_max_m=%.2f beach_continuity_pct=%.1f square_edge_ocean_violations=%d"),
 		WorldSizeM,
 		SeaLevelM,
 		Metrics.SampleCount,
@@ -230,5 +257,8 @@ FString FJungleVolcanicIslandTerrainModel::BuildMetricsLogLine(const FJGTerrainM
 		Metrics.MaxLaharCorridorMask,
 		Metrics.MaxCraterMask,
 		Metrics.MaxVentMask,
-		Metrics.MaxHardBlockerMask);
+		Metrics.MaxHardBlockerMask,
+		Metrics.MaxShorelineAbsErrorM,
+		Metrics.BeachContinuityPercent,
+		Metrics.SquareEdgeOceanViolationCount);
 }
