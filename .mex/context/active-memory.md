@@ -204,3 +204,14 @@ reason: PR5 runtime file 003 was consumed as the third sequential implementation
 review_by: 2026-07-26
 
 PR5-run 003 is GitHub PR #33 on branch `pr5-run-003`, commit `1bef01f`. It expands the riparian/wet-valley source contract with reach metadata, crossing candidates, rain-state response, sound anchors, route evidence, debug views, and bank/crossing classification helpers. Validation: `git diff --check` passed; the new source/header scan returned no forbidden navigation drift matches; the mounted UE Build.sh was invoked but exceeded the DevSpace 300s timeout without returning a compiler error; local CodeRabbit CLI hit its review quota, but GitHub PR checks showed CodeRabbit passing. Next PR5 target after PR #33 merges and local `main` syncs is runtime file 004 ridge/slope/canopy orientation contracts. Four-PR handoff is not due yet; PR5-run 003 is position 3/5 in batch 001 runtime consumption.
+
+## 2026-06-26-pr5-run-004-ridge-slope-canopy-contracts
+
+status: active-unreviewed
+created: 2026-06-26
+source: pr5lifecycle-runtimefiles/001/004_ridge_slope_canopy_orientation_research.md
+target: Source/JungleGame/JungleRidgeSlopeMountainEcosystemSpec.h
+reason: PR5 runtime file 004 was consumed as the fourth sequential implementation PR input.
+review_by: 2026-07-26
+
+PR5-run 004 is GitHub PR #34 on branch `pr5-run-004`, commit `f00d0e2`. It expands ridge/slope/canopy source contracts with orientation cue categories, terrain forms, canopy states, cue degradation, weather/solar/night states, profile-shaped data contracts, developer validation points, debug view names, mask naming, cue-floor validation, and first validation point lists. Validation: `git diff --check` passed; the new source/header scan returned no forbidden navigation drift matches; mounted UE Build.sh was invoked but exceeded the DevSpace 300s timeout without returning a compiler error; GitHub PR checks showed CodeRabbit passing. Next PR5 target after PR #34 merges and local `main` syncs is runtime file 005 world validation evidence contracts. Four-PR handoff is due after PR5-run 004 because this completes positions 1/4 through 4/4 of the current sequential runtime batch, but the user explicitly requested continuing through 005, so create/update handoff after PR5-run 005 lands.
