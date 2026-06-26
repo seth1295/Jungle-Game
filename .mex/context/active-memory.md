@@ -247,4 +247,15 @@ target: Docs/World/FullSizeTerrainSource.md
 reason: PR5 runtime batch 002 file 002 is being consumed as the second sequential implementation PR input.
 review_by: 2026-07-26
 
-PR5 Batch 002 / 002 defines the deterministic full-size terrain source contract: 8129 by 8129 vertices, 2 m source spacing, 16.256 km square domain, fixed config identity, required derived channels, developer-only review point intents, and generated artifact policy. Full generated rasters remain ignored by default. Next target after this PR lands is runtime file 003 full-size terrain in-game shell.
+PR5 Batch 002 / 002 defines the deterministic full-size terrain source contract: 8129 by 8129 vertices, 2 m source spacing, 16.256 km square domain, fixed config identity, required derived channels, developer-only review point intents, and generated artifact policy. Full generated rasters remain ignored by default. Validation: `git diff --cached --check` passed. PR #37 landed on `main` as `294a88a`. Next target is runtime file 003 full-size terrain in-game shell.
+
+## 2026-06-26-pr5-batch002-003-terrain-ingame-shell
+
+status: active-unreviewed
+created: 2026-06-26
+source: pr5lifecycle-runtimefiles/002/003_full_size_terrain_ingame_shell_research.md
+target: Source/JungleGame/JungleFullSizeTerrainShellActor.h, Source/JungleGame/JungleFullSizeTerrainShellActor.cpp, Source/JungleGame/JungleGameMode.cpp, Docs/World/FullSizeTerrainShell.md
+reason: PR5 runtime batch 002 file 003 is being consumed as the third sequential implementation PR input.
+review_by: 2026-07-26
+
+PR5 Batch 002 / 003 adds a source-authored runtime terrain shell actor and spawns it from `JungleGameMode` while no project-owned `.umap` asset exists. The shell provides rough full-size world blockout structure for basin/lowland, creek valley, ridge spine, mountain shoulder, creek mouth/coast, and ocean edge placeholders. Validation: `git diff --cached --check` passed; UE Build.sh was invoked but exceeded the DevSpace 300s timeout without returning a compiler error. Next target after this PR lands is runtime file 004 full-size mask/biome debug state.

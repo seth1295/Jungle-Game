@@ -2,6 +2,7 @@
 
 #include "JungleCell0Director.h"
 #include "JungleCell0LargeWorldIntegrationSpec.h"
+#include "JungleFullSizeTerrainShellActor.h"
 #include "JungleGame.h"
 #include "JunglePlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
@@ -18,6 +19,13 @@ void AJungleGameMode::BeginPlay()
 	if (!GetWorld())
 	{
 		return;
+	}
+
+	TArray<AActor*> ExistingTerrainShells;
+	UGameplayStatics::GetAllActorsOfClass(this, AJungleFullSizeTerrainShellActor::StaticClass(), ExistingTerrainShells);
+	if (ExistingTerrainShells.Num() == 0)
+	{
+		GetWorld()->SpawnActor<AJungleFullSizeTerrainShellActor>(AJungleFullSizeTerrainShellActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
 	}
 
 	TArray<AActor*> ExistingCell0Directors;
