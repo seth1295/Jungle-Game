@@ -380,3 +380,14 @@ reason: PR5 Batch 003 runtime file 008 requires deterministic heightfield/topogr
 review_by: 2026-07-27
 
 PR5 Batch 003 / 008 adds topographic export/evidence metrics without writing heavyweight generated artifacts into the repo. It defines export-grid identity, required/generated map schema counts, height/slope/relief ranges, 50 m contour band coverage, shoreline contour samples, sea-level shoreline error, beach continuity percentage, ocean-below-sea percentage, ridge/gully/crater/hazard mask maxima, and slope histograms. Runtime logs now include `JG_TOPO_EXPORT_008` alongside terrain/channel metrics, making the canonical source measurable for future PNG/CSV/heightmap export commandlets while preserving artifact hygiene. Validation expectation: changed source/.mex diff checks should pass; UBT remains environment-dependent on local Unreal path visibility. Next target after landing is PR5 Batch 003 / 009: large terrain generator architecture.
+
+## 2026-06-27-pr5-batch003-009-generator-architecture
+
+status: active-unreviewed
+created: 2026-06-27
+source: pr5lifecycle-runtimefiles/003/009_large_terrain_generator_architecture_research.md
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, Source/JungleGame/JungleFullSizeTerrainShellActor.cpp
+reason: PR5 Batch 003 runtime file 009 requires the terrain generator to expose explicit config/version/seed/identity and architecture validation rather than relying on implicit constants scattered through the source.
+review_by: 2026-07-27
+
+PR5 Batch 003 / 009 adds generator config identity, version ID `JG_TERRAIN_GENERATOR_009`, deterministic seed, source resolution identity, runtime tile identity, channel count, architecture switches, a stable fingerprint, and architecture validation metrics. Runtime logs now include world-size, sea-level, source-resolution, coast-source-ownership, runtime mesh bridge, topographic evidence, and overall architecture validity via `JG_TERRAIN_GENERATOR_009`. This keeps terrain generation source-owned and deterministic while avoiding Blueprint-only or mesh-first generator drift. Validation expectation: changed source/.mex diff checks should pass; UBT remains environment-dependent on local Unreal path visibility. Next target after landing is PR5 Batch 003 / 010: full terrain batch acceptance and handoff.
