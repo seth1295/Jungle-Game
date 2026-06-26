@@ -43,6 +43,7 @@ private:
 	void BuildShell();
 	void BuildProceduralTerrainMesh();
 	float CalculateTerrainHeightCm(float LocalX, float LocalY) const;
+	void LogTerrainMetrics() const;
 	void BuildDebugCubeBlockout();
 	void AddDebugBlock(const FVector& LocalLocation, const FVector& Scale, FName Name, float LocalYawDegrees = 0.0f);
 	void ScheduleTerrainShellSmokeIfRequested();
