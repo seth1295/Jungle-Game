@@ -226,3 +226,14 @@ reason: PR5 runtime file 005 was consumed as the fifth sequential implementation
 review_by: 2026-07-26
 
 PR5-run 005 is GitHub PR #35 on branch `pr5-run-005`, source commit `e815414`. It adds developer-only world validation evidence contracts, package smoke evidence fields, repo hygiene evidence fields, artifact references, screenshot specs, debug view names, and local artifact ignore guidance. Validation before PR: `git diff --check` and `git diff --cached --check` passed; mounted UE Build.sh was invoked but exceeded the DevSpace 300s timeout without returning a compiler error. GitHub allowed PR #35 to merge and local `main` was synced after merge. PR #35 landed on `main` as `32b9b99`. Batch handoff file is tracked for fresh-chat recovery.
+
+## 2026-06-26-pr5-batch002-001-world-authority
+
+status: active-unreviewed
+created: 2026-06-26
+source: pr5lifecycle-runtimefiles/002/001_full_size_world_authority_research.md
+target: Source/JungleGame/JungleFullSizeWorldAuthoritySpec.h, Docs/World/FullSizeWorldAuthority.md
+reason: PR5 runtime batch 002 file 001 is being consumed as the first sequential implementation PR input.
+review_by: 2026-07-26
+
+PR5 Batch 002 / 001 establishes the first full-size world authority shell. The project-owned target world path is defined as `/Game/JungleGame/Maps/WLD_JungleIsland_Full`; existing template OpenWorld use is documented as a temporary bridge only because no project-owned map asset is present yet. Cell 0 remains a review anchor only. Validation: `git diff --check` and `git diff --cached --check` passed. Next target after this PR lands is runtime file 002 deterministic full-size terrain source.
