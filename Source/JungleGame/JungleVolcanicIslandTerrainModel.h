@@ -151,6 +151,35 @@ struct FJGTerrainChannelMetrics
 	int32 SlopeClassCounts[5] = {0, 0, 0, 0, 0};
 };
 
+struct FJGTerrainTopographicMetrics
+{
+	int32 ExportVerticesPerSide = 0;
+	int32 ExportSampleCount = 0;
+	int32 RequiredMapCount = 9;
+	int32 GeneratedMapSchemaCount = 0;
+	float ExportSpacingM = 0.0f;
+	float MinHeightM = TNumericLimits<float>::Max();
+	float MaxHeightM = TNumericLimits<float>::Lowest();
+	float MeanHeightM = 0.0f;
+	float MaxSlopeDegrees = 0.0f;
+	float MeanSlopeDegrees = 0.0f;
+	float MaxReliefM = 0.0f;
+	float MaxShorelineAbsErrorM = 0.0f;
+	float BeachContinuityPercent = 0.0f;
+	float OceanBelowSeaPercent = 0.0f;
+	float RidgeMaskMax = 0.0f;
+	float GullyMaskMax = 0.0f;
+	float CraterMaskMax = 0.0f;
+	float HazardMaskMax = 0.0f;
+	int32 ShorelineContourSamples = 0;
+	int32 BeachBandSamples = 0;
+	int32 BeachBandPassSamples = 0;
+	int32 OceanSamples = 0;
+	int32 OceanBelowSeaSamples = 0;
+	int32 Contour50mBandsTouched = 0;
+	int32 SlopeHistogram[5] = {0, 0, 0, 0, 0};
+};
+
 class JUNGLEGAME_API FJungleVolcanicIslandTerrainModel
 {
 public:
@@ -187,6 +216,8 @@ public:
 	static FJGTerrainChannelSample SampleTerrainChannelsMeters(float WorldXM, float WorldYM, float DerivativeSpacingM = SourceReferenceSpacingM);
 	static FJGTerrainChannelMetrics BuildChannelMetrics(int32 SamplesPerSide = RuntimePreviewVerticesPerSide);
 	static FString BuildChannelMetricsLogLine(const FJGTerrainChannelMetrics& Metrics);
+	static FJGTerrainTopographicMetrics BuildTopographicMetrics(int32 ExportVerticesPerSide = RuntimePreviewVerticesPerSide);
+	static FString BuildTopographicMetricsLogLine(const FJGTerrainTopographicMetrics& Metrics);
 
 private:
 	static float SmoothStep(float Edge0, float Edge1, float Value);
