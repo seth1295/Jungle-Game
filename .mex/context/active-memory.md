@@ -160,3 +160,14 @@ reason: User defined PR5 lifecycle as a repeatable workflow where setup creates 
 review_by: 2026-07-26
 
 PR5 lifecycle is now a project workflow. `pr5lifecycle-setup` creates five standalone researcher prompt files under `pr5lifecycle-precursor/<batch>/`. The user sends those prompts to independent no-context researcher AIs. The returned Markdown research/spec files are placed under `pr5lifecycle-runtimefiles/<batch>/`. `pr5lifecycle-run` consumes runtime files 001 through 005 as five sequential implementation PRs with validation, `.mex` updates, CodeRabbit, merge, and main sync between each PR. Batch 001 setup prompts target the world-first terrain/biome lane. Batch 001 runtime files are present and staged in branch `pr5-setup-batch-001` with world-first terrain/biome source bridge scaffolding. Validation: `git diff --cached --check` passes after trimming generated Markdown trailing whitespace; UE compile validation is blocked in the current shell because both documented build paths `/mnt/ue5/UnrealEngine/.../Build.sh` and `/run/media/seth/UE5_WORKSPACE/UnrealEngine/.../Build.sh` are missing. Treat this as an environment path blocker, not a source compile failure.
+
+## 2026-06-26-pr5-run-001-macro-terrain
+
+status: active-unreviewed
+created: 2026-06-26
+source: pr5lifecycle-runtimefiles/001/001_macro_island_terrain_navigation_research.md
+target: Source/JungleGame/JungleWorldTerrainBiomeRunway.h, Source/JungleGame/JungleWorldTerrainBiomeRunway.cpp
+reason: PR5 runtime file 001 is being consumed as the first sequential implementation PR input.
+review_by: 2026-07-26
+
+PR5-run 001 implements the accepted macro island terrain research as source-level contracts: expanded terrain channel schema, landform taxonomy, traversal categories, terrain evidence types, channel contracts, landform traversal rules, and default developer-only terrain review points. Deferred items remain runtime learned terrain generation, InfiniteDiffusion/Terrain Diffusion integration, full erosion/hydrology simulation, final rainforest biome generation, and production PCG. No player-facing map, compass, GPS, objective marker, HUD clock, explicit time readout, or orientation confidence UI is introduced.
