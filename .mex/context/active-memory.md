@@ -215,3 +215,14 @@ reason: PR5 runtime file 004 was consumed as the fourth sequential implementatio
 review_by: 2026-07-26
 
 PR5-run 004 is GitHub PR #34 on branch `pr5-run-004`, commit `f00d0e2`. It expands ridge/slope/canopy source contracts with orientation cue categories, terrain forms, canopy states, cue degradation, weather/solar/night states, profile-shaped data contracts, developer validation points, debug view names, mask naming, cue-floor validation, and first validation point lists. Validation: `git diff --check` passed; the new source/header scan returned no forbidden navigation drift matches; mounted UE Build.sh was invoked but exceeded the DevSpace 300s timeout without returning a compiler error; GitHub PR checks showed CodeRabbit passing. Next PR5 target after PR #34 merges and local `main` syncs is runtime file 005 world validation evidence contracts. Four-PR handoff is due after PR5-run 004 because this completes positions 1/4 through 4/4 of the current sequential runtime batch, but the user explicitly requested continuing through 005, so create/update handoff after PR5-run 005 lands.
+
+## 2026-06-26-pr5-run-005-validation-contracts
+
+status: active-unreviewed
+created: 2026-06-26
+source: pr5lifecycle-runtimefiles/001/005_world_validation_evidence_research.md
+target: Source/JungleGame/JungleWorldValidationEvidenceSpec.h, handoffs/2026-06-26-pr5-batch-001-runtime-001-005.md
+reason: PR5 runtime file 005 was consumed as the fifth sequential implementation PR input and batch handoff point.
+review_by: 2026-07-26
+
+PR5-run 005 is GitHub PR #35 on branch `pr5-run-005`, source commit `e815414`. It adds developer-only world validation evidence contracts, package smoke evidence fields, repo hygiene evidence fields, artifact references, screenshot specs, debug view names, and local artifact ignore guidance. Validation before PR: `git diff --check` and `git diff --cached --check` passed; mounted UE Build.sh was invoked but exceeded the DevSpace 300s timeout without returning a compiler error. GitHub CodeRabbit check is pending at time of this entry. After PR #35 merges, local `main` must be synced clean and this entry should be marked confirmed with the merge commit. Batch handoff file is tracked for fresh-chat recovery.
