@@ -229,7 +229,7 @@ PR5-run 005 is GitHub PR #35 on branch `pr5-run-005`, source commit `e815414`. I
 
 ## 2026-06-26-pr5-batch002-001-world-authority
 
-status: active-unreviewed
+status: confirmed
 created: 2026-06-26
 source: pr5lifecycle-runtimefiles/002/001_full_size_world_authority_research.md
 target: Source/JungleGame/JungleFullSizeWorldAuthoritySpec.h, Docs/World/FullSizeWorldAuthority.md
@@ -240,7 +240,7 @@ PR5 Batch 002 / 001 establishes the first full-size world authority shell. The p
 
 ## 2026-06-26-pr5-batch002-002-deterministic-terrain-source
 
-status: active-unreviewed
+status: confirmed
 created: 2026-06-26
 source: pr5lifecycle-runtimefiles/002/002_deterministic_full_size_terrain_source_research.md
 target: Docs/World/FullSizeTerrainSource.md
@@ -251,7 +251,7 @@ PR5 Batch 002 / 002 defines the deterministic full-size terrain source contract:
 
 ## 2026-06-26-pr5-batch002-003-terrain-ingame-shell
 
-status: active-unreviewed
+status: confirmed
 created: 2026-06-26
 source: pr5lifecycle-runtimefiles/002/003_full_size_terrain_ingame_shell_research.md
 target: Source/JungleGame/JungleFullSizeTerrainShellActor.h, Source/JungleGame/JungleFullSizeTerrainShellActor.cpp, Source/JungleGame/JungleGameMode.cpp, Docs/World/FullSizeTerrainShell.md
@@ -262,7 +262,7 @@ PR5 Batch 002 / 003 adds a source-authored runtime terrain shell actor and spawn
 
 ## 2026-06-26-pr5-batch002-004-mask-biome-debug-state
 
-status: active-unreviewed
+status: confirmed
 created: 2026-06-26
 source: pr5lifecycle-runtimefiles/002/004_full_size_mask_biome_debug_state_research.md
 target: Source/JungleGame/JungleFullSizeMaskBiomeDebugSpec.h, Docs/World/FullSizeMaskBiomeDebugState.md
@@ -273,11 +273,11 @@ PR5 Batch 002 / 004 defines developer-only full-size mask, biome, and traversal 
 
 ## 2026-06-26-pr5-batch002-005-packaged-smoke-evidence
 
-status: active-unreviewed
+status: confirmed
 created: 2026-06-26
 source: pr5lifecycle-runtimefiles/002/005_packaged_full_size_world_smoke_evidence_research.md
 target: Source/JungleGame/JunglePackagedFullSizeWorldSmokeSpec.h, Docs/World/PackagedFullSizeWorldSmoke.md, handoffs/2026-06-26-pr5-batch-002-runtime-001-005.md
 reason: PR5 runtime batch 002 file 005 is being consumed as the fifth sequential implementation PR input and batch handoff point.
 review_by: 2026-07-26
 
-PR5 Batch 002 / 005 defines packaged full-size world smoke evidence, required developer-only review points, runtime log token expectations, artifact hygiene, and the batch handoff. It records that a fresh packaged build including the runtime shell is pending because UE Build.sh previously exceeded the DevSpace 300s timeout without returning a compiler error. After this PR lands, PR5 Batch 002 is complete and the next planned PR5 batch is full-world traversal/ecosystem readability.
+PR5 Batch 002 / 005 defines packaged full-size world smoke evidence, required developer-only review points, runtime log token expectations, artifact hygiene, and the batch handoff. It records that a fresh packaged build including the runtime shell is pending because UE Build.sh previously exceeded the DevSpace 300s timeout without returning a compiler error. PR #40 landed on `main` as `dcdf53e`. PR5 Batch 002 is complete with handoff `handoffs/2026-06-26-pr5-batch-002-runtime-001-005.md`; next planned PR5 batch is full-world traversal/ecosystem readability.
