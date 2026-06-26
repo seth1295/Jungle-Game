@@ -1,16 +1,40 @@
 #include "JungleFullSizeTerrainShellActor.h"
 
+#include "Components/SceneComponent.h"
+#include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
+#include "GameFramework/Pawn.h"
+#include "GameFramework/PlayerController.h"
 #include "JungleGame.h"
+#include "Kismet/GameplayStatics.h"
+#include "Materials/MaterialInterface.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
+#include "ProceduralMeshComponent.h"
+#include "TimerManager.h"
 #include "UObject/ConstructorHelpers.h"
 
 AJungleFullSizeTerrainShellActor::AJungleFullSizeTerrainShellActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
+	SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot"));
+	RootComponent = SceneRoot;
+
+	TerrainMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("FullSizeProceduralTerrain"));
+	TerrainMesh->SetupAttachment(SceneRoot);
+	TerrainMesh->bUseAsyncCooking = true;
+
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshRef(TEXT("/Engine/BasicShapes/Cube.Cube"));
 	if (MeshRef.Succeeded())
 	{
 		CubeMesh = MeshRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MaterialRef(TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial"));
+	if (MaterialRef.Succeeded())
+	{
+		TerrainMaterial = MaterialRef.Object;
 	}
 }
 
@@ -18,24 +42,150 @@ void AJungleFullSizeTerrainShellActor::BeginPlay()
 {
 	Super::BeginPlay();
 	BuildShell();
+	ScheduleTerrainShellSmokeIfRequested();
 }
 
 void AJungleFullSizeTerrainShellActor::BuildShell()
 {
-	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell spawned: id=JG_FULL_TERRAIN_SHELL_002 extent_m=16256 review_points=8 source=runtime-source-authored-blockout"));
+	BuildProceduralTerrainMesh();
 
-	AddBlock(FVector(0.0f, 0.0f, -160.0f), FVector(160.0f, 160.0f, 0.18f), TEXT("FullWorldLowlandBasin"));
-	AddBlock(FVector(3600.0f, -1800.0f, -130.0f), FVector(110.0f, 24.0f, 0.12f), TEXT("FullWorldCreekValley"), -18.0f);
-	AddBlock(FVector(-3200.0f, 2400.0f, 140.0f), FVector(95.0f, 16.0f, 1.0f), TEXT("FullWorldRidgeSpine"), 32.0f);
-	AddBlock(FVector(-4100.0f, 3100.0f, 340.0f), FVector(38.0f, 12.0f, 1.8f), TEXT("FullWorldMountainShoulder"), 22.0f);
-	AddBlock(FVector(6200.0f, -4800.0f, -175.0f), FVector(70.0f, 32.0f, 0.08f), TEXT("FullWorldCreekMouthCoast"), 10.0f);
-	AddBlock(FVector(0.0f, -7200.0f, -220.0f), FVector(210.0f, 16.0f, 0.08f), TEXT("FullWorldSouthCoast"));
-	AddBlock(FVector(0.0f, 7600.0f, -260.0f), FVector(220.0f, 14.0f, 0.1f), TEXT("FullWorldNorthOceanEdge"));
-	AddBlock(FVector(7200.0f, 0.0f, -230.0f), FVector(14.0f, 220.0f, 0.1f), TEXT("FullWorldEastOceanEdge"));
-	AddBlock(FVector(-7200.0f, 0.0f, -230.0f), FVector(14.0f, 220.0f, 0.1f), TEXT("FullWorldWestOceanEdge"));
+	if (bSpawnDebugCubeBlockout || FParse::Param(FCommandLine::Get(), TEXT("JungleDebugCubeShell")))
+	{
+		BuildDebugCubeBlockout();
+	}
+
+	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell spawned: id=JG_FULL_TERRAIN_SHELL_002 extent_m=16256 review_points=8 source=runtime-source-authored-blockout"));
+	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell v2 ready: id=JG_FULL_TERRAIN_SHELL_003 grid=%dx%d extent_m=%.0f source=deterministic-procedural-heightfield cube_fallback=%s"), TerrainVerticesPerSide, TerrainVerticesPerSide, FullWorldExtentMeters, bSpawnDebugCubeBlockout ? TEXT("enabled") : TEXT("available"));
 }
 
-void AJungleFullSizeTerrainShellActor::AddBlock(const FVector& LocalLocation, const FVector& Scale, FName Name, float LocalYawDegrees)
+void AJungleFullSizeTerrainShellActor::BuildProceduralTerrainMesh()
+{
+	if (!TerrainMesh)
+	{
+		return;
+	}
+
+	constexpr float HalfExtentCm = FullWorldExtentCm;
+	const float StepCm = (HalfExtentCm * 2.0f) / static_cast<float>(TerrainVerticesPerSide - 1);
+
+	TArray<FVector> Vertices;
+	TArray<int32> Triangles;
+	TArray<FVector> Normals;
+	TArray<FVector2D> UVs;
+	TArray<FColor> VertexColors;
+	TArray<FProcMeshTangent> Tangents;
+
+	Vertices.Reserve(TerrainVerticesPerSide * TerrainVerticesPerSide);
+	Normals.Reserve(TerrainVerticesPerSide * TerrainVerticesPerSide);
+	UVs.Reserve(TerrainVerticesPerSide * TerrainVerticesPerSide);
+	VertexColors.Reserve(TerrainVerticesPerSide * TerrainVerticesPerSide);
+	Tangents.Reserve(TerrainVerticesPerSide * TerrainVerticesPerSide);
+	Triangles.Reserve((TerrainVerticesPerSide - 1) * (TerrainVerticesPerSide - 1) * 6);
+
+	for (int32 Y = 0; Y < TerrainVerticesPerSide; ++Y)
+	{
+		for (int32 X = 0; X < TerrainVerticesPerSide; ++X)
+		{
+			const float LocalX = -HalfExtentCm + static_cast<float>(X) * StepCm;
+			const float LocalY = -HalfExtentCm + static_cast<float>(Y) * StepCm;
+			const float HeightCm = CalculateTerrainHeightCm(LocalX, LocalY);
+
+			Vertices.Emplace(LocalX, LocalY, HeightCm);
+			Normals.Emplace(FVector::ZeroVector);
+			UVs.Emplace(static_cast<float>(X) / static_cast<float>(TerrainVerticesPerSide - 1), static_cast<float>(Y) / static_cast<float>(TerrainVerticesPerSide - 1));
+			VertexColors.Emplace(FColor::White);
+			Tangents.Emplace(1.0f, 0.0f, 0.0f);
+		}
+	}
+
+	for (int32 Y = 0; Y < TerrainVerticesPerSide - 1; ++Y)
+	{
+		for (int32 X = 0; X < TerrainVerticesPerSide - 1; ++X)
+		{
+			const int32 I0 = X + Y * TerrainVerticesPerSide;
+			const int32 I1 = I0 + 1;
+			const int32 I2 = I0 + TerrainVerticesPerSide;
+			const int32 I3 = I2 + 1;
+
+			Triangles.Add(I0);
+			Triangles.Add(I2);
+			Triangles.Add(I1);
+			Triangles.Add(I1);
+			Triangles.Add(I2);
+			Triangles.Add(I3);
+		}
+	}
+
+	for (int32 TriangleIndex = 0; TriangleIndex < Triangles.Num(); TriangleIndex += 3)
+	{
+		const int32 A = Triangles[TriangleIndex];
+		const int32 B = Triangles[TriangleIndex + 1];
+		const int32 C = Triangles[TriangleIndex + 2];
+		const FVector FaceNormal = FVector::CrossProduct(Vertices[B] - Vertices[A], Vertices[C] - Vertices[A]).GetSafeNormal();
+		Normals[A] += FaceNormal;
+		Normals[B] += FaceNormal;
+		Normals[C] += FaceNormal;
+	}
+
+	for (FVector& Normal : Normals)
+	{
+		Normal = Normal.IsNearlyZero() ? FVector::UpVector : Normal.GetSafeNormal();
+	}
+
+	TerrainMesh->CreateMeshSection(0, Vertices, Triangles, Normals, UVs, VertexColors, Tangents, true);
+	if (TerrainMaterial)
+	{
+		TerrainMesh->SetMaterial(0, TerrainMaterial);
+	}
+}
+
+float AJungleFullSizeTerrainShellActor::CalculateTerrainHeightCm(float LocalX, float LocalY) const
+{
+	constexpr float HalfExtentCm = FullWorldExtentCm;
+	const float NX = LocalX / HalfExtentCm;
+	const float NY = LocalY / HalfExtentCm;
+	const float Radius = FMath::Sqrt(NX * NX + NY * NY);
+	const float IslandFalloff = FMath::Clamp(1.0f - FMath::Pow(FMath::Max(0.0f, Radius - 0.72f) / 0.28f, 2.0f), 0.0f, 1.0f);
+
+	const float RidgeAxis = (LocalY * 0.72f) - (LocalX * 0.42f) - 90000.0f;
+	const float RidgeDistance = FMath::Abs(RidgeAxis) / 220000.0f;
+	const float RidgeSpine = FMath::Exp(-RidgeDistance * RidgeDistance) * 9800.0f;
+
+	const float MountainX = (LocalX + 330000.0f) / 180000.0f;
+	const float MountainY = (LocalY - 285000.0f) / 150000.0f;
+	const float MountainShoulder = FMath::Exp(-(MountainX * MountainX + MountainY * MountainY)) * 14500.0f;
+
+	const float CreekAxis = (LocalY + 0.58f * LocalX + 50000.0f) / 85000.0f;
+	const float CreekLongitudinal = FMath::Clamp((LocalX + 230000.0f) / 620000.0f, 0.0f, 1.0f);
+	const float CreekValley = -FMath::Exp(-CreekAxis * CreekAxis) * FMath::Lerp(2600.0f, 5200.0f, CreekLongitudinal);
+
+	const float BasinX = LocalX / 310000.0f;
+	const float BasinY = (LocalY + 60000.0f) / 270000.0f;
+	const float LowlandBasin = -FMath::Exp(-(BasinX * BasinX + BasinY * BasinY)) * 2600.0f;
+
+	const float CoastLowering = FMath::Pow(FMath::Clamp(Radius, 0.0f, 1.0f), 3.4f) * -7600.0f;
+	const float DeterministicUndulation =
+		FMath::Sin(LocalX * 0.000014f + LocalY * 0.000009f) * 1200.0f +
+		FMath::Sin(LocalX * 0.000031f - LocalY * 0.000017f) * 650.0f +
+		FMath::Sin(LocalX * 0.000071f + LocalY * 0.000053f) * 260.0f;
+
+	return (RidgeSpine + MountainShoulder + CreekValley + LowlandBasin + CoastLowering + DeterministicUndulation) * IslandFalloff - 600.0f;
+}
+
+void AJungleFullSizeTerrainShellActor::BuildDebugCubeBlockout()
+{
+	AddDebugBlock(FVector(0.0f, 0.0f, -160.0f), FVector(160.0f, 160.0f, 0.18f), TEXT("FullWorldLowlandBasin"));
+	AddDebugBlock(FVector(3600.0f, -1800.0f, -130.0f), FVector(110.0f, 24.0f, 0.12f), TEXT("FullWorldCreekValley"), -18.0f);
+	AddDebugBlock(FVector(-3200.0f, 2400.0f, 140.0f), FVector(95.0f, 16.0f, 1.0f), TEXT("FullWorldRidgeSpine"), 32.0f);
+	AddDebugBlock(FVector(-4100.0f, 3100.0f, 340.0f), FVector(38.0f, 12.0f, 1.8f), TEXT("FullWorldMountainShoulder"), 22.0f);
+	AddDebugBlock(FVector(6200.0f, -4800.0f, -175.0f), FVector(70.0f, 32.0f, 0.08f), TEXT("FullWorldCreekMouthCoast"), 10.0f);
+	AddDebugBlock(FVector(0.0f, -7200.0f, -220.0f), FVector(210.0f, 16.0f, 0.08f), TEXT("FullWorldSouthCoast"));
+	AddDebugBlock(FVector(0.0f, 7600.0f, -260.0f), FVector(220.0f, 14.0f, 0.1f), TEXT("FullWorldNorthOceanEdge"));
+	AddDebugBlock(FVector(7200.0f, 0.0f, -230.0f), FVector(14.0f, 220.0f, 0.1f), TEXT("FullWorldEastOceanEdge"));
+	AddDebugBlock(FVector(-7200.0f, 0.0f, -230.0f), FVector(14.0f, 220.0f, 0.1f), TEXT("FullWorldWestOceanEdge"));
+}
+
+void AJungleFullSizeTerrainShellActor::AddDebugBlock(const FVector& LocalLocation, const FVector& Scale, FName Name, float LocalYawDegrees)
 {
 	if (!CubeMesh || !GetWorld())
 	{
@@ -53,4 +203,58 @@ void AJungleFullSizeTerrainShellActor::AddBlock(const FVector& LocalLocation, co
 #endif
 	MeshActor->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
 	MeshActor->SetActorScale3D(Scale);
+}
+
+void AJungleFullSizeTerrainShellActor::ScheduleTerrainShellSmokeIfRequested()
+{
+	if (!FParse::Param(FCommandLine::Get(), TEXT("JungleTerrainShellSmoke")))
+	{
+		return;
+	}
+
+	FTimerHandle ViewTimer;
+	GetWorldTimerManager().SetTimer(ViewTimer, this, &AJungleFullSizeTerrainShellActor::MovePlayerToTerrainShellSmokeView, 0.75f, false);
+	FTimerHandle ShotTimer;
+	GetWorldTimerManager().SetTimer(ShotTimer, this, &AJungleFullSizeTerrainShellActor::TakeTerrainShellSmokeShot, 3.0f, false);
+	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell smoke capture scheduled."));
+}
+
+void AJungleFullSizeTerrainShellActor::MovePlayerToTerrainShellSmokeView()
+{
+	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	if (!PlayerPawn || !PlayerController)
+	{
+		UE_LOG(LogJungleGame, Warning, TEXT("Full-size terrain shell smoke view skipped: missing player controller or pawn."));
+		return;
+	}
+
+	const FVector ViewLocation(145000.0f, -170000.0f, 18500.0f);
+	const FRotator PawnRotation(0.0f, 38.0f, 0.0f);
+	const FRotator ViewRotation(-18.0f, 38.0f, 0.0f);
+	PlayerPawn->SetActorLocationAndRotation(ViewLocation, PawnRotation, false, nullptr, ETeleportType::TeleportPhysics);
+	PlayerController->SetControlRotation(ViewRotation);
+	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell smoke view set at %s with rotation %s."), *ViewLocation.ToString(), *ViewRotation.ToString());
+}
+
+void AJungleFullSizeTerrainShellActor::TakeTerrainShellSmokeShot()
+{
+	if (!GEngine || !GetWorld())
+	{
+		UE_LOG(LogJungleGame, Warning, TEXT("Full-size terrain shell smoke shot skipped: engine or world missing."));
+		return;
+	}
+
+	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell smoke shot requested."));
+	GEngine->Exec(GetWorld(), TEXT("HighResShot 1920x1080"));
+	FTimerHandle ExitTimer;
+	GetWorldTimerManager().SetTimer(ExitTimer, this, &AJungleFullSizeTerrainShellActor::ExitAfterTerrainShellSmokeShot, 1.5f, false);
+}
+
+void AJungleFullSizeTerrainShellActor::ExitAfterTerrainShellSmokeShot()
+{
+	if (GEngine && GetWorld())
+	{
+		GEngine->Exec(GetWorld(), TEXT("quit"));
+	}
 }

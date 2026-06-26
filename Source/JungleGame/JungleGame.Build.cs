@@ -12,7 +12,8 @@ public class JungleGame : ModuleRules
 			"CoreUObject",
 			"Engine",
 			"InputCore",
-			"EnhancedInput"
+			"EnhancedInput",
+			"ProceduralMeshComponent"
 		});
 	}
 }
