@@ -22,8 +22,8 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	static constexpr float FullWorldExtentCm = 812800.0f;
-	static constexpr float FullWorldExtentMeters = 16256.0f;
+	static constexpr float FullWorldExtentCm = 9753600.0f;
+	static constexpr float FullWorldExtentMeters = 97536.0f;
 
 	UPROPERTY(VisibleAnywhere, Category = "Terrain Shell")
 	TObjectPtr<USceneComponent> SceneRoot;

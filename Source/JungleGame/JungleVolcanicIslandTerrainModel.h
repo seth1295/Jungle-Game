@@ -182,12 +182,12 @@ struct FJGTerrainTopographicMetrics
 
 struct FJGTerrainGeneratorConfig
 {
-	FName GeneratorId = TEXT("JG_VOLCANIC_ISLAND_BATCH003");
-	FName VersionId = TEXT("JG_TERRAIN_GENERATOR_009");
-	int32 Seed = 3009;
-	float WorldSizeMeters = 16256.0f;
+	FName GeneratorId = TEXT("JG_VOLCANIC_ISLAND_BATCH004_X6");
+	FName VersionId = TEXT("JG_TERRAIN_GENERATOR_004_X6_ANTI_RADIAL");
+	int32 Seed = 4004;
+	float WorldSizeMeters = 97536.0f;
 	float SeaLevelMeters = 0.0f;
-	float TargetPeakMeters = 1400.0f;
+	float TargetPeakMeters = 3800.0f;
 	int32 SourceVerticesPerSide = 8129;
 	int32 RuntimeTilesPerSideValue = 32;
 	int32 ChannelCount = 15;
@@ -218,7 +218,7 @@ struct FJGTerrainBatchAcceptanceMetrics
 	FString AcceptedTerrainVersion;
 	FString GeneratorFingerprint;
 	int32 RuntimeFilesAccepted = 0;
-	int32 RuntimeFilesExpected = 10;
+	int32 RuntimeFilesExpected = 3;
 	int32 RequiredLogTokenCount = 0;
 	float PeakHeightM = 0.0f;
 	float ShorelineErrorMaxM = 0.0f;
@@ -241,13 +241,13 @@ struct FJGTerrainBatchAcceptanceMetrics
 class JUNGLEGAME_API FJungleVolcanicIslandTerrainModel
 {
 public:
-	static constexpr float WorldSizeM = 16256.0f;
+	static constexpr float WorldSizeM = 97536.0f;
 	static constexpr float HalfExtentM = WorldSizeM * 0.5f;
 	static constexpr float SeaLevelM = 0.0f;
-	static constexpr float MeanIslandRadiusM = 7000.0f;
-	static constexpr float MaxIslandRadiusM = 7350.0f;
-	static constexpr float TargetPeakHeightM = 1400.0f;
-	static constexpr int32 PrimaryCatchmentCount = 14;
+	static constexpr float MeanIslandRadiusM = 42000.0f;
+	static constexpr float MaxIslandRadiusM = 44100.0f;
+	static constexpr float TargetPeakHeightM = 3800.0f;
+	static constexpr int32 PrimaryCatchmentCount = 23;
 	static constexpr int32 RuntimePreviewVerticesPerSide = 129;
 	static constexpr int32 SourceReferenceVerticesPerSide = 8129;
 	static constexpr int32 RuntimeTilesPerSide = 32;

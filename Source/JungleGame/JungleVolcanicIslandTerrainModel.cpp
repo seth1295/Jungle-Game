@@ -20,15 +20,16 @@ float FJungleVolcanicIslandTerrainModel::RingMask(float DistanceM, float CenterM
 float FJungleVolcanicIslandTerrainModel::OrganicIslandRadiusMeters(float ThetaRadians)
 {
 	const float BroadLobes =
-		260.0f * FMath::Sin(3.0f * ThetaRadians + 0.70f) +
-		170.0f * FMath::Sin(5.0f * ThetaRadians - 1.10f) +
-		75.0f * FMath::Sin(9.0f * ThetaRadians + 2.30f);
+		1560.0f * FMath::Sin(3.0f * ThetaRadians + 0.70f) +
+		1020.0f * FMath::Sin(5.0f * ThetaRadians - 1.10f) +
+		450.0f * FMath::Sin(9.0f * ThetaRadians + 2.30f) +
+		260.0f * FMath::Sin(13.0f * ThetaRadians - 0.80f);
 
 	const float BayHeadlandWarp =
-		95.0f * FMath::Sin(2.0f * ThetaRadians - 0.35f) *
+		570.0f * FMath::Sin(2.0f * ThetaRadians - 0.35f) *
 		FMath::Sin(7.0f * ThetaRadians + 1.60f);
 
-	return FMath::Clamp(MeanIslandRadiusM + BroadLobes + BayHeadlandWarp, 6200.0f, MaxIslandRadiusM);
+	return FMath::Clamp(MeanIslandRadiusM + BroadLobes + BayHeadlandWarp, 37200.0f, MaxIslandRadiusM);
 }
 
 FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float WorldXM, float WorldYM)
@@ -68,66 +69,139 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 		CoastalLandHeightM = FMath::Lerp(62.0f, 155.0f, SmoothStep(1100.0f, 2300.0f, LandwardDistanceM));
 	}
 
-	const FVector2D MassifCenterM(-220.0f, 180.0f);
+	const FVector2D MassifCenterM(-1320.0f, 1080.0f);
 	const FVector2D FromMassifM = WorldXY - MassifCenterM;
 	const float MassifDistanceM = FromMassifM.Size();
 	const float MassifTheta = FMath::Atan2(FromMassifM.Y, FromMassifM.X);
-	const float MassifBaseRadiusM = 4350.0f;
-	const float MassifNormalized = FMath::Clamp(MassifDistanceM / MassifBaseRadiusM, 0.0f, 1.3f);
-	const float ConcaveShield = FMath::Pow(FMath::Clamp(1.0f - FMath::Pow(MassifNormalized, 1.55f), 0.0f, 1.0f), 1.18f);
-	const float UpperSteepening = FMath::Pow(FMath::Clamp(1.0f - MassifDistanceM / 1650.0f, 0.0f, 1.0f), 2.2f) * 165.0f;
-	const float ShoulderBench = FMath::Exp(-FMath::Square((MassifDistanceM - 2850.0f) / 520.0f)) * 55.0f;
+	const float MassifBaseRadiusM = 28250.0f;
+	const float MassifNormalized = FMath::Clamp(MassifDistanceM / MassifBaseRadiusM, 0.0f, 1.35f);
+	const float ConcaveShield = FMath::Pow(FMath::Clamp(1.0f - FMath::Pow(MassifNormalized, 1.42f), 0.0f, 1.0f), 1.12f);
+	const float UpperSteepening = FMath::Pow(FMath::Clamp(1.0f - MassifDistanceM / 9500.0f, 0.0f, 1.0f), 2.05f) * 420.0f;
+	const float ShoulderBench = FMath::Exp(-FMath::Square((MassifDistanceM - 17400.0f) / 3300.0f)) * 185.0f;
 	const float Asymmetry =
-		FMath::Sin(WorldXM * 0.00042f + 0.9f) * 24.0f +
-		FMath::Sin(WorldYM * 0.00036f - 1.7f) * 18.0f;
-	const float CoastalProtection = SmoothStep(1250.0f, 2400.0f, LandwardDistanceM) * LandMask;
-	const float MassifMask = FMath::Clamp(SmoothStep(0.04f, 0.82f, 1.0f - MassifNormalized) * CoastalProtection, 0.0f, 1.0f);
+		FMath::Sin(WorldXM * 0.000070f + 0.9f) * 142.0f +
+		FMath::Sin(WorldYM * 0.000060f - 1.7f) * 108.0f +
+		FMath::Sin((WorldXM + WorldYM) * 0.000040f + 2.1f) * 70.0f;
+	const float CoastalProtection = SmoothStep(6200.0f, 11800.0f, LandwardDistanceM) * LandMask;
+	const float MassifMask = FMath::Clamp(SmoothStep(0.035f, 0.84f, 1.0f - MassifNormalized) * CoastalProtection, 0.0f, 1.0f);
 	const float MassifHeightM = (TargetPeakHeightM * ConcaveShield + UpperSteepening + ShoulderBench + Asymmetry) * CoastalProtection;
 
-	const float NormalizedCatchmentFloat = (MassifTheta + PI) / (2.0f * PI) * static_cast<float>(PrimaryCatchmentCount);
-	const float WrappedCatchmentFloat = FMath::Fmod(NormalizedCatchmentFloat + static_cast<float>(PrimaryCatchmentCount), static_cast<float>(PrimaryCatchmentCount));
-	const int32 CatchmentId = FMath::Clamp(FMath::FloorToInt(WrappedCatchmentFloat), 0, PrimaryCatchmentCount - 1);
-	const int32 NearestRidgeIndex = FMath::RoundToInt(WrappedCatchmentFloat) % PrimaryCatchmentCount;
-	const float RidgeTheta = (static_cast<float>(NearestRidgeIndex) / static_cast<float>(PrimaryCatchmentCount)) * 2.0f * PI - PI;
-	const float GullyTheta = ((static_cast<float>(CatchmentId) + 0.5f) / static_cast<float>(PrimaryCatchmentCount)) * 2.0f * PI - PI;
-	const float RidgeAngularDelta = FMath::Abs(FMath::Atan2(FMath::Sin(MassifTheta - RidgeTheta), FMath::Cos(MassifTheta - RidgeTheta)));
-	const float GullyAngularDelta = FMath::Abs(FMath::Atan2(FMath::Sin(MassifTheta - GullyTheta), FMath::Cos(MassifTheta - GullyTheta)));
-	const float MidSlopeMask = SmoothStep(1450.0f, 2750.0f, MassifDistanceM) * (1.0f - SmoothStep(5600.0f, 6600.0f, MassifDistanceM)) * LandMask;
-	const float RidgeMask = (1.0f - SmoothStep(0.035f, 0.125f, RidgeAngularDelta)) * MidSlopeMask * SmoothStep(1350.0f, 2200.0f, LandwardDistanceM);
-	const float GullyReachMask = SmoothStep(1800.0f, 2900.0f, MassifDistanceM) * SmoothStep(700.0f, 1350.0f, LandwardDistanceM) * LandMask;
-	const float GullyMask = (1.0f - SmoothStep(0.038f, 0.120f, GullyAngularDelta)) * GullyReachMask;
-	const bool bLaharCatchment = CatchmentId == 1 || CatchmentId == 4 || CatchmentId == 7 || CatchmentId == 10 || CatchmentId == 12;
-	const float LaharCorridorMask = bLaharCatchment ? GullyMask * SmoothStep(2600.0f, 4300.0f, MassifDistanceM) : 0.0f;
-	const float CoastalFanMask = (1.0f - SmoothStep(0.045f, 0.150f, GullyAngularDelta)) * SmoothStep(260.0f, 720.0f, LandwardDistanceM) * (1.0f - SmoothStep(1050.0f, 1650.0f, LandwardDistanceM)) * LandMask;
-	const float RidgeHeightM = RidgeMask * FMath::Lerp(28.0f, 96.0f, SmoothStep(2600.0f, 4300.0f, MassifDistanceM));
-	const float GullyIncisionM = GullyMask * (FMath::Lerp(18.0f, 72.0f, SmoothStep(2200.0f, 5100.0f, MassifDistanceM)) + LaharCorridorMask * 46.0f);
-	const float FanDepositM = CoastalFanMask * FMath::Lerp(8.0f, 26.0f, SmoothStep(380.0f, 900.0f, LandwardDistanceM));
+	const auto AngularDelta = [](float A, float B)
+	{
+		return FMath::Abs(FMath::Atan2(FMath::Sin(A - B), FMath::Cos(A - B)));
+	};
+	const auto WrapAngle = [](float A)
+	{
+		return FMath::Atan2(FMath::Sin(A), FMath::Cos(A));
+	};
 
-	const FVector2D CraterCenterM = MassifCenterM + FVector2D(115.0f, -80.0f);
+	static constexpr float BasinAngles[PrimaryCatchmentCount] =
+	{
+		-3.04f, -2.73f, -2.48f, -2.13f, -1.86f, -1.57f, -1.20f, -0.98f,
+		-0.61f, -0.33f, -0.05f, 0.29f, 0.57f, 0.92f, 1.13f, 1.46f,
+		1.73f, 2.03f, 2.34f, 2.57f, 2.82f, 3.03f, 3.13f
+	};
+	static constexpr float BasinWidths[PrimaryCatchmentCount] =
+	{
+		0.155f, 0.110f, 0.135f, 0.175f, 0.120f, 0.160f, 0.105f, 0.185f,
+		0.130f, 0.115f, 0.170f, 0.145f, 0.105f, 0.190f, 0.100f, 0.155f,
+		0.125f, 0.180f, 0.112f, 0.148f, 0.118f, 0.090f, 0.140f
+	};
+	static constexpr float BasinCurves[PrimaryCatchmentCount] =
+	{
+		0.34f, -0.18f, 0.27f, -0.31f, 0.14f, 0.42f, -0.24f, 0.19f,
+		-0.38f, 0.25f, -0.15f, 0.33f, -0.28f, 0.16f, -0.35f, 0.22f,
+		0.11f, -0.29f, 0.37f, -0.12f, 0.24f, -0.41f, 0.17f
+	};
+	static constexpr float BasinStrengths[PrimaryCatchmentCount] =
+	{
+		0.92f, 0.58f, 0.74f, 1.00f, 0.63f, 0.88f, 0.52f, 0.94f,
+		0.70f, 0.61f, 0.97f, 0.79f, 0.55f, 1.00f, 0.50f, 0.83f,
+		0.69f, 0.91f, 0.57f, 0.77f, 0.60f, 0.49f, 0.72f
+	};
+
+	const float Distance01 = FMath::Clamp(MassifDistanceM / 38000.0f, 0.0f, 1.0f);
+	const float BasinDomainWarp =
+		0.18f * FMath::Sin(MassifDistanceM * 0.00017f + MassifTheta * 2.70f) +
+		0.11f * FMath::Sin(WorldXM * 0.000061f - WorldYM * 0.000047f + 0.8f) +
+		0.07f * FMath::Sin((WorldXM - WorldYM) * 0.000039f + MassifTheta * 4.1f);
+	const float WarpedTheta = WrapAngle(MassifTheta + BasinDomainWarp * SmoothStep(0.08f, 0.94f, Distance01));
+
+	int32 CatchmentId = 0;
+	float BestGullyDelta = TNumericLimits<float>::Max();
+	for (int32 BasinIndex = 0; BasinIndex < PrimaryCatchmentCount; ++BasinIndex)
+	{
+		const float CurvedCenter = WrapAngle(BasinAngles[BasinIndex] + BasinCurves[BasinIndex] * 0.18f * SmoothStep(0.16f, 0.88f, Distance01));
+		const float Delta = AngularDelta(WarpedTheta, CurvedCenter);
+		if (Delta < BestGullyDelta)
+		{
+			BestGullyDelta = Delta;
+			CatchmentId = BasinIndex;
+		}
+	}
+
+	float BestRidgeDelta = TNumericLimits<float>::Max();
+	for (int32 BasinIndex = 0; BasinIndex < PrimaryCatchmentCount; ++BasinIndex)
+	{
+		const int32 NextIndex = (BasinIndex + 1) % PrimaryCatchmentCount;
+		const float A = BasinAngles[BasinIndex];
+		float B = BasinAngles[NextIndex];
+		if (NextIndex == 0)
+		{
+			B += 2.0f * PI;
+		}
+		const float BoundaryAngle = WrapAngle((A + B) * 0.5f + 0.045f * FMath::Sin(static_cast<float>(BasinIndex) * 1.91f));
+		BestRidgeDelta = FMath::Min(BestRidgeDelta, AngularDelta(WarpedTheta, BoundaryAngle));
+	}
+
+	const float BasinWidth = BasinWidths[CatchmentId];
+	const float BasinStrength = BasinStrengths[CatchmentId];
+	const float MidSlopeMask = SmoothStep(5200.0f, 14800.0f, MassifDistanceM) * (1.0f - SmoothStep(35000.0f, 40500.0f, MassifDistanceM)) * LandMask;
+	const float RidgeBreakup = FMath::Clamp(0.72f + 0.20f * FMath::Sin(MassifDistanceM * 0.00029f + WarpedTheta * 5.3f) + 0.14f * FMath::Sin(WorldXM * 0.000083f + WorldYM * 0.000051f), 0.38f, 1.0f);
+	const float GullyBreakup = FMath::Clamp(0.78f + 0.18f * FMath::Sin(MassifDistanceM * 0.00034f - WarpedTheta * 3.7f) + 0.12f * FMath::Sin(WorldXM * 0.000047f - WorldYM * 0.000089f), 0.42f, 1.0f);
+	const float RidgeMask = (1.0f - SmoothStep(0.042f, 0.150f + BasinWidth * 0.18f, BestRidgeDelta)) * MidSlopeMask * SmoothStep(5400.0f, 10400.0f, LandwardDistanceM) * RidgeBreakup;
+	const float GullyReachMask = SmoothStep(6500.0f, 13200.0f, MassifDistanceM) * SmoothStep(3300.0f, 7400.0f, LandwardDistanceM) * (1.0f - SmoothStep(36500.0f, 43000.0f, MassifDistanceM)) * LandMask;
+	const float TrunkGullyMask = (1.0f - SmoothStep(BasinWidth * 0.20f, BasinWidth * 0.72f, BestGullyDelta)) * GullyReachMask * BasinStrength * GullyBreakup;
+	const float BranchAngleA = WrapAngle(BasinAngles[CatchmentId] + BasinCurves[CatchmentId] * 0.42f + FMath::Sin(Distance01 * 5.0f + static_cast<float>(CatchmentId)) * 0.10f);
+	const float BranchAngleB = WrapAngle(BasinAngles[CatchmentId] - BasinCurves[CatchmentId] * 0.35f + FMath::Cos(Distance01 * 4.0f + static_cast<float>(CatchmentId) * 0.7f) * 0.12f);
+	const float BranchReach = SmoothStep(10500.0f, 18000.0f, MassifDistanceM) * (1.0f - SmoothStep(28500.0f, 39000.0f, MassifDistanceM)) * LandMask;
+	const float SecondaryBranchMask = FMath::Max(
+		(1.0f - SmoothStep(0.030f, 0.085f, AngularDelta(WarpedTheta, BranchAngleA))) * BranchReach * 0.55f,
+		(1.0f - SmoothStep(0.035f, 0.095f, AngularDelta(WarpedTheta, BranchAngleB))) * BranchReach * 0.42f);
+	const float GullyMask = FMath::Clamp(TrunkGullyMask + SecondaryBranchMask, 0.0f, 1.0f);
+	const bool bLaharCatchment = CatchmentId == 2 || CatchmentId == 5 || CatchmentId == 8 || CatchmentId == 11 || CatchmentId == 13 || CatchmentId == 17 || CatchmentId == 20;
+	const float LaharCorridorMask = bLaharCatchment ? TrunkGullyMask * SmoothStep(12200.0f, 22500.0f, MassifDistanceM) * (1.0f - SmoothStep(36000.0f, 43500.0f, MassifDistanceM)) : 0.0f;
+	const float CoastalFanMask = (1.0f - SmoothStep(BasinWidth * 0.30f, BasinWidth * 0.95f, BestGullyDelta)) * SmoothStep(1200.0f, 3900.0f, LandwardDistanceM) * (1.0f - SmoothStep(7200.0f, 11800.0f, LandwardDistanceM)) * LandMask * BasinStrength;
+	const float RidgeHeightM = RidgeMask * FMath::Lerp(85.0f, 310.0f, SmoothStep(10500.0f, 28000.0f, MassifDistanceM));
+	const float GullyIncisionM = GullyMask * (FMath::Lerp(65.0f, 260.0f, SmoothStep(9000.0f, 33500.0f, MassifDistanceM)) + LaharCorridorMask * 145.0f);
+	const float FanDepositM = CoastalFanMask * FMath::Lerp(22.0f, 82.0f, SmoothStep(1900.0f, 6500.0f, LandwardDistanceM));
+
+	const FVector2D CraterCenterM = MassifCenterM + FVector2D(720.0f, -520.0f);
 	const FVector2D CraterDeltaM = WorldXY - CraterCenterM;
 	const float CraterYawRadians = 0.42f;
 	const float CraterU = CraterDeltaM.X * FMath::Cos(CraterYawRadians) + CraterDeltaM.Y * FMath::Sin(CraterYawRadians);
 	const float CraterV = -CraterDeltaM.X * FMath::Sin(CraterYawRadians) + CraterDeltaM.Y * FMath::Cos(CraterYawRadians);
-	const float CraterNorm = FMath::Sqrt(FMath::Square(CraterU / 390.0f) + FMath::Square(CraterV / 285.0f));
-	const float CraterInteriorMask = (1.0f - SmoothStep(0.72f, 1.02f, CraterNorm)) * MassifMask;
-	const float RimMask = RingMask(CraterNorm, 1.0f, 0.24f) * MassifMask;
-	const FVector2D VentCenterM = CraterCenterM + FVector2D(-75.0f, 95.0f);
+	const float CraterNorm = FMath::Sqrt(FMath::Square(CraterU / 1850.0f) + FMath::Square(CraterV / 1320.0f));
+	const float CraterInteriorMask = (1.0f - SmoothStep(0.72f, 1.04f, CraterNorm)) * MassifMask;
+	const float RimMask = RingMask(CraterNorm, 1.0f, 0.27f) * MassifMask;
+	const FVector2D VentCenterM = CraterCenterM + FVector2D(-410.0f, 520.0f);
 	const float VentDistanceM = (WorldXY - VentCenterM).Size();
-	const float VentMask = (1.0f - SmoothStep(70.0f, 175.0f, VentDistanceM)) * CraterInteriorMask;
+	const float VentMask = (1.0f - SmoothStep(320.0f, 840.0f, VentDistanceM)) * CraterInteriorMask;
 	const float BreachTheta = -0.82f;
-	const float BreachAngularDelta = FMath::Abs(FMath::Atan2(FMath::Sin(MassifTheta - BreachTheta), FMath::Cos(MassifTheta - BreachTheta)));
-	const float BreachMask = (1.0f - SmoothStep(0.050f, 0.155f, BreachAngularDelta)) * SmoothStep(390.0f, 720.0f, MassifDistanceM) * (1.0f - SmoothStep(2100.0f, 2850.0f, MassifDistanceM)) * MassifMask;
-	const float FissureMask = (1.0f - SmoothStep(0.018f, 0.052f, BreachAngularDelta)) * SmoothStep(1050.0f, 1450.0f, MassifDistanceM) * (1.0f - SmoothStep(2400.0f, 3150.0f, MassifDistanceM)) * MassifMask;
+	const float BreachAngularDelta = AngularDelta(WarpedTheta, BreachTheta);
+	const float BreachMask = (1.0f - SmoothStep(0.040f, 0.135f, BreachAngularDelta)) * SmoothStep(1850.0f, 4200.0f, MassifDistanceM) * (1.0f - SmoothStep(11800.0f, 17800.0f, MassifDistanceM)) * MassifMask;
+	const float FissureMask = (1.0f - SmoothStep(0.014f, 0.045f, BreachAngularDelta)) * SmoothStep(5600.0f, 8200.0f, MassifDistanceM) * (1.0f - SmoothStep(18500.0f, 26000.0f, MassifDistanceM)) * MassifMask;
 	const float BrokenRimMask = RimMask * (1.0f - BreachMask);
 	const float LavaCrustMask = FMath::Clamp(CraterInteriorMask * 0.70f + VentMask + BreachMask * 0.45f + FissureMask * 0.60f, 0.0f, 1.0f);
 	const float UnstableCrustMask = FMath::Clamp(VentMask + FissureMask + LavaCrustMask * 0.45f, 0.0f, 1.0f);
 	const float HardBlockerMask = FMath::Clamp(BrokenRimMask * 0.75f + VentMask + FissureMask * 0.85f + BreachMask * 0.35f, 0.0f, 1.0f);
-	const float RimRaiseM = BrokenRimMask * 82.0f;
-	const float CraterDepressionM = CraterInteriorMask * 128.0f + VentMask * 78.0f + BreachMask * 58.0f + FissureMask * 32.0f;
+	const float RimRaiseM = BrokenRimMask * 260.0f;
+	const float CraterDepressionM = CraterInteriorMask * 420.0f + VentMask * 260.0f + BreachMask * 190.0f + FissureMask * 110.0f;
 
 	const float LongWaveUndulationM =
-		FMath::Sin(WorldXM * 0.0018f + WorldYM * 0.0011f) * 8.0f +
-		FMath::Sin(WorldXM * 0.0027f - WorldYM * 0.0016f) * 5.0f;
+		FMath::Sin(WorldXM * 0.00030f + WorldYM * 0.00018f) * 46.0f +
+		FMath::Sin(WorldXM * 0.00045f - WorldYM * 0.00027f) * 32.0f +
+		FMath::Sin(WorldXM * 0.00012f + MassifTheta * 3.0f) * 24.0f;
 
 	const float TerrainProcessHeightM = MassifHeightM + LongWaveUndulationM * LandMask + RidgeHeightM - GullyIncisionM + FanDepositM + RimRaiseM - CraterDepressionM;
 	const float LandHeightM = FMath::Max(CoastalLandHeightM - GullyIncisionM * 0.18f, CoastalLandHeightM + TerrainProcessHeightM);
@@ -244,7 +318,7 @@ FJGTerrainMetrics FJungleVolcanicIslandTerrainModel::BuildMetrics(int32 SamplesP
 FString FJungleVolcanicIslandTerrainModel::BuildMetricsLogLine(const FJGTerrainMetrics& Metrics)
 {
 	return FString::Printf(
-		TEXT("id=JG_VOLCANIC_TERRAIN_005 world_m=%.0f sea_level_m=%.1f samples=%d height_min_m=%.1f height_max_m=%.1f island_radius_min_m=%.1f island_radius_max_m=%.1f ocean_margin_min_m=%.1f square_edge_height_min_m=%.1f square_edge_height_max_m=%.1f target_peak_m=%.1f catchments=%d ridge_mask_max=%.2f gully_mask_max=%.2f lahar_mask_max=%.2f crater_mask_max=%.2f vent_mask_max=%.2f hard_blocker_mask_max=%.2f shoreline_error_max_m=%.2f beach_continuity_pct=%.1f square_edge_ocean_violations=%d"),
+		TEXT("id=JG_VOLCANIC_TERRAIN_004_X6_ANTI_RADIAL world_m=%.0f sea_level_m=%.1f samples=%d height_min_m=%.1f height_max_m=%.1f island_radius_min_m=%.1f island_radius_max_m=%.1f ocean_margin_min_m=%.1f square_edge_height_min_m=%.1f square_edge_height_max_m=%.1f target_peak_m=%.1f catchments=%d ridge_mask_max=%.2f gully_mask_max=%.2f lahar_mask_max=%.2f crater_mask_max=%.2f vent_mask_max=%.2f hard_blocker_mask_max=%.2f shoreline_error_max_m=%.2f beach_continuity_pct=%.1f square_edge_ocean_violations=%d"),
 		WorldSizeM,
 		SeaLevelM,
 		Metrics.SampleCount,
@@ -689,7 +763,7 @@ FJGTerrainGeneratorArchitectureMetrics FJungleVolcanicIslandTerrainModel::BuildG
 FString FJungleVolcanicIslandTerrainModel::BuildGeneratorArchitectureLogLine(const FJGTerrainGeneratorArchitectureMetrics& Metrics)
 {
 	return FString::Printf(
-		TEXT("id=JG_TERRAIN_GENERATOR_009 fingerprint=%s source_vertices=%d runtime_tiles_per_side=%d channels=%d validation_stages=%d world_size_match=%s sea_level_match=%s source_resolution_match=%s coast_source_owned=%s runtime_mesh_bridge=%s topographic_evidence=%s architecture_valid=%s"),
+		TEXT("id=JG_TERRAIN_GENERATOR_004_X6_ANTI_RADIAL fingerprint=%s source_vertices=%d runtime_tiles_per_side=%d channels=%d validation_stages=%d world_size_match=%s sea_level_match=%s source_resolution_match=%s coast_source_owned=%s runtime_mesh_bridge=%s topographic_evidence=%s architecture_valid=%s"),
 		*Metrics.ConfigFingerprint,
 		Metrics.SourceVerticesPerSide,
 		Metrics.RuntimeTilesPerSideValue,
@@ -717,10 +791,10 @@ FJGTerrainBatchAcceptanceMetrics FJungleVolcanicIslandTerrainModel::BuildBatchAc
 	const FJGTerrainGeneratorConfig Config = BuildDefaultGeneratorConfig();
 	const FJGTerrainGeneratorArchitectureMetrics ArchitectureMetrics = BuildGeneratorArchitectureMetrics(Config);
 
-	Acceptance.AcceptedTerrainVersion = TEXT("JG_VOLCANIC_TERRAIN_BATCH003_010");
+	Acceptance.AcceptedTerrainVersion = TEXT("JG_VOLCANIC_TERRAIN_BATCH004_X6_ANTI_RADIAL");
 	Acceptance.GeneratorFingerprint = ArchitectureMetrics.ConfigFingerprint;
-	Acceptance.RuntimeFilesAccepted = 10;
-	Acceptance.RequiredLogTokenCount = 5;
+	Acceptance.RuntimeFilesAccepted = 3;
+	Acceptance.RequiredLogTokenCount = 6;
 	Acceptance.PeakHeightM = TerrainMetrics.MaxHeightM;
 	Acceptance.ShorelineErrorMaxM = TerrainMetrics.MaxShorelineAbsErrorM;
 	Acceptance.BeachContinuityPercent = TerrainMetrics.BeachContinuityPercent;
@@ -728,7 +802,7 @@ FJGTerrainBatchAcceptanceMetrics FJungleVolcanicIslandTerrainModel::BuildBatchAc
 	Acceptance.SeamErrorMaxM = RuntimeMetrics.MaxAdjacentSeamAbsErrorM;
 	Acceptance.MaxSlopeDegrees = ChannelMetrics.MaxSlopeDegrees;
 	Acceptance.HardBlockerMaskMax = TerrainMetrics.MaxHardBlockerMask;
-	Acceptance.bPeakAccepted = Acceptance.PeakHeightM >= 1200.0f;
+	Acceptance.bPeakAccepted = Acceptance.PeakHeightM >= 3400.0f;
 	Acceptance.bSeaLevelAccepted = Acceptance.ShorelineErrorMaxM <= 0.25f;
 	Acceptance.bBeachAccepted = Acceptance.BeachContinuityPercent >= 95.0f;
 	Acceptance.bOceanAccepted = Acceptance.OceanBelowSeaPercent >= 99.0f;
@@ -743,7 +817,7 @@ FJGTerrainBatchAcceptanceMetrics FJungleVolcanicIslandTerrainModel::BuildBatchAc
 FString FJungleVolcanicIslandTerrainModel::BuildBatchAcceptanceLogLine(const FJGTerrainBatchAcceptanceMetrics& Metrics)
 {
 	return FString::Printf(
-		TEXT("id=JG_TERRAIN_BATCH003_ACCEPTANCE_010 version=%s fingerprint=%s runtime_files=%d/%d log_tokens=%d peak_m=%.1f peak_ok=%s shoreline_error_max_m=%.3f sea_level_ok=%s beach_continuity_pct=%.1f beach_ok=%s ocean_below_sea_pct=%.1f ocean_ok=%s seam_error_max_m=%.4f runtime_mesh_ok=%s slope_max_deg=%.2f hard_blocker_mask_max=%.2f channels_ok=%s topo_ok=%s architecture_ok=%s batch_accepted=%s"),
+		TEXT("id=JG_TERRAIN_BATCH004_ACCEPTANCE_X6_ANTI_RADIAL version=%s fingerprint=%s runtime_files=%d/%d log_tokens=%d peak_m=%.1f peak_ok=%s shoreline_error_max_m=%.3f sea_level_ok=%s beach_continuity_pct=%.1f beach_ok=%s ocean_below_sea_pct=%.1f ocean_ok=%s seam_error_max_m=%.4f runtime_mesh_ok=%s slope_max_deg=%.2f hard_blocker_mask_max=%.2f channels_ok=%s topo_ok=%s architecture_ok=%s batch_accepted=%s"),
 		*Metrics.AcceptedTerrainVersion,
 		*Metrics.GeneratorFingerprint,
 		Metrics.RuntimeFilesAccepted,

@@ -1,0 +1,26 @@
+{
+  "version": "PR5_BATCH003_SHORE_FIXED_TERRAIN_PREVIEW",
+  "resolution_px": 1024,
+  "world_size_m": 16256.0,
+  "pixel_spacing_m": 15.890518084066471,
+  "height_min_m": -145.0,
+  "height_max_m": 1750.4691,
+  "peak_xy_m": [
+    -293.975,
+    325.756
+  ],
+  "shoreline_error_max_m": 0.0,
+  "beach_continuity_pct": 100.0,
+  "ocean_below_sea_pct": 100.0,
+  "square_edge_ocean_violations": 0,
+  "square_edge_samples": 4092,
+  "slope_max_deg_preview": 81.477,
+  "elapsed_seconds": 48.731,
+  "outputs": {
+    "color_relief_png": "Images/TerrainPreview/PR5_Batch003_Island_1024px_ColorRelief.png",
+    "height_png": "Images/TerrainPreview/PR5_Batch003_Island_1024px_Height.png",
+    "slope_png": "Images/TerrainPreview/PR5_Batch003_Island_1024px_Slope.png",
+    "mask_atlas_png": "Images/TerrainPreview/PR5_Batch003_Island_1024px_MaskAtlas_BeachR_RidgeGullyG_HazardB.png"
+  },
+  "note": "Tracked preview evidence generated from deterministic PR5 Batch 003 terrain math. Not an AI-generated image and not full 8129x8129 export."
+}
