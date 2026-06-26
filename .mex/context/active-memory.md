@@ -413,3 +413,14 @@ reason: Preview topography derivation proved terrain output was derivable but fa
 review_by: 2026-07-27
 
 This fix keeps the accepted 1743.77 m volcanic peak while hardening final coastal acceptance after all massif, ridge, gully, crater, and long-wave terrain contributions. It adds a stronger final shoreline hard-lock inside the measured shoreline-error envelope and clamps only the landward beach acceptance band to -0.25 m through +9.75 m. Lightweight preview derivation after the fix reported: height max 1743.77 m, shoreline error max 0.0000 m, beach continuity 100.0%, ocean below sea 100.0%, and square-edge ocean violations 0/512. UBT remains deferred until local Unreal build access is available.
+
+## 2026-06-27-pr5-terrain-preview-image-exporter
+
+status: active-unreviewed
+created: 2026-06-27
+source: user request for a tool-rendered island image, not AI-generated imagery
+target: scripts/terrain-preview-export.py, Docs/World/TerrainPreview/**
+reason: The project needs a deterministic, labelled preview image exporter that renders the PR5 Batch 003 island from sampled terrain data rather than prompt-generated concept art.
+review_by: 2026-07-27
+
+Added `scripts/terrain-preview-export.py`, a dependency-free Python PNG exporter that mirrors the PR5 Batch 003 terrain math and writes labelled, tracked documentation evidence under `Docs/World/TerrainPreview/`. Default preview resolution is 1024 px so the primary island preview is useful without UE rendering or full 8129 x 8129 export. Generated files include color relief, grayscale height, grayscale slope, RGB mask atlas, manifest JSON, and README. The 1024 px generated manifest reported height max 1750.4691 m, shoreline error max 0.0 m, beach continuity 100.0%, ocean below sea 100.0%, and square-edge ocean violations 0/4092. These files are intended as small tracked terrain evidence, not ignored scratch. Full 8129 x 8129 export remains a later heavyweight tool path.
