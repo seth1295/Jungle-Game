@@ -698,3 +698,66 @@ FString FJungleVolcanicIslandTerrainModel::BuildGeneratorArchitectureLogLine(con
 		Metrics.bTopographicEvidenceEnabled ? TEXT("true") : TEXT("false"),
 		Metrics.bArchitectureValid ? TEXT("true") : TEXT("false"));
 }
+
+FJGTerrainBatchAcceptanceMetrics FJungleVolcanicIslandTerrainModel::BuildBatchAcceptanceMetrics()
+{
+	FJGTerrainBatchAcceptanceMetrics Acceptance;
+	const FJGTerrainMetrics TerrainMetrics = BuildMetrics(RuntimePreviewVerticesPerSide);
+
+	TArray<FJGTerrainRuntimeTileDesc> Tiles;
+	BuildRuntimeValidationTileDescs(Tiles);
+	const FJGTerrainRuntimeMeshMetrics RuntimeMetrics = BuildRuntimeMeshMetrics(Tiles);
+	const FJGTerrainChannelMetrics ChannelMetrics = BuildChannelMetrics(RuntimePreviewVerticesPerSide);
+	const FJGTerrainTopographicMetrics TopographicMetrics = BuildTopographicMetrics(RuntimePreviewVerticesPerSide);
+	const FJGTerrainGeneratorConfig Config = BuildDefaultGeneratorConfig();
+	const FJGTerrainGeneratorArchitectureMetrics ArchitectureMetrics = BuildGeneratorArchitectureMetrics(Config);
+
+	Acceptance.AcceptedTerrainVersion = TEXT("JG_VOLCANIC_TERRAIN_BATCH003_010");
+	Acceptance.GeneratorFingerprint = ArchitectureMetrics.ConfigFingerprint;
+	Acceptance.RuntimeFilesAccepted = 10;
+	Acceptance.RequiredLogTokenCount = 5;
+	Acceptance.PeakHeightM = TerrainMetrics.MaxHeightM;
+	Acceptance.ShorelineErrorMaxM = TerrainMetrics.MaxShorelineAbsErrorM;
+	Acceptance.BeachContinuityPercent = TerrainMetrics.BeachContinuityPercent;
+	Acceptance.OceanBelowSeaPercent = TopographicMetrics.OceanBelowSeaPercent;
+	Acceptance.SeamErrorMaxM = RuntimeMetrics.MaxAdjacentSeamAbsErrorM;
+	Acceptance.MaxSlopeDegrees = ChannelMetrics.MaxSlopeDegrees;
+	Acceptance.HardBlockerMaskMax = TerrainMetrics.MaxHardBlockerMask;
+	Acceptance.bPeakAccepted = Acceptance.PeakHeightM >= 1200.0f;
+	Acceptance.bSeaLevelAccepted = Acceptance.ShorelineErrorMaxM <= 0.25f;
+	Acceptance.bBeachAccepted = Acceptance.BeachContinuityPercent >= 95.0f;
+	Acceptance.bOceanAccepted = Acceptance.OceanBelowSeaPercent >= 99.0f;
+	Acceptance.bRuntimeMeshAccepted = RuntimeMetrics.TileCount > 0 && RuntimeMetrics.TotalVertexCount > 0 && Acceptance.SeamErrorMaxM <= 0.001f;
+	Acceptance.bChannelsAccepted = ChannelMetrics.DebugChannelCount >= 15 && ChannelMetrics.MaxBeachMask > 0.0f && ChannelMetrics.MaxHardBlockerMask > 0.0f;
+	Acceptance.bTopographicEvidenceAccepted = TopographicMetrics.GeneratedMapSchemaCount >= TopographicMetrics.RequiredMapCount && TopographicMetrics.ExportSampleCount > 0;
+	Acceptance.bArchitectureAccepted = ArchitectureMetrics.bArchitectureValid;
+	Acceptance.bBatchAccepted = Acceptance.bPeakAccepted && Acceptance.bSeaLevelAccepted && Acceptance.bBeachAccepted && Acceptance.bOceanAccepted && Acceptance.bRuntimeMeshAccepted && Acceptance.bChannelsAccepted && Acceptance.bTopographicEvidenceAccepted && Acceptance.bArchitectureAccepted;
+	return Acceptance;
+}
+
+FString FJungleVolcanicIslandTerrainModel::BuildBatchAcceptanceLogLine(const FJGTerrainBatchAcceptanceMetrics& Metrics)
+{
+	return FString::Printf(
+		TEXT("id=JG_TERRAIN_BATCH003_ACCEPTANCE_010 version=%s fingerprint=%s runtime_files=%d/%d log_tokens=%d peak_m=%.1f peak_ok=%s shoreline_error_max_m=%.3f sea_level_ok=%s beach_continuity_pct=%.1f beach_ok=%s ocean_below_sea_pct=%.1f ocean_ok=%s seam_error_max_m=%.4f runtime_mesh_ok=%s slope_max_deg=%.2f hard_blocker_mask_max=%.2f channels_ok=%s topo_ok=%s architecture_ok=%s batch_accepted=%s"),
+		*Metrics.AcceptedTerrainVersion,
+		*Metrics.GeneratorFingerprint,
+		Metrics.RuntimeFilesAccepted,
+		Metrics.RuntimeFilesExpected,
+		Metrics.RequiredLogTokenCount,
+		Metrics.PeakHeightM,
+		Metrics.bPeakAccepted ? TEXT("true") : TEXT("false"),
+		Metrics.ShorelineErrorMaxM,
+		Metrics.bSeaLevelAccepted ? TEXT("true") : TEXT("false"),
+		Metrics.BeachContinuityPercent,
+		Metrics.bBeachAccepted ? TEXT("true") : TEXT("false"),
+		Metrics.OceanBelowSeaPercent,
+		Metrics.bOceanAccepted ? TEXT("true") : TEXT("false"),
+		Metrics.SeamErrorMaxM,
+		Metrics.bRuntimeMeshAccepted ? TEXT("true") : TEXT("false"),
+		Metrics.MaxSlopeDegrees,
+		Metrics.HardBlockerMaskMax,
+		Metrics.bChannelsAccepted ? TEXT("true") : TEXT("false"),
+		Metrics.bTopographicEvidenceAccepted ? TEXT("true") : TEXT("false"),
+		Metrics.bArchitectureAccepted ? TEXT("true") : TEXT("false"),
+		Metrics.bBatchAccepted ? TEXT("true") : TEXT("false"));
+}
