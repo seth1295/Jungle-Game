@@ -132,8 +132,13 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 	const float TerrainProcessHeightM = MassifHeightM + LongWaveUndulationM * LandMask + RidgeHeightM - GullyIncisionM + FanDepositM + RimRaiseM - CraterDepressionM;
 	const float LandHeightM = FMath::Max(CoastalLandHeightM - GullyIncisionM * 0.18f, CoastalLandHeightM + TerrainProcessHeightM);
 	const float RawHeightM = FMath::Lerp(OceanHeightM, LandHeightM, LandMask);
-	const float ShorelineConstraintMask = 1.0f - SmoothStep(12.0f, 85.0f, FMath::Abs(SignedShorelineDistanceM));
-	const float CoastLockedHeightM = FMath::Lerp(RawHeightM, SeaLevelM, ShorelineConstraintMask);
+	const float AbsShorelineDistanceM = FMath::Abs(SignedShorelineDistanceM);
+	const float ShorelineConstraintMask = 1.0f - SmoothStep(12.0f, 85.0f, AbsShorelineDistanceM);
+	const float ShorelineHardLockMask = 1.0f - SmoothStep(76.0f, 94.0f, AbsShorelineDistanceM);
+	const float ShoreLockedHeightM = FMath::Lerp(RawHeightM, SeaLevelM, FMath::Max(ShorelineConstraintMask, ShorelineHardLockMask));
+	const float BeachAcceptanceMask = SmoothStep(20.0f, 80.0f, SignedShorelineDistanceM) * (1.0f - SmoothStep(190.0f, 260.0f, SignedShorelineDistanceM)) * LandMask;
+	const float BeachAcceptedHeightM = FMath::Clamp(ShoreLockedHeightM, -0.25f, 9.75f);
+	const float CoastLockedHeightM = FMath::Lerp(ShoreLockedHeightM, BeachAcceptedHeightM, BeachAcceptanceMask);
 
 	Sample.HeightM = CoastLockedHeightM;
 	Sample.BaseHeightM = FMath::Lerp(OceanHeightM, CoastalLandHeightM, LandMask);
