@@ -16,6 +16,13 @@ struct FJGTerrainSample
 	float CoastalLowlandMask = 0.0f;
 	float MassifMask = 0.0f;
 	float MassifHeightM = 0.0f;
+	float RidgeMask = 0.0f;
+	float GullyMask = 0.0f;
+	float LaharCorridorMask = 0.0f;
+	float CoastalFanMask = 0.0f;
+	float RidgeHeightM = 0.0f;
+	float GullyIncisionM = 0.0f;
+	int32 CatchmentId = INDEX_NONE;
 };
 
 struct FJGTerrainMetrics
@@ -27,7 +34,11 @@ struct FJGTerrainMetrics
 	float MinIslandRadiusM = TNumericLimits<float>::Max();
 	float MaxIslandRadiusM = TNumericLimits<float>::Lowest();
 	float MinOceanMarginM = TNumericLimits<float>::Max();
+	float MaxRidgeMask = 0.0f;
+	float MaxGullyMask = 0.0f;
+	float MaxLaharCorridorMask = 0.0f;
 	int32 SampleCount = 0;
+	int32 CatchmentCount = 14;
 	int32 OceanEdgeSampleCount = 0;
 };
 
@@ -40,6 +51,7 @@ public:
 	static constexpr float MeanIslandRadiusM = 7000.0f;
 	static constexpr float MaxIslandRadiusM = 7350.0f;
 	static constexpr float TargetPeakHeightM = 1400.0f;
+	static constexpr int32 PrimaryCatchmentCount = 14;
 	static constexpr int32 RuntimePreviewVerticesPerSide = 129;
 
 	static FJGTerrainSample SampleTerrainMeters(float WorldXM, float WorldYM);
