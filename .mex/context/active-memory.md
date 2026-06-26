@@ -171,3 +171,25 @@ reason: PR5 runtime file 001 is being consumed as the first sequential implement
 review_by: 2026-07-26
 
 PR5-run 001 implements the accepted macro island terrain research as source-level contracts: expanded terrain channel schema, landform taxonomy, traversal categories, terrain evidence types, channel contracts, landform traversal rules, and default developer-only terrain review points. Deferred items remain runtime learned terrain generation, InfiniteDiffusion/Terrain Diffusion integration, full erosion/hydrology simulation, final rainforest biome generation, and production PCG. No player-facing map, compass, GPS, objective marker, HUD clock, explicit time readout, or orientation confidence UI is introduced.
+
+## 2026-06-26-pr5-lifecycle-tooling-checkpoint
+
+status: active-unreviewed
+created: 2026-06-26
+source: user
+target: docs/PR5_LIFECYCLE.md, .mex/context/active-memory.md
+reason: PR5 lifecycle runtime work was paused to remove DevSpace raw bash command-shape blockers from PR lifecycle operations before continuing implementation.
+review_by: 2026-07-26
+
+PR5 lifecycle remains the active Jungle Game lane. PR5-run 001 macro terrain contracts have landed. Before the PTB/DevSpace tooling pause, PR5-run 002 biome mask/traversal work had been started but was not completed or PR-merged. Last known pre-pause state: Jungle Game may be on branch `pr5-run-002`; `Source/JungleGame/JungleWorldMaskData.h` had partial local edits expanding biome mask/traversal declarations; `Source/JungleGame/JungleWorldMaskData.cpp` was not confirmed present/complete; no `.mex` completion entry, commit, PR, CodeRabbit pass, or merge was confirmed for PR5-run 002. During the pause, PrivateToolBridge was patched toward typed repo lifecycle MCP operations, including a `repo_complete_pr` tool backed by `repo_lifecycle_tools.py`, so future PR5 lifecycle merges can avoid raw `gh pr merge`/merge-endpoint bash strings that ChatGPT sometimes blocks before MCP. DevSpace/PTB was relaunched after the patch. Next PR5 action is to verify the new typed tool is visible/usable, then inspect the Jungle Game branch/status/diff before resuming PR5-run 002. Do not assume PR5-run 002 is clean, complete, or still on the expected branch without inspection.
+
+## 2026-06-26-pr5-run-002-biome-mask-traversal-contracts
+
+status: active-unreviewed
+created: 2026-06-26
+source: pr5lifecycle-runtimefiles/001/002_tropical_biome_masks_traversal_research.md
+target: Source/JungleGame/JungleWorldMaskData.h, Source/JungleGame/JungleWorldMaskData.cpp
+reason: PR5 runtime file 002 was consumed as the second sequential implementation PR input.
+review_by: 2026-07-26
+
+PR5-run 002 is GitHub PR #32 on branch `pr5-run-002`. Commits `57408c8` and `ac45cd4` implement source-level biome mask/traversal contracts: canonical normalized mask vocabulary, traversal classes/rules, developer-only debug view/report specs, traversal resistance composition, false-affordance classification, and explicit guard fields preventing debug/mask data from becoming player-facing navigation UI. Validation: `git diff --cached --check` passed for source commits; forbidden navigation UI keyword scan on the new source/header returned no matches; CodeRabbit light review initially found two valid contract issues and rerun after fixes returned no findings. UE compile/package validation remains blocked locally because documented Unreal Engine Build.sh/UnrealEditor paths are not present under `/run/media/seth` or `/mnt/ue5`. Next PR5 target after PR #32 merges and local `main` syncs is runtime file 003 creek/riparian/wet-valley ecosystem contracts. Four-PR handoff is not due yet; PR5-run 002 is position 2/5 in batch 001 runtime consumption.
