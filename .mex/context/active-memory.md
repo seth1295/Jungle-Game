@@ -369,3 +369,14 @@ reason: PR5 Batch 003 runtime file 007 requires the canonical volcanic terrain s
 review_by: 2026-07-27
 
 PR5 Batch 003 / 007 adds terrain channel sample and metrics structures, debug channel identity, slope/relief finite-difference derivation, packed coast/landform/hazard channel values, discrete elevation/slope/relief classes, and runtime log token `JG_TERRAIN_CHANNELS_007`. The terrain shell logs channel metrics alongside runtime tile metrics so reviewer-visible terrain masks include beach, ocean, shelf, massif, ridge, gully, catchment, crater, lava/crust, unstable crust, hard blocker, slope, and relief state. Validation expectation: `git diff --check` for changed source/.mex should pass; UBT remains environment-dependent on local Unreal path visibility. Next target after landing is PR5 Batch 003 / 008: heightfield export and topographic comparison evidence.
+
+## 2026-06-27-pr5-batch003-008-topographic-export-evidence
+
+status: active-unreviewed
+created: 2026-06-27
+source: pr5lifecycle-runtimefiles/003/008_heightfield_export_topographic_comparison_research.md
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, Source/JungleGame/JungleFullSizeTerrainShellActor.cpp
+reason: PR5 Batch 003 runtime file 008 requires deterministic heightfield/topographic comparison evidence derived from the same canonical terrain source used by runtime tiles and channel masks.
+review_by: 2026-07-27
+
+PR5 Batch 003 / 008 adds topographic export/evidence metrics without writing heavyweight generated artifacts into the repo. It defines export-grid identity, required/generated map schema counts, height/slope/relief ranges, 50 m contour band coverage, shoreline contour samples, sea-level shoreline error, beach continuity percentage, ocean-below-sea percentage, ridge/gully/crater/hazard mask maxima, and slope histograms. Runtime logs now include `JG_TOPO_EXPORT_008` alongside terrain/channel metrics, making the canonical source measurable for future PNG/CSV/heightmap export commandlets while preserving artifact hygiene. Validation expectation: changed source/.mex diff checks should pass; UBT remains environment-dependent on local Unreal path visibility. Next target after landing is PR5 Batch 003 / 009: large terrain generator architecture.

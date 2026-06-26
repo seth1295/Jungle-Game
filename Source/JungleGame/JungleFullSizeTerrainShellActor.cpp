@@ -80,6 +80,8 @@ void AJungleFullSizeTerrainShellActor::BuildProceduralTerrainMesh()
 	LogRuntimeMeshMetrics(TileDescs);
 	const FJGTerrainChannelMetrics ChannelMetrics = FJungleVolcanicIslandTerrainModel::BuildChannelMetrics(FJungleVolcanicIslandTerrainModel::RuntimePreviewVerticesPerSide);
 	UE_LOG(LogJungleGame, Display, TEXT("Terrain channel metrics: %s"), *FJungleVolcanicIslandTerrainModel::BuildChannelMetricsLogLine(ChannelMetrics));
+	const FJGTerrainTopographicMetrics TopographicMetrics = FJungleVolcanicIslandTerrainModel::BuildTopographicMetrics(FJungleVolcanicIslandTerrainModel::RuntimePreviewVerticesPerSide);
+	UE_LOG(LogJungleGame, Display, TEXT("Terrain topographic export metrics: %s"), *FJungleVolcanicIslandTerrainModel::BuildTopographicMetricsLogLine(TopographicMetrics));
 }
 
 void AJungleFullSizeTerrainShellActor::BuildRuntimeTileMeshSection(int32 SectionIndex, const FJGTerrainRuntimeTileDesc& TileDesc)

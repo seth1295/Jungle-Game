@@ -525,3 +525,99 @@ FString FJungleVolcanicIslandTerrainModel::BuildChannelMetricsLogLine(const FJGT
 		Metrics.SlopeClassCounts[3],
 		Metrics.SlopeClassCounts[4]);
 }
+
+FJGTerrainTopographicMetrics FJungleVolcanicIslandTerrainModel::BuildTopographicMetrics(int32 ExportVerticesPerSide)
+{
+	FJGTerrainTopographicMetrics Metrics;
+	Metrics.ExportVerticesPerSide = FMath::Max(2, ExportVerticesPerSide);
+	Metrics.ExportSpacingM = WorldSizeM / static_cast<float>(Metrics.ExportVerticesPerSide - 1);
+	Metrics.GeneratedMapSchemaCount = 9;
+	float HeightTotal = 0.0f;
+	float SlopeTotal = 0.0f;
+	TSet<int32> ContourBands;
+
+	for (int32 Y = 0; Y < Metrics.ExportVerticesPerSide; ++Y)
+	{
+		for (int32 X = 0; X < Metrics.ExportVerticesPerSide; ++X)
+		{
+			const float WorldXM = -HalfExtentM + static_cast<float>(X) * Metrics.ExportSpacingM;
+			const float WorldYM = -HalfExtentM + static_cast<float>(Y) * Metrics.ExportSpacingM;
+			const FJGTerrainChannelSample Channels = SampleTerrainChannelsMeters(WorldXM, WorldYM, SourceReferenceSpacingM);
+
+			Metrics.MinHeightM = FMath::Min(Metrics.MinHeightM, Channels.Terrain.HeightM);
+			Metrics.MaxHeightM = FMath::Max(Metrics.MaxHeightM, Channels.Terrain.HeightM);
+			Metrics.MaxSlopeDegrees = FMath::Max(Metrics.MaxSlopeDegrees, Channels.SlopeDegrees);
+			Metrics.MaxReliefM = FMath::Max(Metrics.MaxReliefM, Channels.ReliefM);
+			Metrics.RidgeMaskMax = FMath::Max(Metrics.RidgeMaskMax, Channels.Terrain.RidgeMask);
+			Metrics.GullyMaskMax = FMath::Max(Metrics.GullyMaskMax, Channels.Terrain.GullyMask);
+			Metrics.CraterMaskMax = FMath::Max(Metrics.CraterMaskMax, Channels.Terrain.CraterMask);
+			Metrics.HazardMaskMax = FMath::Max(Metrics.HazardMaskMax, Channels.HazardMask01);
+			Metrics.MaxShorelineAbsErrorM = FMath::Max(Metrics.MaxShorelineAbsErrorM, Channels.Terrain.ShorelineErrorM);
+
+			HeightTotal += Channels.Terrain.HeightM;
+			SlopeTotal += Channels.SlopeDegrees;
+			++Metrics.ExportSampleCount;
+			ContourBands.Add(FMath::FloorToInt(Channels.Terrain.HeightM / 50.0f));
+			Metrics.SlopeHistogram[FMath::Clamp<int32>(Channels.SlopeClass, 0, 4)]++;
+
+			if (Channels.Terrain.SignedShorelineDistanceM >= 20.0f && Channels.Terrain.SignedShorelineDistanceM <= 190.0f)
+			{
+				++Metrics.BeachBandSamples;
+				if (Channels.Terrain.HeightM >= -0.25f && Channels.Terrain.HeightM <= 10.0f)
+				{
+					++Metrics.BeachBandPassSamples;
+				}
+			}
+			if (FMath::Abs(Channels.Terrain.SignedShorelineDistanceM) <= 65.0f)
+			{
+				++Metrics.ShorelineContourSamples;
+			}
+			if (Channels.Terrain.OceanMask > 0.5f)
+			{
+				++Metrics.OceanSamples;
+				if (Channels.Terrain.HeightM <= SeaLevelM)
+				{
+					++Metrics.OceanBelowSeaSamples;
+				}
+			}
+		}
+	}
+
+	Metrics.MeanHeightM = Metrics.ExportSampleCount > 0 ? HeightTotal / static_cast<float>(Metrics.ExportSampleCount) : 0.0f;
+	Metrics.MeanSlopeDegrees = Metrics.ExportSampleCount > 0 ? SlopeTotal / static_cast<float>(Metrics.ExportSampleCount) : 0.0f;
+	Metrics.BeachContinuityPercent = Metrics.BeachBandSamples > 0 ? 100.0f * static_cast<float>(Metrics.BeachBandPassSamples) / static_cast<float>(Metrics.BeachBandSamples) : 0.0f;
+	Metrics.OceanBelowSeaPercent = Metrics.OceanSamples > 0 ? 100.0f * static_cast<float>(Metrics.OceanBelowSeaSamples) / static_cast<float>(Metrics.OceanSamples) : 0.0f;
+	Metrics.Contour50mBandsTouched = ContourBands.Num();
+	return Metrics;
+}
+
+FString FJungleVolcanicIslandTerrainModel::BuildTopographicMetricsLogLine(const FJGTerrainTopographicMetrics& Metrics)
+{
+	return FString::Printf(
+		TEXT("id=JG_TOPO_EXPORT_008 export_vertices=%d export_spacing_m=%.2f samples=%d maps=%d/%d height_min_m=%.1f height_max_m=%.1f height_mean_m=%.1f slope_max_deg=%.2f slope_mean_deg=%.2f relief_max_m=%.2f contour_50m_bands=%d shoreline_samples=%d shoreline_error_max_m=%.3f beach_continuity_pct=%.1f ocean_below_sea_pct=%.1f ridge_mask_max=%.2f gully_mask_max=%.2f crater_mask_max=%.2f hazard_mask_max=%.2f slope_hist=%d/%d/%d/%d/%d source=canonical-topographic-evidence-schema"),
+		Metrics.ExportVerticesPerSide,
+		Metrics.ExportSpacingM,
+		Metrics.ExportSampleCount,
+		Metrics.GeneratedMapSchemaCount,
+		Metrics.RequiredMapCount,
+		Metrics.MinHeightM,
+		Metrics.MaxHeightM,
+		Metrics.MeanHeightM,
+		Metrics.MaxSlopeDegrees,
+		Metrics.MeanSlopeDegrees,
+		Metrics.MaxReliefM,
+		Metrics.Contour50mBandsTouched,
+		Metrics.ShorelineContourSamples,
+		Metrics.MaxShorelineAbsErrorM,
+		Metrics.BeachContinuityPercent,
+		Metrics.OceanBelowSeaPercent,
+		Metrics.RidgeMaskMax,
+		Metrics.GullyMaskMax,
+		Metrics.CraterMaskMax,
+		Metrics.HazardMaskMax,
+		Metrics.SlopeHistogram[0],
+		Metrics.SlopeHistogram[1],
+		Metrics.SlopeHistogram[2],
+		Metrics.SlopeHistogram[3],
+		Metrics.SlopeHistogram[4]);
+}
