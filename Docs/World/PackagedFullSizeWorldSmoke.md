@@ -107,7 +107,9 @@ PR5 Batch 002 establishes:
 
 ## Next Batch
 
-PR5 Batch 003 should move from full-size world state toward full-world traversal and ecosystem readability:
+PR5 Batch 003 should move from cube-block full-size world state to a deterministic procedural terrain substrate before deeper traversal and ecosystem readability work. The next first slice should produce a coarse continuous terrain mesh or heightfield with basin, creek-valley, ridge, mountain-shoulder, coast, and ocean-edge shape logic while keeping fixed seed/config identity, source-owned generation, developer-only review points, and the existing cube shell as fallback/debug evidence.
+
+After that terrain shell v2 / PCG terrain foundation exists, continue into:
 
 - creek/riparian traversal;
 - ridge/slope/mountain readability;
