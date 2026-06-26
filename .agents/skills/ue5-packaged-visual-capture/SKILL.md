@@ -1,3 +1,8 @@
+---
+name: ue5-packaged-visual-capture
+description: Use when validating that the packaged Jungle Game build is visually playable via UE-native screenshot capture, not just startup logs.
+---
+
 # UE5 Packaged Visual Capture
 
 Use this skill when validating that the packaged Jungle Game build is visually playable, not just that it starts or logs spawn messages.

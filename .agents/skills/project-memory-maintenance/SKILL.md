@@ -21,6 +21,8 @@ Use this skill for edits to:
 - Do not store secrets, tokens, owner passwords, raw prompts, raw context dumps, or raw model outputs.
 - Do not copy PrivateToolBridge project-specific implementation details unless they are generic workflow rules needed here.
 - Memory entries should have status, created date, source, target, reason, and review date.
+- Every completed PR must update `.mex/context/active-memory.md`; treat this as a required PR lifecycle gate, not optional documentation cleanup.
+- If a PR lands through a direct cherry-pick, direct push, tool-blocked merge workaround, or other unusual path, update `.mex` before starting the next implementation PR.
 
 ## Validation
 
@@ -30,6 +32,7 @@ This project does not currently have a memory-check command. Validate by direct 
 2. Confirm router paths stay inside `.mex/` or local `.agents/skills/`.
 3. Confirm active-memory entries do not contain secrets or raw auth material.
 4. Confirm any git lifecycle action was explicitly authorized.
+5. Confirm completed PRs have matching `.mex/context/active-memory.md` entries before the next PR starts.
 
 ## Output
 
