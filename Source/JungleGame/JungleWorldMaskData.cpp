@@ -31,18 +31,18 @@ namespace JungleWorldMaskData
 			{ EBiomeMaskId::EvidenceConfusion, TEXT("M_EvidenceConfusion"), 0.0f, 1.0f, true, true },
 			{ EBiomeMaskId::NightDangerPressure, TEXT("M_NightDangerPressure"), 0.0f, 1.0f, true, true },
 			{ EBiomeMaskId::TraversalResistance, TEXT("TR_Resistance"), 0.0f, 1.0f, true, true },
-			{ EBiomeMaskId::TraversalClass, TEXT("TR_Class"), 0.0f, 7.0f, false, true }
+			{ EBiomeMaskId::TraversalClass, TEXT("TR_Class"), 0.0f, static_cast<float>(ETraversalMaskClass::EvidenceSensitive), false, true }
 		};
 
 		const FTraversalMaskRule TraversalMaskRules[] =
 		{
-			{ ETraversalMaskClass::Affordance, JungleWorldTerrainBiomeRunway::ETraversalCategory::Affordance, 0.00f, 0.25f, TEXT("TR_Affordance") },
-			{ ETraversalMaskClass::NeutralFriction, JungleWorldTerrainBiomeRunway::ETraversalCategory::NeutralFriction, 0.20f, 0.45f, TEXT("TR_NeutralFriction") },
-			{ ETraversalMaskClass::HazardFriction, JungleWorldTerrainBiomeRunway::ETraversalCategory::SoftBlocker, 0.35f, 0.65f, TEXT("TR_HazardFriction") },
-			{ ETraversalMaskClass::SoftBlocker, JungleWorldTerrainBiomeRunway::ETraversalCategory::SoftBlocker, 0.55f, 0.80f, TEXT("TR_SoftBlocker") },
-			{ ETraversalMaskClass::HardBlocker, JungleWorldTerrainBiomeRunway::ETraversalCategory::HardBlocker, 0.85f, 1.00f, TEXT("TR_HardBlocker") },
-			{ ETraversalMaskClass::FalseAffordance, JungleWorldTerrainBiomeRunway::ETraversalCategory::FalseAffordance, 0.60f, 0.90f, TEXT("TR_FalseAffordance") },
-			{ ETraversalMaskClass::EvidenceSensitive, JungleWorldTerrainBiomeRunway::ETraversalCategory::NeutralFriction, 0.20f, 0.70f, TEXT("TR_EvidenceSensitive") }
+			{ ETraversalMaskClass::Affordance, JungleWorldTerrainBiomeRunway::ETraversalCategory::Affordance, 0.00f, 0.25f, TEXT("TR_Affordance"), false, NAME_None },
+			{ ETraversalMaskClass::NeutralFriction, JungleWorldTerrainBiomeRunway::ETraversalCategory::NeutralFriction, 0.20f, 0.45f, TEXT("TR_NeutralFriction"), false, NAME_None },
+			{ ETraversalMaskClass::HazardFriction, JungleWorldTerrainBiomeRunway::ETraversalCategory::SoftBlocker, 0.35f, 0.65f, TEXT("TR_HazardFriction"), false, NAME_None },
+			{ ETraversalMaskClass::SoftBlocker, JungleWorldTerrainBiomeRunway::ETraversalCategory::SoftBlocker, 0.55f, 0.80f, TEXT("TR_SoftBlocker"), false, NAME_None },
+			{ ETraversalMaskClass::HardBlocker, JungleWorldTerrainBiomeRunway::ETraversalCategory::HardBlocker, 0.85f, 1.00f, TEXT("TR_HardBlocker"), true, TEXT("Direct physical blocker masks can override composed resistance") },
+			{ ETraversalMaskClass::FalseAffordance, JungleWorldTerrainBiomeRunway::ETraversalCategory::FalseAffordance, 0.60f, 0.90f, TEXT("TR_FalseAffordance"), false, NAME_None },
+			{ ETraversalMaskClass::EvidenceSensitive, JungleWorldTerrainBiomeRunway::ETraversalCategory::NeutralFriction, 0.20f, 0.70f, TEXT("TR_EvidenceSensitive"), true, TEXT("Evidence masks can override ordinary friction labels inside this band") }
 		};
 
 		const FMaskValidationReportSpec MaskValidationReportSpecs[] =
@@ -140,14 +140,19 @@ namespace JungleWorldMaskData
 
 		const float Resistance = CalculateTraversalResistance(Sample);
 
-		if (IsFalseAffordanceCandidate(Sample) && Resistance >= 0.60f)
+		if (Resistance >= 0.85f)
+		{
+			return ETraversalMaskClass::HardBlocker;
+		}
+
+		if (IsFalseAffordanceCandidate(Sample) && Resistance >= 0.60f && Resistance <= 0.90f)
 		{
 			return ETraversalMaskClass::FalseAffordance;
 		}
 
-		if (Resistance >= 0.85f)
+		if ((Sample.EvidenceRetention >= 0.65f || Sample.EvidenceConfusion >= 0.65f) && Resistance >= 0.20f && Resistance <= 0.70f)
 		{
-			return ETraversalMaskClass::HardBlocker;
+			return ETraversalMaskClass::EvidenceSensitive;
 		}
 
 		if (Resistance >= 0.65f)
@@ -158,11 +163,6 @@ namespace JungleWorldMaskData
 		if (Resistance >= 0.45f)
 		{
 			return ETraversalMaskClass::HazardFriction;
-		}
-
-		if ((Sample.EvidenceRetention >= 0.65f || Sample.EvidenceConfusion >= 0.65f) && Resistance >= 0.20f)
-		{
-			return ETraversalMaskClass::EvidenceSensitive;
 		}
 
 		if (Resistance <= 0.25f)

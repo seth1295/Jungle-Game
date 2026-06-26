@@ -95,6 +95,8 @@ namespace JungleWorldMaskData
 		float MinimumResistance = 0.0f;
 		float MaximumResistance = 1.0f;
 		FName StableName;
+		bool bAllowsPriorityOverride = false;
+		FName PriorityReason;
 	};
 
 	struct FBiomeMaskSample
