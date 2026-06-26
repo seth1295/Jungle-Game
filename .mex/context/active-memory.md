@@ -402,3 +402,14 @@ reason: PR5 Batch 003 runtime file 010 requires final terrain-batch acceptance m
 review_by: 2026-07-27
 
 PR5 Batch 003 / 010 adds aggregate terrain batch acceptance metrics and tracked handoff `handoffs/2026-06-27-pr5-batch-003-runtime-006-010.md`. Runtime acceptance aggregates terrain height/coast metrics, runtime mesh seam metrics, channel metrics, topographic evidence metrics, and generator architecture metrics into `JG_TERRAIN_BATCH003_ACCEPTANCE_010`, including pass/fail booleans for peak, sea-level, beach, ocean, runtime mesh, channels, topographic evidence, architecture, and overall batch acceptance. Validation expectation: changed source/.mex/handoff diff checks should pass; UBT remains environment-dependent on local Unreal path visibility. After landing, PR5 Batch 003 runtime files 001-010 are complete and later PR5 work should resume from the tracked handoff plus local Unreal build/smoke validation when engine access is available.
+
+## 2026-06-27-pr5-batch003-shoreline-acceptance-fix
+
+status: active-unreviewed
+created: 2026-06-27
+source: derived topography preview after PR5 Batch 003 / 010
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp
+reason: Preview topography derivation proved terrain output was derivable but failed shore acceptance because post-process coastline locking was too narrow and beach-band samples still received terrain-process uplift.
+review_by: 2026-07-27
+
+This fix keeps the accepted 1743.77 m volcanic peak while hardening final coastal acceptance after all massif, ridge, gully, crater, and long-wave terrain contributions. It adds a stronger final shoreline hard-lock inside the measured shoreline-error envelope and clamps only the landward beach acceptance band to -0.25 m through +9.75 m. Lightweight preview derivation after the fix reported: height max 1743.77 m, shoreline error max 0.0000 m, beach continuity 100.0%, ocean below sea 100.0%, and square-edge ocean violations 0/512. UBT remains deferred until local Unreal build access is available.
