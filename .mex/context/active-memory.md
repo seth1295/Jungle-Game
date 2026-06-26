@@ -324,4 +324,15 @@ target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/
 reason: PR5 Batch 003 requires terrain-only active volcano structure before any later VFX/gameplay systems: broken summit crater, nested vent, breach, lava-crust masks, unstable-crust masks, and hard-blocker terrain evidence.
 review_by: 2026-07-26
 
-PR5 Batch 003 / 004 is being implemented on branch `pr5-batch003-004-crater-lava-hazards`. It extends `FJungleVolcanicIslandTerrainModel` with crater interior, broken rim, nested vent, breach, fissure, lava-crust, unstable-crust, and hard-blocker masks plus crater depression/rim-raise terrain contributions. Runtime metrics advance to `JG_VOLCANIC_TERRAIN_004` with crater, vent, and hard-blocker mask maxima. Validation so far: local edit completed; next lifecycle step is diff validation, forbidden UI scan, commit, PR creation, CodeRabbit/GitHub check review, merge, and local `main` sync. Next target after this PR lands is PR5 Batch 003 / 005: sea-level beach ring and coastal shelf hardening plus batch handoff.
+PR5 Batch 003 / 004 was GitHub PR #44 on branch `pr5-batch003-004-crater-lava-hazards`. It extended `FJungleVolcanicIslandTerrainModel` with crater interior, broken rim, nested vent, breach, fissure, lava-crust, unstable-crust, and hard-blocker masks plus crater depression/rim-raise terrain contributions. Runtime metrics advanced to `JG_VOLCANIC_TERRAIN_004` with crater, vent, and hard-blocker mask maxima. Validation: `git diff --check` and `git diff --cached --check` passed; forbidden navigation UI scan produced only existing deny-rule documentation matches; documented local Unreal Build.sh paths were missing, so UBT validation was environment-blocked rather than source-failed; GitHub CodeRabbit checks passed. PR #44 landed on `main` as `c3a142b`. Next target is PR5 Batch 003 / 005: sea-level beach ring and coastal shelf hardening plus batch handoff.
+
+## 2026-06-26-pr5-batch003-005-sea-level-coast
+
+status: confirmed
+created: 2026-06-26
+source: pr5lifecycle-runtimefiles/003/005_sea_level_beach_ring_coastal_shelf_research.md
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, Docs/World/SeaLevelBeachRingCoastalShelf.md, handoffs/2026-06-26-pr5-batch-003-runtime-001-005.md
+reason: PR5 Batch 003 requires the island perimeter to resolve through a sea-level beach/coastal-shelf constraint, with square world edges remaining ocean/container terrain, before the batch stop point.
+review_by: 2026-07-26
+
+PR5 Batch 003 / 005 is being implemented on branch `pr5-batch003-005-sea-level-coast`. It adds shoreline constraint, shoreline error, beach width, beach continuity, and square-edge ocean violation metrics to `FJungleVolcanicIslandTerrainModel`; runtime metrics advance to `JG_VOLCANIC_TERRAIN_005`; and the batch handoff `handoffs/2026-06-26-pr5-batch-003-runtime-001-005.md` records the stop point. Validation so far: local edit completed; next lifecycle step is diff validation, forbidden UI scan, commit, PR creation, CodeRabbit/GitHub check review, merge, local `main` sync, and final stop. Do not start runtime file 006 unless explicitly requested.

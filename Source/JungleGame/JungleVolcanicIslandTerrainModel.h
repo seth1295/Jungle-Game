@@ -14,6 +14,9 @@ struct FJGTerrainSample
 	float CoastalShelfMask = 0.0f;
 	float BeachRingMask = 0.0f;
 	float CoastalLowlandMask = 0.0f;
+	float ShorelineConstraintMask = 0.0f;
+	float ShorelineErrorM = 0.0f;
+	float BeachWidthM = 0.0f;
 	float MassifMask = 0.0f;
 	float MassifHeightM = 0.0f;
 	float RidgeMask = 0.0f;
@@ -42,6 +45,8 @@ struct FJGTerrainMetrics
 	float MinIslandRadiusM = TNumericLimits<float>::Max();
 	float MaxIslandRadiusM = TNumericLimits<float>::Lowest();
 	float MinOceanMarginM = TNumericLimits<float>::Max();
+	float MaxShorelineAbsErrorM = 0.0f;
+	float BeachContinuityPercent = 0.0f;
 	float MaxRidgeMask = 0.0f;
 	float MaxGullyMask = 0.0f;
 	float MaxLaharCorridorMask = 0.0f;
@@ -51,6 +56,10 @@ struct FJGTerrainMetrics
 	int32 SampleCount = 0;
 	int32 CatchmentCount = 14;
 	int32 OceanEdgeSampleCount = 0;
+	int32 ShorelineSampleCount = 0;
+	int32 BeachSampleCount = 0;
+	int32 BeachContinuitySampleCount = 0;
+	int32 SquareEdgeOceanViolationCount = 0;
 };
 
 class JUNGLEGAME_API FJungleVolcanicIslandTerrainModel
