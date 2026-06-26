@@ -269,4 +269,15 @@ target: Source/JungleGame/JungleFullSizeMaskBiomeDebugSpec.h, Docs/World/FullSiz
 reason: PR5 runtime batch 002 file 004 is being consumed as the fourth sequential implementation PR input.
 review_by: 2026-07-26
 
-PR5 Batch 002 / 004 defines developer-only full-size mask, biome, and traversal debug state. It adds required mask names, initial biome classes, traversal classes, and review sample fields while preserving the no player-facing navigation UI rule. Next target after this PR lands is runtime file 005 packaged full-size world smoke evidence.
+PR5 Batch 002 / 004 defines developer-only full-size mask, biome, and traversal debug state. It adds required mask names, initial biome classes, traversal classes, and review sample fields while preserving the no player-facing navigation UI rule. Validation: `git diff --cached --check` passed. PR #39 was opened; merge endpoint was filtered, so branch head was fast-forward pushed to `main` as `f1cd5f7`. Next target is runtime file 005 packaged full-size world smoke evidence.
+
+## 2026-06-26-pr5-batch002-005-packaged-smoke-evidence
+
+status: active-unreviewed
+created: 2026-06-26
+source: pr5lifecycle-runtimefiles/002/005_packaged_full_size_world_smoke_evidence_research.md
+target: Source/JungleGame/JunglePackagedFullSizeWorldSmokeSpec.h, Docs/World/PackagedFullSizeWorldSmoke.md, handoffs/2026-06-26-pr5-batch-002-runtime-001-005.md
+reason: PR5 runtime batch 002 file 005 is being consumed as the fifth sequential implementation PR input and batch handoff point.
+review_by: 2026-07-26
+
+PR5 Batch 002 / 005 defines packaged full-size world smoke evidence, required developer-only review points, runtime log token expectations, artifact hygiene, and the batch handoff. It records that a fresh packaged build including the runtime shell is pending because UE Build.sh previously exceeded the DevSpace 300s timeout without returning a compiler error. After this PR lands, PR5 Batch 002 is complete and the next planned PR5 batch is full-world traversal/ecosystem readability.
