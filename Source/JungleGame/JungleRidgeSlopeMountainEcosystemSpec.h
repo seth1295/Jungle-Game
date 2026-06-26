@@ -37,6 +37,243 @@ enum class EJungleRidgeSlopeEvidenceCue : uint8
 	FalseOpenRidgeLine,
 };
 
+enum class EJG_OrientationCueCategory : uint8
+{
+	TerrainBackbone,
+	DrainageFlow,
+	RidgeSpurSaddle,
+	SlopeFeel,
+	SkylineSilhouette,
+	CanopyGap,
+	SkyWindow,
+	SolarShadow,
+	NightCelestial,
+	WeatherAtmosphere,
+	AcousticDirection,
+	VegetationTransition,
+	TraversalRisk,
+	CoastalMacroCue,
+};
+
+enum class EJG_TerrainForm : uint8
+{
+	Unknown,
+	MainRidge,
+	Spur,
+	Saddle,
+	UpperSlope,
+	MidSlope,
+	LowerSlope,
+	SlopeBreak,
+	Bench,
+	Gully,
+	Gorge,
+	ValleyFloor,
+	CreekCorridor,
+	CreekJunction,
+	WaterfallApproach,
+	CoastalEscarpment,
+	BeachExit,
+	Headland,
+};
+
+enum class EJG_CanopyCueState : uint8
+{
+	Closed,
+	DenseFiltered,
+	BrokenFiltered,
+	LocalGap,
+	StormGap,
+	RidgeThin,
+	SaddleWindow,
+	GorgeSlot,
+	CoastalOpen,
+};
+
+enum class EJG_CueDegradationState : uint8
+{
+	ClearReadable,
+	FilteredReadable,
+	Intermittent,
+	Ambiguous,
+	Occluded,
+	Distorted,
+	Suppressed,
+};
+
+enum class EJG_WeatherCueState : uint8
+{
+	Clear,
+	BrokenCloud,
+	OvercastBright,
+	OvercastDark,
+	LightRain,
+	HeavyRain,
+	Mist,
+	DenseFog,
+	Storm,
+	PostRainClearing,
+};
+
+enum class EJG_SolarCueState : uint8
+{
+	None,
+	DiffuseBrightnessGradient,
+	FilteredCanopyMottle,
+	PartialSunDisk,
+	DirectSunAndShadow,
+	LowAngleRidgeLight,
+	StormSuppressed,
+};
+
+enum class EJG_ShadowCueState : uint8
+{
+	None,
+	DiffuseOnly,
+	MottledUnreliable,
+	ShortLocalReliable,
+	LongDirectionalReliable,
+	DistortedByTerrain,
+};
+
+enum class EJG_NightCueState : uint8
+{
+	BlackCanopy,
+	MoonFilteredCanopy,
+	MoonGapVisible,
+	StarWindowVisible,
+	RidgeSilhouetteVisible,
+	CoastalSkyGlowVisible,
+	StormNightSuppressed,
+};
+
+enum class EJG_SkyWindowClass : uint8
+{
+	None,
+	PinHole,
+	FilteredCanopy,
+	NarrowSlot,
+	LocalGap,
+	RidgeWindow,
+	SaddleWindow,
+	CoastalWindow,
+};
+
+enum class EJG_OrientationDebugView : uint8
+{
+	All,
+	TerrainBackbone,
+	RidgeSpurSaddle,
+	DrainageFlow,
+	CanopyClosure,
+	SkyWindow,
+	SolarShadow,
+	NightSky,
+	WeatherDegradation,
+	AcousticReach,
+	VegetationTransition,
+	TraversalPressure,
+	CueFloor,
+	DeveloperAudit,
+};
+
+enum class EJG_OrientationValidationPointType : uint8
+{
+	RidgeCrest,
+	SpurBranch,
+	Saddle,
+	Gully,
+	Gorge,
+	CanopyGap,
+	CreekJunction,
+	CoastalExit,
+	FoggedRidge,
+	NightSkyWindow,
+};
+
+struct DA_JGOrientationCueProfile
+{
+	FName ProfileId;
+	EJG_OrientationCueCategory CueCategory = EJG_OrientationCueCategory::TerrainBackbone;
+	EJG_TerrainForm TerrainForm = EJG_TerrainForm::Unknown;
+	EJG_CanopyCueState CanopyCueState = EJG_CanopyCueState::Closed;
+	EJG_WeatherCueState WeatherCueState = EJG_WeatherCueState::Clear;
+	float MinReadableDistance = 0.0f;
+	float MaxReadableDistance = 80.0f;
+	float OcclusionSensitivity = 0.5f;
+	float WeatherSensitivity = 0.5f;
+	TArray<FName> EvidenceTags;
+	TArray<FName> ScreenshotValidationTags;
+	bool bDeveloperOnly = true;
+};
+
+struct DA_JGSkylineAnchorProfile
+{
+	FName AnchorId;
+	EJG_TerrainForm TerrainForm = EJG_TerrainForm::MainRidge;
+	EJG_SkyWindowClass RequiredWindow = EJG_SkyWindowClass::RidgeWindow;
+	float MinimumSilhouetteVisibility = 0.68f;
+	float MinimumHorizonFraction = 0.15f;
+	bool bRequiresHLODReview = true;
+};
+
+struct DA_JGCanopyCueProfile
+{
+	FName ProfileId;
+	EJG_CanopyCueState CanopyCueState = EJG_CanopyCueState::DenseFiltered;
+	float SkyVisibleFraction = 0.0f;
+	float DirectSunVisibleFraction = 0.0f;
+	float HorizonVisibleFraction = 0.0f;
+	float SilhouetteVisibleFraction = 0.0f;
+	float MoonStarVisibleFraction = 0.0f;
+	float CanopyOcclusionFraction = 1.0f;
+};
+
+struct DA_JGWeatherDegradationProfile
+{
+	FName ProfileId;
+	EJG_WeatherCueState WeatherCueState = EJG_WeatherCueState::Clear;
+	float WeatherVisibilityMeters = 1000.0f;
+	float FogDensityNormalized = 0.0f;
+	float RainIntensityNormalized = 0.0f;
+	float CloudCoverNormalized = 0.0f;
+	float DirectSunTransmission = 1.0f;
+	float DiffuseSkyTransmission = 1.0f;
+	float DistantSoundSuppression = 0.0f;
+};
+
+struct DA_JGTraversalPressureProfile
+{
+	FName ProfileId;
+	EJG_TerrainForm TerrainForm = EJG_TerrainForm::Unknown;
+	float SlopeDegrees = 0.0f;
+	float FootingRisk = 0.0f;
+	float VegetationResistance = 0.0f;
+	float WindExposure = 0.0f;
+	EJG_CueDegradationState CueState = EJG_CueDegradationState::FilteredReadable;
+};
+
+struct BP_JGOrientationValidationPoint
+{
+	FName ValidationPointId;
+	FVector WorldLocation = FVector::ZeroVector;
+	EJG_OrientationValidationPointType Type = EJG_OrientationValidationPointType::RidgeCrest;
+	EJG_TerrainForm TerrainForm = EJG_TerrainForm::MainRidge;
+	EJG_CanopyCueState CanopyCueState = EJG_CanopyCueState::RidgeThin;
+	EJG_SkyWindowClass SkyWindowClass = EJG_SkyWindowClass::RidgeWindow;
+	EJG_WeatherCueState WeatherCueState = EJG_WeatherCueState::Clear;
+	TArray<EJG_OrientationCueCategory> ReadableCueCategories;
+	TArray<EJG_OrientationCueCategory> SuppressedCueCategories;
+	EJG_OrientationCueCategory DominantRecoveryCue = EJG_OrientationCueCategory::TerrainBackbone;
+	bool bScreenshotRequired = true;
+	bool bDeveloperOnly = true;
+
+	bool PassesCueFloor() const
+	{
+		return ReadableCueCategories.Num() >= 2;
+	}
+};
+
 /** Reviewable contract for future ridge/slope/mountain PCG rules. */
 struct FJungleRidgeSlopeRuleContract
 {
@@ -62,7 +299,7 @@ struct FJungleRidgeSlopeRuleContract
 
 struct FJungleRidgeSlopeMountainEcosystemSpec
 {
-	static constexpr int32 EcosystemPassVersion = 1;
+	static constexpr int32 EcosystemPassVersion = 2;
 	static constexpr float MinimumRidgeInfluence = FJunglePCGBiomeFrameworkSpec::RidgeInfluenceScore;
 	static constexpr float MinimumSkyWindow = 0.62f;
 	static constexpr float MinimumSilhouetteVisibility = 0.68f;
@@ -138,6 +375,58 @@ struct FJungleRidgeSlopeMountainEcosystemSpec
 			|| Sample.GetMaskValue(TEXT("footing_risk")) >= InjuryRiskFooting;
 	}
 
+	static EJG_CueDegradationState ResolveCueDegradation(float CueStrength, float CanopyTransmission, float WeatherVisibilityFactor, float LocalOcclusion)
+	{
+		const float Score = CueStrength * CanopyTransmission * WeatherVisibilityFactor * (1.0f - LocalOcclusion);
+
+		if (Score >= 0.80f)
+		{
+			return EJG_CueDegradationState::ClearReadable;
+		}
+
+		if (Score >= 0.55f)
+		{
+			return EJG_CueDegradationState::FilteredReadable;
+		}
+
+		if (Score >= 0.35f)
+		{
+			return EJG_CueDegradationState::Intermittent;
+		}
+
+		if (Score >= 0.20f)
+		{
+			return EJG_CueDegradationState::Ambiguous;
+		}
+
+		return LocalOcclusion >= 0.70f ? EJG_CueDegradationState::Occluded : EJG_CueDegradationState::Suppressed;
+	}
+
+	static EJG_SolarCueState ResolveSolarCueState(const DA_JGCanopyCueProfile& Canopy, const DA_JGWeatherDegradationProfile& Weather)
+	{
+		if (Weather.RainIntensityNormalized >= 0.80f || Weather.CloudCoverNormalized >= 0.92f)
+		{
+			return EJG_SolarCueState::StormSuppressed;
+		}
+
+		if (Canopy.DirectSunVisibleFraction >= 0.70f && Weather.DirectSunTransmission >= 0.60f)
+		{
+			return EJG_SolarCueState::DirectSunAndShadow;
+		}
+
+		if (Canopy.DirectSunVisibleFraction >= 0.35f)
+		{
+			return EJG_SolarCueState::PartialSunDisk;
+		}
+
+		if (Canopy.SkyVisibleFraction >= 0.25f)
+		{
+			return EJG_SolarCueState::FilteredCanopyMottle;
+		}
+
+		return Weather.DiffuseSkyTransmission > 0.20f ? EJG_SolarCueState::DiffuseBrightnessGradient : EJG_SolarCueState::None;
+	}
+
 	static EJungleRidgeSlopeMountainZone ClassifyRidgeSlopeZone(const FJunglePCGBiomeInputSample& Sample)
 	{
 		if (!IsInsideRidgeSlopeInfluence(Sample))
@@ -185,46 +474,83 @@ struct FJungleRidgeSlopeMountainEcosystemSpec
 			return EJungleRidgeSlopeMountainZone::ShelteredDenseSlope;
 		}
 
-		if (Sample.GetMaskValue(TEXT("ridge_valley")) >= MinimumRidgeInfluence
-			&& Sample.GetMaskValue(TEXT("affordance_zone")) >= MinimumSpurAffordance)
-		{
-			return EJungleRidgeSlopeMountainZone::SpurMovementAffordance;
-		}
-
 		if (Sample.GetMaskValue(TEXT("affordance_zone")) >= MinimumSaddleAffordance
-			&& Sample.SlopeDegrees <= FJungleMacroTerrainSpec::MaximumRoutineWalkableSlopeDegrees)
+			&& Sample.GetMaskValue(TEXT("sky_window")) >= MinimumSkyWindow * 0.75f)
 		{
 			return EJungleRidgeSlopeMountainZone::SaddleTransitionAffordance;
+		}
+
+		if (Sample.GetMaskValue(TEXT("affordance_zone")) >= MinimumSpurAffordance)
+		{
+			return EJungleRidgeSlopeMountainZone::SpurMovementAffordance;
 		}
 
 		return EJungleRidgeSlopeMountainZone::SlopeBreakRouteDecision;
 	}
 
-	static EJunglePCGTerrainFrictionClass ResolveSlopeFriction(const FJunglePCGBiomeInputSample& Sample)
-	{
-		return FJunglePCGBiomeFrameworkSpec::ResolveTerrainFriction(
-			Sample.GetMaskValue(TEXT("hard_blocker")),
-			Sample.GetMaskValue(TEXT("soft_blocker")),
-			Sample.GetMaskValue(TEXT("affordance_zone")),
-			Sample.GetMaskValue(TEXT("false_affordance")));
-	}
-
 	static TArray<FString> RequiredMaskNames()
 	{
 		return {
-			TEXT("height"),
-			TEXT("slope"),
-			TEXT("aspect"),
 			TEXT("ridge_valley"),
 			TEXT("sky_window"),
 			TEXT("visibility"),
 			TEXT("canopy"),
+			TEXT("aspect"),
 			TEXT("sound_propagation"),
 			TEXT("footing_risk"),
 			TEXT("hard_blocker"),
 			TEXT("soft_blocker"),
 			TEXT("affordance_zone"),
 			TEXT("false_affordance"),
+			TEXT("M_Terrain_MainRidgeMask"),
+			TEXT("M_Terrain_SpurMask"),
+			TEXT("M_Terrain_SaddleMask"),
+			TEXT("M_Terrain_GullyMask"),
+			TEXT("M_Terrain_GorgeMask"),
+			TEXT("M_Terrain_SlopeBreakMask"),
+			TEXT("M_Canopy_ClosedMask"),
+			TEXT("M_Canopy_GapMask"),
+			TEXT("M_Canopy_SkyWindowMask"),
+			TEXT("M_Canopy_RidgeThinMask"),
+			TEXT("M_Veg_CreekMarginMask"),
+			TEXT("M_Veg_CanopyGapRegrowthMask"),
+			TEXT("M_Exposure_WindRidgeMask"),
+		};
+	}
+
+	static TArray<FString> DebugViewNames()
+	{
+		return {
+			TEXT("DBG_OrientationCue_All"),
+			TEXT("DBG_OrientationCue_TerrainBackbone"),
+			TEXT("DBG_OrientationCue_RidgeSpurSaddle"),
+			TEXT("DBG_OrientationCue_DrainageFlow"),
+			TEXT("DBG_OrientationCue_CanopyClosure"),
+			TEXT("DBG_OrientationCue_SkyWindow"),
+			TEXT("DBG_OrientationCue_SolarShadow"),
+			TEXT("DBG_OrientationCue_NightSky"),
+			TEXT("DBG_OrientationCue_WeatherDegradation"),
+			TEXT("DBG_OrientationCue_AcousticReach"),
+			TEXT("DBG_OrientationCue_VegetationTransition"),
+			TEXT("DBG_OrientationCue_TraversalPressure"),
+			TEXT("DBG_OrientationCue_CueFloor"),
+			TEXT("DBG_OrientationCue_DeveloperAudit"),
+		};
+	}
+
+	static TArray<BP_JGOrientationValidationPoint> DefaultValidationPoints()
+	{
+		return {
+			{ TEXT("VP_RidgeCrest"), FVector::ZeroVector, EJG_OrientationValidationPointType::RidgeCrest, EJG_TerrainForm::MainRidge, EJG_CanopyCueState::RidgeThin, EJG_SkyWindowClass::RidgeWindow, EJG_WeatherCueState::Clear, { EJG_OrientationCueCategory::TerrainBackbone, EJG_OrientationCueCategory::SkyWindow, EJG_OrientationCueCategory::AcousticDirection }, {}, EJG_OrientationCueCategory::TerrainBackbone, true, true },
+			{ TEXT("VP_SpurBranch"), FVector::ZeroVector, EJG_OrientationValidationPointType::SpurBranch, EJG_TerrainForm::Spur, EJG_CanopyCueState::BrokenFiltered, EJG_SkyWindowClass::FilteredCanopy, EJG_WeatherCueState::Clear, { EJG_OrientationCueCategory::RidgeSpurSaddle, EJG_OrientationCueCategory::SlopeFeel }, {}, EJG_OrientationCueCategory::RidgeSpurSaddle, true, true },
+			{ TEXT("VP_Saddle"), FVector::ZeroVector, EJG_OrientationValidationPointType::Saddle, EJG_TerrainForm::Saddle, EJG_CanopyCueState::SaddleWindow, EJG_SkyWindowClass::SaddleWindow, EJG_WeatherCueState::BrokenCloud, { EJG_OrientationCueCategory::RidgeSpurSaddle, EJG_OrientationCueCategory::SkyWindow, EJG_OrientationCueCategory::WeatherAtmosphere }, {}, EJG_OrientationCueCategory::SkyWindow, true, true },
+			{ TEXT("VP_Gully"), FVector::ZeroVector, EJG_OrientationValidationPointType::Gully, EJG_TerrainForm::Gully, EJG_CanopyCueState::Closed, EJG_SkyWindowClass::None, EJG_WeatherCueState::LightRain, { EJG_OrientationCueCategory::DrainageFlow, EJG_OrientationCueCategory::VegetationTransition }, { EJG_OrientationCueCategory::SkyWindow }, EJG_OrientationCueCategory::DrainageFlow, true, true },
+			{ TEXT("VP_Gorge"), FVector::ZeroVector, EJG_OrientationValidationPointType::Gorge, EJG_TerrainForm::Gorge, EJG_CanopyCueState::GorgeSlot, EJG_SkyWindowClass::NarrowSlot, EJG_WeatherCueState::Mist, { EJG_OrientationCueCategory::DrainageFlow, EJG_OrientationCueCategory::AcousticDirection }, { EJG_OrientationCueCategory::SkylineSilhouette }, EJG_OrientationCueCategory::AcousticDirection, true, true },
+			{ TEXT("VP_CanopyGap"), FVector::ZeroVector, EJG_OrientationValidationPointType::CanopyGap, EJG_TerrainForm::SlopeBreak, EJG_CanopyCueState::LocalGap, EJG_SkyWindowClass::LocalGap, EJG_WeatherCueState::Clear, { EJG_OrientationCueCategory::CanopyGap, EJG_OrientationCueCategory::SolarShadow }, {}, EJG_OrientationCueCategory::CanopyGap, true, true },
+			{ TEXT("VP_CreekJunction"), FVector::ZeroVector, EJG_OrientationValidationPointType::CreekJunction, EJG_TerrainForm::CreekJunction, EJG_CanopyCueState::DenseFiltered, EJG_SkyWindowClass::FilteredCanopy, EJG_WeatherCueState::PostRainClearing, { EJG_OrientationCueCategory::DrainageFlow, EJG_OrientationCueCategory::AcousticDirection }, {}, EJG_OrientationCueCategory::DrainageFlow, true, true },
+			{ TEXT("VP_CoastalExit"), FVector::ZeroVector, EJG_OrientationValidationPointType::CoastalExit, EJG_TerrainForm::BeachExit, EJG_CanopyCueState::CoastalOpen, EJG_SkyWindowClass::CoastalWindow, EJG_WeatherCueState::Clear, { EJG_OrientationCueCategory::CoastalMacroCue, EJG_OrientationCueCategory::SkyWindow }, {}, EJG_OrientationCueCategory::CoastalMacroCue, true, true },
+			{ TEXT("VP_FoggedRidge"), FVector::ZeroVector, EJG_OrientationValidationPointType::FoggedRidge, EJG_TerrainForm::MainRidge, EJG_CanopyCueState::RidgeThin, EJG_SkyWindowClass::RidgeWindow, EJG_WeatherCueState::DenseFog, { EJG_OrientationCueCategory::TerrainBackbone, EJG_OrientationCueCategory::TraversalRisk }, { EJG_OrientationCueCategory::SkylineSilhouette }, EJG_OrientationCueCategory::TerrainBackbone, true, true },
+			{ TEXT("VP_NightSkyWindow"), FVector::ZeroVector, EJG_OrientationValidationPointType::NightSkyWindow, EJG_TerrainForm::Saddle, EJG_CanopyCueState::SaddleWindow, EJG_SkyWindowClass::SaddleWindow, EJG_WeatherCueState::Clear, { EJG_OrientationCueCategory::NightCelestial, EJG_OrientationCueCategory::AcousticDirection }, { EJG_OrientationCueCategory::SolarShadow }, EJG_OrientationCueCategory::NightCelestial, true, true },
 		};
 	}
 
@@ -232,70 +558,49 @@ struct FJungleRidgeSlopeMountainEcosystemSpec
 	{
 		TArray<FJungleRidgeSlopeRuleContract> Rules;
 
-		FJungleRidgeSlopeRuleContract SkyWindow;
-		SkyWindow.Zone = EJungleRidgeSlopeMountainZone::RidgeCrestSkyWindow;
-		SkyWindow.EvidenceCue = EJungleRidgeSlopeEvidenceCue::SkyWindow;
-		SkyWindow.RuleKind = EJunglePCGSpawnRuleKind::SkyWindowPreservationZone;
-		SkyWindow.FrictionClass = EJunglePCGTerrainFrictionClass::Open;
-		SkyWindow.RequiredMaskNames = { TEXT("ridge_valley"), TEXT("sky_window"), TEXT("visibility"), TEXT("canopy") };
-		SkyWindow.MaxInstancesPerHectare = 0.0f;
-		SkyWindow.MinimumSpacingMeters = 20.0f;
-		SkyWindow.bPreservesSkyWindow = true;
-		SkyWindow.bRequiresFutureHLODReview = true;
-		Rules.Add(SkyWindow);
-
-		FJungleRidgeSlopeRuleContract Silhouette;
-		Silhouette.Zone = EJungleRidgeSlopeMountainZone::MountainShoulderSilhouette;
-		Silhouette.EvidenceCue = EJungleRidgeSlopeEvidenceCue::SkylineSilhouette;
-		Silhouette.RuleKind = EJunglePCGSpawnRuleKind::LandmarkSilhouettePlaceholder;
-		Silhouette.FrictionClass = EJunglePCGTerrainFrictionClass::Open;
-		Silhouette.RequiredMaskNames = { TEXT("height"), TEXT("ridge_valley"), TEXT("visibility"), TEXT("sky_window") };
-		Silhouette.MaxInstancesPerHectare = 3.0f;
-		Silhouette.MinimumSpacingMeters = 64.0f;
-		Silhouette.bCanAnchorSilhouette = true;
-		Silhouette.bRequiresFutureHLODReview = true;
-		Rules.Add(Silhouette);
+		FJungleRidgeSlopeRuleContract RidgeSkyWindow;
+		RidgeSkyWindow.Zone = EJungleRidgeSlopeMountainZone::RidgeCrestSkyWindow;
+		RidgeSkyWindow.EvidenceCue = EJungleRidgeSlopeEvidenceCue::SkyWindow;
+		RidgeSkyWindow.RuleKind = EJunglePCGSpawnRuleKind::SkyWindowPreservationZone;
+		RidgeSkyWindow.FrictionClass = EJunglePCGTerrainFrictionClass::Open;
+		RidgeSkyWindow.RequiredMaskNames = { TEXT("ridge_valley"), TEXT("sky_window"), TEXT("canopy") };
+		RidgeSkyWindow.MaxInstancesPerHectare = 12.0f;
+		RidgeSkyWindow.MinimumSpacingMeters = 20.0f;
+		RidgeSkyWindow.bPreservesSkyWindow = true;
+		RidgeSkyWindow.bCanAnchorSilhouette = true;
+		RidgeSkyWindow.bRequiresFutureHLODReview = true;
+		Rules.Add(RidgeSkyWindow);
 
 		FJungleRidgeSlopeRuleContract SpurAffordance;
 		SpurAffordance.Zone = EJungleRidgeSlopeMountainZone::SpurMovementAffordance;
 		SpurAffordance.EvidenceCue = EJungleRidgeSlopeEvidenceCue::SpurLineMovement;
 		SpurAffordance.RuleKind = EJunglePCGSpawnRuleKind::AffordanceCuePlaceholder;
 		SpurAffordance.FrictionClass = EJunglePCGTerrainFrictionClass::Open;
-		SpurAffordance.RequiredMaskNames = { TEXT("ridge_valley"), TEXT("slope"), TEXT("affordance_zone"), TEXT("visibility") };
+		SpurAffordance.RequiredMaskNames = { TEXT("ridge_valley"), TEXT("affordance_zone"), TEXT("slope") };
 		SpurAffordance.MaxInstancesPerHectare = 18.0f;
-		SpurAffordance.MinimumSpacingMeters = 10.0f;
+		SpurAffordance.MinimumSpacingMeters = 16.0f;
 		Rules.Add(SpurAffordance);
 
-		FJungleRidgeSlopeRuleContract ExposedWind;
-		ExposedWind.Zone = EJungleRidgeSlopeMountainZone::ExposedOpenCanopySlope;
-		ExposedWind.EvidenceCue = EJungleRidgeSlopeEvidenceCue::WindOpenCanopy;
-		ExposedWind.RuleKind = EJunglePCGSpawnRuleKind::SoundAnchorPlaceholder;
-		ExposedWind.FrictionClass = EJunglePCGTerrainFrictionClass::Open;
-		ExposedWind.RequiredMaskNames = { TEXT("aspect"), TEXT("canopy"), TEXT("sound_propagation"), TEXT("sky_window") };
-		ExposedWind.MaxInstancesPerHectare = 10.0f;
-		ExposedWind.MinimumSpacingMeters = 18.0f;
-		ExposedWind.bPreservesSkyWindow = true;
-		Rules.Add(ExposedWind);
+		FJungleRidgeSlopeRuleContract SlopeRisk;
+		SlopeRisk.Zone = EJungleRidgeSlopeMountainZone::SteepSlopeFatigueRisk;
+		SlopeRisk.EvidenceCue = EJungleRidgeSlopeEvidenceCue::FatigueRouteReconsideration;
+		SlopeRisk.RuleKind = EJunglePCGSpawnRuleKind::RockRootPlaceholder;
+		SlopeRisk.FrictionClass = EJunglePCGTerrainFrictionClass::ReadablePlantFriction;
+		SlopeRisk.RequiredMaskNames = { TEXT("slope"), TEXT("footing_risk"), TEXT("soft_blocker") };
+		SlopeRisk.MaxInstancesPerHectare = 34.0f;
+		SlopeRisk.MinimumSpacingMeters = 8.0f;
+		Rules.Add(SlopeRisk);
 
-		FJungleRidgeSlopeRuleContract SteepFatigue;
-		SteepFatigue.Zone = EJungleRidgeSlopeMountainZone::SteepSlopeFatigueRisk;
-		SteepFatigue.EvidenceCue = EJungleRidgeSlopeEvidenceCue::FatigueRouteReconsideration;
-		SteepFatigue.RuleKind = EJunglePCGSpawnRuleKind::RockRootPlaceholder;
-		SteepFatigue.FrictionClass = EJunglePCGTerrainFrictionClass::ReadablePlantFriction;
-		SteepFatigue.RequiredMaskNames = { TEXT("slope"), TEXT("footing_risk"), TEXT("soft_blocker"), TEXT("affordance_zone") };
-		SteepFatigue.MaxInstancesPerHectare = 24.0f;
-		SteepFatigue.MinimumSpacingMeters = 8.0f;
-		Rules.Add(SteepFatigue);
-
-		FJungleRidgeSlopeRuleContract FalseRidge;
-		FalseRidge.Zone = EJungleRidgeSlopeMountainZone::FalseSkylineAffordance;
-		FalseRidge.EvidenceCue = EJungleRidgeSlopeEvidenceCue::FalseOpenRidgeLine;
-		FalseRidge.RuleKind = EJunglePCGSpawnRuleKind::FalseAffordanceCuePlaceholder;
-		FalseRidge.FrictionClass = EJunglePCGTerrainFrictionClass::FalseAffordance;
-		FalseRidge.RequiredMaskNames = { TEXT("false_affordance"), TEXT("ridge_valley"), TEXT("footing_risk") };
-		FalseRidge.MaxInstancesPerHectare = 8.0f;
-		FalseRidge.MinimumSpacingMeters = 18.0f;
-		Rules.Add(FalseRidge);
+		FJungleRidgeSlopeRuleContract FalseSkyline;
+		FalseSkyline.Zone = EJungleRidgeSlopeMountainZone::FalseSkylineAffordance;
+		FalseSkyline.EvidenceCue = EJungleRidgeSlopeEvidenceCue::FalseOpenRidgeLine;
+		FalseSkyline.RuleKind = EJunglePCGSpawnRuleKind::FalseAffordanceCuePlaceholder;
+		FalseSkyline.FrictionClass = EJunglePCGTerrainFrictionClass::FalseAffordance;
+		FalseSkyline.RequiredMaskNames = { TEXT("false_affordance"), TEXT("sky_window"), TEXT("canopy") };
+		FalseSkyline.MaxInstancesPerHectare = 8.0f;
+		FalseSkyline.MinimumSpacingMeters = 24.0f;
+		FalseSkyline.bPreservesSkyWindow = false;
+		Rules.Add(FalseSkyline);
 
 		return Rules;
 	}
@@ -303,14 +608,16 @@ struct FJungleRidgeSlopeMountainEcosystemSpec
 	static TArray<FString> RequiredValidationOutputNames()
 	{
 		return {
-			TEXT("ridge_slope_mountain_zone"),
-			TEXT("ridge_sky_window_preservation"),
+			TEXT("ridge_slope_zone"),
+			TEXT("ridge_sky_window"),
+			TEXT("spur_affordance"),
+			TEXT("saddle_transition"),
+			TEXT("slope_break_decision"),
 			TEXT("mountain_silhouette_anchor"),
-			TEXT("spur_saddle_affordance"),
-			TEXT("slope_break_route_decision"),
-			TEXT("exposed_sheltered_aspect_variation"),
 			TEXT("steep_slope_fatigue_risk"),
-			TEXT("false_skyline_affordance"),
+			TEXT("orientation_cue_floor"),
+			TEXT("weather_degradation_state"),
+			TEXT("canopy_sky_window_profile"),
 		};
 	}
 };
