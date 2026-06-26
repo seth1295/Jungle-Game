@@ -8,6 +8,7 @@ class UMaterialInterface;
 class UProceduralMeshComponent;
 class USceneComponent;
 class UStaticMesh;
+struct FJGTerrainRuntimeTileDesc;
 
 UCLASS()
 class JUNGLEGAME_API AJungleFullSizeTerrainShellActor : public AActor
@@ -21,7 +22,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	static constexpr int32 TerrainVerticesPerSide = 129;
 	static constexpr float FullWorldExtentCm = 812800.0f;
 	static constexpr float FullWorldExtentMeters = 16256.0f;
 
@@ -34,6 +34,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Terrain Shell|Debug")
 	bool bSpawnDebugCubeBlockout = false;
 
+	UPROPERTY(EditAnywhere, Category = "Terrain Shell|Runtime")
+	int32 RuntimeValidationTilesPerSide = 5;
+
 	UPROPERTY()
 	TObjectPtr<UStaticMesh> CubeMesh;
 
@@ -42,8 +45,10 @@ private:
 
 	void BuildShell();
 	void BuildProceduralTerrainMesh();
+	void BuildRuntimeTileMeshSection(int32 SectionIndex, const FJGTerrainRuntimeTileDesc& TileDesc);
 	float CalculateTerrainHeightCm(float LocalX, float LocalY) const;
 	void LogTerrainMetrics() const;
+	void LogRuntimeMeshMetrics(const TArray<FJGTerrainRuntimeTileDesc>& TileDescs) const;
 	void BuildDebugCubeBlockout();
 	void AddDebugBlock(const FVector& LocalLocation, const FVector& Scale, FName Name, float LocalYawDegrees = 0.0f);
 	void ScheduleTerrainShellSmokeIfRequested();

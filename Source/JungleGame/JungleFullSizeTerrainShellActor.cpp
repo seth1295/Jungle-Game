@@ -56,7 +56,7 @@ void AJungleFullSizeTerrainShellActor::BuildShell()
 	}
 
 	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell spawned: id=JG_FULL_TERRAIN_SHELL_002 extent_m=16256 review_points=8 source=runtime-source-authored-blockout"));
-	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell v2 ready: id=JG_FULL_TERRAIN_SHELL_003 grid=%dx%d extent_m=%.0f source=deterministic-procedural-heightfield cube_fallback=%s"), TerrainVerticesPerSide, TerrainVerticesPerSide, FullWorldExtentMeters, bSpawnDebugCubeBlockout ? TEXT("enabled") : TEXT("available"));
+	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell v2 ready: id=JG_FULL_TERRAIN_SHELL_003 grid=%dx%d extent_m=%.0f source=deterministic-procedural-heightfield cube_fallback=%s"), FJungleVolcanicIslandTerrainModel::RuntimePreviewVerticesPerSide, FJungleVolcanicIslandTerrainModel::RuntimePreviewVerticesPerSide, FullWorldExtentMeters, bSpawnDebugCubeBlockout ? TEXT("enabled") : TEXT("available"));
 	LogTerrainMetrics();
 }
 
@@ -67,8 +67,29 @@ void AJungleFullSizeTerrainShellActor::BuildProceduralTerrainMesh()
 		return;
 	}
 
-	constexpr float HalfExtentCm = FullWorldExtentCm;
-	const float StepCm = (HalfExtentCm * 2.0f) / static_cast<float>(TerrainVerticesPerSide - 1);
+	TerrainMesh->ClearAllMeshSections();
+
+	TArray<FJGTerrainRuntimeTileDesc> TileDescs;
+	FJungleVolcanicIslandTerrainModel::BuildRuntimeValidationTileDescs(TileDescs);
+
+	for (int32 TileIndex = 0; TileIndex < TileDescs.Num(); ++TileIndex)
+	{
+		BuildRuntimeTileMeshSection(TileIndex, TileDescs[TileIndex]);
+	}
+
+	LogRuntimeMeshMetrics(TileDescs);
+}
+
+void AJungleFullSizeTerrainShellActor::BuildRuntimeTileMeshSection(int32 SectionIndex, const FJGTerrainRuntimeTileDesc& TileDesc)
+{
+	if (!TerrainMesh || TileDesc.VerticesPerSide < 2)
+	{
+		return;
+	}
+
+	const int32 VerticesPerSide = TileDesc.VerticesPerSide;
+	const int32 VertexCount = VerticesPerSide * VerticesPerSide;
+	const int32 QuadCountPerSide = VerticesPerSide - 1;
 
 	TArray<FVector> Vertices;
 	TArray<int32> Triangles;
@@ -77,36 +98,41 @@ void AJungleFullSizeTerrainShellActor::BuildProceduralTerrainMesh()
 	TArray<FColor> VertexColors;
 	TArray<FProcMeshTangent> Tangents;
 
-	Vertices.Reserve(TerrainVerticesPerSide * TerrainVerticesPerSide);
-	Normals.Reserve(TerrainVerticesPerSide * TerrainVerticesPerSide);
-	UVs.Reserve(TerrainVerticesPerSide * TerrainVerticesPerSide);
-	VertexColors.Reserve(TerrainVerticesPerSide * TerrainVerticesPerSide);
-	Tangents.Reserve(TerrainVerticesPerSide * TerrainVerticesPerSide);
-	Triangles.Reserve((TerrainVerticesPerSide - 1) * (TerrainVerticesPerSide - 1) * 6);
+	Vertices.Reserve(VertexCount);
+	Normals.Reserve(VertexCount);
+	UVs.Reserve(VertexCount);
+	VertexColors.Reserve(VertexCount);
+	Tangents.Reserve(VertexCount);
+	Triangles.Reserve(QuadCountPerSide * QuadCountPerSide * 6);
 
-	for (int32 Y = 0; Y < TerrainVerticesPerSide; ++Y)
+	for (int32 Y = 0; Y < VerticesPerSide; ++Y)
 	{
-		for (int32 X = 0; X < TerrainVerticesPerSide; ++X)
+		const float AlphaY = static_cast<float>(Y) / static_cast<float>(VerticesPerSide - 1);
+		const float WorldYM = FMath::Lerp(TileDesc.MinYM, TileDesc.MaxYM, AlphaY);
+		for (int32 X = 0; X < VerticesPerSide; ++X)
 		{
-			const float LocalX = -HalfExtentCm + static_cast<float>(X) * StepCm;
-			const float LocalY = -HalfExtentCm + static_cast<float>(Y) * StepCm;
-			const float HeightCm = CalculateTerrainHeightCm(LocalX, LocalY);
+			const float AlphaX = static_cast<float>(X) / static_cast<float>(VerticesPerSide - 1);
+			const float WorldXM = FMath::Lerp(TileDesc.MinXM, TileDesc.MaxXM, AlphaX);
+			const FJGTerrainSample TerrainSample = FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(WorldXM, WorldYM);
 
-			Vertices.Emplace(LocalX, LocalY, HeightCm);
+			Vertices.Emplace(WorldXM * 100.0f, WorldYM * 100.0f, TerrainSample.HeightM * 100.0f);
 			Normals.Emplace(FVector::ZeroVector);
-			UVs.Emplace(static_cast<float>(X) / static_cast<float>(TerrainVerticesPerSide - 1), static_cast<float>(Y) / static_cast<float>(TerrainVerticesPerSide - 1));
-			VertexColors.Emplace(FColor::White);
+			UVs.Emplace((WorldXM + FJungleVolcanicIslandTerrainModel::HalfExtentM) / FJungleVolcanicIslandTerrainModel::WorldSizeM, (WorldYM + FJungleVolcanicIslandTerrainModel::HalfExtentM) / FJungleVolcanicIslandTerrainModel::WorldSizeM);
+			const uint8 CoastDebug = static_cast<uint8>(FMath::Clamp(TerrainSample.BeachRingMask * 255.0f, 0.0f, 255.0f));
+			const uint8 RidgeDebug = static_cast<uint8>(FMath::Clamp(TerrainSample.RidgeMask * 255.0f, 0.0f, 255.0f));
+			const uint8 HazardDebug = static_cast<uint8>(FMath::Clamp(TerrainSample.HardBlockerMask * 255.0f, 0.0f, 255.0f));
+			VertexColors.Emplace(CoastDebug, RidgeDebug, HazardDebug, 255);
 			Tangents.Emplace(1.0f, 0.0f, 0.0f);
 		}
 	}
 
-	for (int32 Y = 0; Y < TerrainVerticesPerSide - 1; ++Y)
+	for (int32 Y = 0; Y < QuadCountPerSide; ++Y)
 	{
-		for (int32 X = 0; X < TerrainVerticesPerSide - 1; ++X)
+		for (int32 X = 0; X < QuadCountPerSide; ++X)
 		{
-			const int32 I0 = X + Y * TerrainVerticesPerSide;
+			const int32 I0 = X + Y * VerticesPerSide;
 			const int32 I1 = I0 + 1;
-			const int32 I2 = I0 + TerrainVerticesPerSide;
+			const int32 I2 = I0 + VerticesPerSide;
 			const int32 I3 = I2 + 1;
 
 			Triangles.Add(I0);
@@ -134,10 +160,10 @@ void AJungleFullSizeTerrainShellActor::BuildProceduralTerrainMesh()
 		Normal = Normal.IsNearlyZero() ? FVector::UpVector : Normal.GetSafeNormal();
 	}
 
-	TerrainMesh->CreateMeshSection(0, Vertices, Triangles, Normals, UVs, VertexColors, Tangents, true);
+	TerrainMesh->CreateMeshSection(SectionIndex, Vertices, Triangles, Normals, UVs, VertexColors, Tangents, TileDesc.bCollisionEnabled);
 	if (TerrainMaterial)
 	{
-		TerrainMesh->SetMaterial(0, TerrainMaterial);
+		TerrainMesh->SetMaterial(SectionIndex, TerrainMaterial);
 	}
 }
 
@@ -150,8 +176,14 @@ float AJungleFullSizeTerrainShellActor::CalculateTerrainHeightCm(float LocalX, f
 
 void AJungleFullSizeTerrainShellActor::LogTerrainMetrics() const
 {
-	const FJGTerrainMetrics Metrics = FJungleVolcanicIslandTerrainModel::BuildMetrics(TerrainVerticesPerSide);
+	const FJGTerrainMetrics Metrics = FJungleVolcanicIslandTerrainModel::BuildMetrics(FJungleVolcanicIslandTerrainModel::RuntimePreviewVerticesPerSide);
 	UE_LOG(LogJungleGame, Display, TEXT("Volcanic terrain metrics: %s"), *FJungleVolcanicIslandTerrainModel::BuildMetricsLogLine(Metrics));
+}
+
+void AJungleFullSizeTerrainShellActor::LogRuntimeMeshMetrics(const TArray<FJGTerrainRuntimeTileDesc>& TileDescs) const
+{
+	const FJGTerrainRuntimeMeshMetrics RuntimeMetrics = FJungleVolcanicIslandTerrainModel::BuildRuntimeMeshMetrics(TileDescs);
+	UE_LOG(LogJungleGame, Display, TEXT("Runtime mesh metrics: %s"), *FJungleVolcanicIslandTerrainModel::BuildRuntimeMeshMetricsLogLine(RuntimeMetrics));
 }
 
 void AJungleFullSizeTerrainShellActor::BuildDebugCubeBlockout()
