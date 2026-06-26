@@ -213,6 +213,31 @@ struct FJGTerrainGeneratorArchitectureMetrics
 	bool bArchitectureValid = false;
 };
 
+struct FJGTerrainBatchAcceptanceMetrics
+{
+	FString AcceptedTerrainVersion;
+	FString GeneratorFingerprint;
+	int32 RuntimeFilesAccepted = 0;
+	int32 RuntimeFilesExpected = 10;
+	int32 RequiredLogTokenCount = 0;
+	float PeakHeightM = 0.0f;
+	float ShorelineErrorMaxM = 0.0f;
+	float BeachContinuityPercent = 0.0f;
+	float OceanBelowSeaPercent = 0.0f;
+	float SeamErrorMaxM = 0.0f;
+	float MaxSlopeDegrees = 0.0f;
+	float HardBlockerMaskMax = 0.0f;
+	bool bPeakAccepted = false;
+	bool bSeaLevelAccepted = false;
+	bool bBeachAccepted = false;
+	bool bOceanAccepted = false;
+	bool bRuntimeMeshAccepted = false;
+	bool bChannelsAccepted = false;
+	bool bTopographicEvidenceAccepted = false;
+	bool bArchitectureAccepted = false;
+	bool bBatchAccepted = false;
+};
+
 class JUNGLEGAME_API FJungleVolcanicIslandTerrainModel
 {
 public:
@@ -255,6 +280,8 @@ public:
 	static FString BuildGeneratorConfigFingerprint(const FJGTerrainGeneratorConfig& Config);
 	static FJGTerrainGeneratorArchitectureMetrics BuildGeneratorArchitectureMetrics(const FJGTerrainGeneratorConfig& Config);
 	static FString BuildGeneratorArchitectureLogLine(const FJGTerrainGeneratorArchitectureMetrics& Metrics);
+	static FJGTerrainBatchAcceptanceMetrics BuildBatchAcceptanceMetrics();
+	static FString BuildBatchAcceptanceLogLine(const FJGTerrainBatchAcceptanceMetrics& Metrics);
 
 private:
 	static float SmoothStep(float Edge0, float Edge1, float Value);

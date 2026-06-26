@@ -85,6 +85,8 @@ void AJungleFullSizeTerrainShellActor::BuildProceduralTerrainMesh()
 	const FJGTerrainGeneratorConfig GeneratorConfig = FJungleVolcanicIslandTerrainModel::BuildDefaultGeneratorConfig();
 	const FJGTerrainGeneratorArchitectureMetrics ArchitectureMetrics = FJungleVolcanicIslandTerrainModel::BuildGeneratorArchitectureMetrics(GeneratorConfig);
 	UE_LOG(LogJungleGame, Display, TEXT("Terrain generator architecture metrics: %s"), *FJungleVolcanicIslandTerrainModel::BuildGeneratorArchitectureLogLine(ArchitectureMetrics));
+	const FJGTerrainBatchAcceptanceMetrics BatchAcceptanceMetrics = FJungleVolcanicIslandTerrainModel::BuildBatchAcceptanceMetrics();
+	UE_LOG(LogJungleGame, Display, TEXT("Terrain batch acceptance metrics: %s"), *FJungleVolcanicIslandTerrainModel::BuildBatchAcceptanceLogLine(BatchAcceptanceMetrics));
 }
 
 void AJungleFullSizeTerrainShellActor::BuildRuntimeTileMeshSection(int32 SectionIndex, const FJGTerrainRuntimeTileDesc& TileDesc)

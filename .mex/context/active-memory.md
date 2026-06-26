@@ -391,3 +391,14 @@ reason: PR5 Batch 003 runtime file 009 requires the terrain generator to expose 
 review_by: 2026-07-27
 
 PR5 Batch 003 / 009 adds generator config identity, version ID `JG_TERRAIN_GENERATOR_009`, deterministic seed, source resolution identity, runtime tile identity, channel count, architecture switches, a stable fingerprint, and architecture validation metrics. Runtime logs now include world-size, sea-level, source-resolution, coast-source-ownership, runtime mesh bridge, topographic evidence, and overall architecture validity via `JG_TERRAIN_GENERATOR_009`. This keeps terrain generation source-owned and deterministic while avoiding Blueprint-only or mesh-first generator drift. Validation expectation: changed source/.mex diff checks should pass; UBT remains environment-dependent on local Unreal path visibility. Next target after landing is PR5 Batch 003 / 010: full terrain batch acceptance and handoff.
+
+## 2026-06-27-pr5-batch003-010-acceptance-handoff
+
+status: active-unreviewed
+created: 2026-06-27
+source: pr5lifecycle-runtimefiles/003/010_full_terrain_batch_acceptance_and_handoff_research.md
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, Source/JungleGame/JungleFullSizeTerrainShellActor.cpp, handoffs/2026-06-27-pr5-batch-003-runtime-006-010.md
+reason: PR5 Batch 003 runtime file 010 requires final terrain-batch acceptance metrics and a tracked fresh-chat handoff before later systems resume.
+review_by: 2026-07-27
+
+PR5 Batch 003 / 010 adds aggregate terrain batch acceptance metrics and tracked handoff `handoffs/2026-06-27-pr5-batch-003-runtime-006-010.md`. Runtime acceptance aggregates terrain height/coast metrics, runtime mesh seam metrics, channel metrics, topographic evidence metrics, and generator architecture metrics into `JG_TERRAIN_BATCH003_ACCEPTANCE_010`, including pass/fail booleans for peak, sea-level, beach, ocean, runtime mesh, channels, topographic evidence, architecture, and overall batch acceptance. Validation expectation: changed source/.mex/handoff diff checks should pass; UBT remains environment-dependent on local Unreal path visibility. After landing, PR5 Batch 003 runtime files 001-010 are complete and later PR5 work should resume from the tracked handoff plus local Unreal build/smoke validation when engine access is available.
