@@ -358,3 +358,14 @@ reason: PR5 Batch 003 runtime file 006 continues from the landed runtime 005 coa
 review_by: 2026-07-27
 
 PR5 Batch 003 / 006 is the runtime mesh resolution, LOD, and terrain scale bridge. It records Batch 003 lifecycle precursor/runtime files as repo state, adds source-reference resolution constants for the 8129 x 8129 / 2 m full-island target, adds runtime tile descriptors for a 32 x 32 tile grid with near/mid/far vertex density, converts the terrain shell to build deterministic validation mesh sections from the canonical volcanic terrain source, enables collision only for near validation tiles, and logs `JG_TERRAIN_RUNTIME_006` metrics for tile counts, vertices, triangles, collision tiles, LOD ring counts, spacing, seam samples, and shoreline error. Validation so far: source diff whitespace passed; full cached diff check is blocked by restored historical lifecycle Markdown trailing whitespace that predates this code path and should be normalized separately or explicitly accepted when tracking those repo files. Next target after landing is PR5 Batch 003 / 007: terrain masks, channels, and material/debug state.
+
+## 2026-06-27-pr5-batch003-007-terrain-mask-channels
+
+status: active-unreviewed
+created: 2026-06-27
+source: pr5lifecycle-runtimefiles/003/007_terrain_masks_channels_material_debug_research.md
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, Source/JungleGame/JungleFullSizeTerrainShellActor.cpp
+reason: PR5 Batch 003 runtime file 007 requires the canonical volcanic terrain source to expose terrain-derived channel data for developer-only material/debug validation without creating player-facing navigation UI.
+review_by: 2026-07-27
+
+PR5 Batch 003 / 007 adds terrain channel sample and metrics structures, debug channel identity, slope/relief finite-difference derivation, packed coast/landform/hazard channel values, discrete elevation/slope/relief classes, and runtime log token `JG_TERRAIN_CHANNELS_007`. The terrain shell logs channel metrics alongside runtime tile metrics so reviewer-visible terrain masks include beach, ocean, shelf, massif, ridge, gully, catchment, crater, lava/crust, unstable crust, hard blocker, slope, and relief state. Validation expectation: `git diff --check` for changed source/.mex should pass; UBT remains environment-dependent on local Unreal path visibility. Next target after landing is PR5 Batch 003 / 008: heightfield export and topographic comparison evidence.

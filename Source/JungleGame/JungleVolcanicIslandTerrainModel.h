@@ -96,6 +96,61 @@ struct FJGTerrainRuntimeMeshMetrics
 	int32 ShorelineSampleCount = 0;
 };
 
+enum class EJGTerrainDebugChannel : uint8
+{
+	Elevation,
+	Island,
+	Ocean,
+	Beach,
+	CoastalShelf,
+	Massif,
+	Ridge,
+	Gully,
+	Catchment,
+	Crater,
+	LavaCrust,
+	UnstableCrust,
+	HardBlocker,
+	Slope,
+	Relief
+};
+
+struct FJGTerrainChannelSample
+{
+	FJGTerrainSample Terrain;
+	float SlopeDegrees = 0.0f;
+	float ReliefM = 0.0f;
+	float IslandMask01 = 0.0f;
+	float LandMask01 = 0.0f;
+	float BeachMask01 = 0.0f;
+	float HazardMask01 = 0.0f;
+	float SlopeMask01 = 0.0f;
+	uint8 ElevationBand = 0;
+	uint8 SlopeClass = 0;
+	uint8 ReliefClass = 0;
+	uint8 PackedCoastChannel = 0;
+	uint8 PackedLandformChannel = 0;
+	uint8 PackedHazardChannel = 0;
+};
+
+struct FJGTerrainChannelMetrics
+{
+	int32 SampleCount = 0;
+	int32 DebugChannelCount = 0;
+	int32 CatchmentCount = 0;
+	float MaxSlopeDegrees = 0.0f;
+	float MeanSlopeDegrees = 0.0f;
+	float MaxReliefM = 0.0f;
+	float MaxBeachMask = 0.0f;
+	float MaxOceanMask = 0.0f;
+	float MaxHardBlockerMask = 0.0f;
+	float MaxHazardMask = 0.0f;
+	int32 BeachChannelSamples = 0;
+	int32 OceanChannelSamples = 0;
+	int32 HardBlockerSamples = 0;
+	int32 SlopeClassCounts[5] = {0, 0, 0, 0, 0};
+};
+
 class JUNGLEGAME_API FJungleVolcanicIslandTerrainModel
 {
 public:
@@ -129,6 +184,9 @@ public:
 	static void BuildRuntimeValidationTileDescs(TArray<FJGTerrainRuntimeTileDesc>& OutTiles);
 	static FJGTerrainRuntimeMeshMetrics BuildRuntimeMeshMetrics(const TArray<FJGTerrainRuntimeTileDesc>& Tiles);
 	static FString BuildRuntimeMeshMetricsLogLine(const FJGTerrainRuntimeMeshMetrics& Metrics);
+	static FJGTerrainChannelSample SampleTerrainChannelsMeters(float WorldXM, float WorldYM, float DerivativeSpacingM = SourceReferenceSpacingM);
+	static FJGTerrainChannelMetrics BuildChannelMetrics(int32 SamplesPerSide = RuntimePreviewVerticesPerSide);
+	static FString BuildChannelMetricsLogLine(const FJGTerrainChannelMetrics& Metrics);
 
 private:
 	static float SmoothStep(float Edge0, float Edge1, float Value);

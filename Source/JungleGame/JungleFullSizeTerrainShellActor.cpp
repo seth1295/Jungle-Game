@@ -78,6 +78,8 @@ void AJungleFullSizeTerrainShellActor::BuildProceduralTerrainMesh()
 	}
 
 	LogRuntimeMeshMetrics(TileDescs);
+	const FJGTerrainChannelMetrics ChannelMetrics = FJungleVolcanicIslandTerrainModel::BuildChannelMetrics(FJungleVolcanicIslandTerrainModel::RuntimePreviewVerticesPerSide);
+	UE_LOG(LogJungleGame, Display, TEXT("Terrain channel metrics: %s"), *FJungleVolcanicIslandTerrainModel::BuildChannelMetricsLogLine(ChannelMetrics));
 }
 
 void AJungleFullSizeTerrainShellActor::BuildRuntimeTileMeshSection(int32 SectionIndex, const FJGTerrainRuntimeTileDesc& TileDesc)
