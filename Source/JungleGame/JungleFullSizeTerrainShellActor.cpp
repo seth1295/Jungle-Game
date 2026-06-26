@@ -6,6 +6,7 @@
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "JungleGame.h"
+#include "JungleVolcanicIslandTerrainModel.h"
 #include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInterface.h"
 #include "Misc/CommandLine.h"
@@ -56,6 +57,7 @@ void AJungleFullSizeTerrainShellActor::BuildShell()
 
 	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell spawned: id=JG_FULL_TERRAIN_SHELL_002 extent_m=16256 review_points=8 source=runtime-source-authored-blockout"));
 	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell v2 ready: id=JG_FULL_TERRAIN_SHELL_003 grid=%dx%d extent_m=%.0f source=deterministic-procedural-heightfield cube_fallback=%s"), TerrainVerticesPerSide, TerrainVerticesPerSide, FullWorldExtentMeters, bSpawnDebugCubeBlockout ? TEXT("enabled") : TEXT("available"));
+	LogTerrainMetrics();
 }
 
 void AJungleFullSizeTerrainShellActor::BuildProceduralTerrainMesh()
@@ -141,35 +143,15 @@ void AJungleFullSizeTerrainShellActor::BuildProceduralTerrainMesh()
 
 float AJungleFullSizeTerrainShellActor::CalculateTerrainHeightCm(float LocalX, float LocalY) const
 {
-	constexpr float HalfExtentCm = FullWorldExtentCm;
-	const float NX = LocalX / HalfExtentCm;
-	const float NY = LocalY / HalfExtentCm;
-	const float Radius = FMath::Sqrt(NX * NX + NY * NY);
-	const float IslandFalloff = FMath::Clamp(1.0f - FMath::Pow(FMath::Max(0.0f, Radius - 0.72f) / 0.28f, 2.0f), 0.0f, 1.0f);
+	const float WorldXM = LocalX * 0.01f;
+	const float WorldYM = LocalY * 0.01f;
+	return FJungleVolcanicIslandTerrainModel::SampleHeightMeters(WorldXM, WorldYM) * 100.0f;
+}
 
-	const float RidgeAxis = (LocalY * 0.72f) - (LocalX * 0.42f) - 90000.0f;
-	const float RidgeDistance = FMath::Abs(RidgeAxis) / 220000.0f;
-	const float RidgeSpine = FMath::Exp(-RidgeDistance * RidgeDistance) * 9800.0f;
-
-	const float MountainX = (LocalX + 330000.0f) / 180000.0f;
-	const float MountainY = (LocalY - 285000.0f) / 150000.0f;
-	const float MountainShoulder = FMath::Exp(-(MountainX * MountainX + MountainY * MountainY)) * 14500.0f;
-
-	const float CreekAxis = (LocalY + 0.58f * LocalX + 50000.0f) / 85000.0f;
-	const float CreekLongitudinal = FMath::Clamp((LocalX + 230000.0f) / 620000.0f, 0.0f, 1.0f);
-	const float CreekValley = -FMath::Exp(-CreekAxis * CreekAxis) * FMath::Lerp(2600.0f, 5200.0f, CreekLongitudinal);
-
-	const float BasinX = LocalX / 310000.0f;
-	const float BasinY = (LocalY + 60000.0f) / 270000.0f;
-	const float LowlandBasin = -FMath::Exp(-(BasinX * BasinX + BasinY * BasinY)) * 2600.0f;
-
-	const float CoastLowering = FMath::Pow(FMath::Clamp(Radius, 0.0f, 1.0f), 3.4f) * -7600.0f;
-	const float DeterministicUndulation =
-		FMath::Sin(LocalX * 0.000014f + LocalY * 0.000009f) * 1200.0f +
-		FMath::Sin(LocalX * 0.000031f - LocalY * 0.000017f) * 650.0f +
-		FMath::Sin(LocalX * 0.000071f + LocalY * 0.000053f) * 260.0f;
-
-	return (RidgeSpine + MountainShoulder + CreekValley + LowlandBasin + CoastLowering + DeterministicUndulation) * IslandFalloff - 600.0f;
+void AJungleFullSizeTerrainShellActor::LogTerrainMetrics() const
+{
+	const FJGTerrainMetrics Metrics = FJungleVolcanicIslandTerrainModel::BuildMetrics(TerrainVerticesPerSide);
+	UE_LOG(LogJungleGame, Display, TEXT("Volcanic terrain metrics: %s"), *FJungleVolcanicIslandTerrainModel::BuildMetricsLogLine(Metrics));
 }
 
 void AJungleFullSizeTerrainShellActor::BuildDebugCubeBlockout()
