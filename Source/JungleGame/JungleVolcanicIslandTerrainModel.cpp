@@ -411,3 +411,117 @@ FString FJungleVolcanicIslandTerrainModel::BuildRuntimeMeshMetricsLogLine(const 
 		Metrics.ShorelineSampleCount,
 		Metrics.MaxShorelineAbsErrorM);
 }
+
+FJGTerrainChannelSample FJungleVolcanicIslandTerrainModel::SampleTerrainChannelsMeters(float WorldXM, float WorldYM, float DerivativeSpacingM)
+{
+	FJGTerrainChannelSample Channels;
+	Channels.Terrain = SampleTerrainMeters(WorldXM, WorldYM);
+
+	const float Spacing = FMath::Max(0.25f, DerivativeSpacingM);
+	const float HX0 = SampleHeightMeters(WorldXM - Spacing, WorldYM);
+	const float HX1 = SampleHeightMeters(WorldXM + Spacing, WorldYM);
+	const float HY0 = SampleHeightMeters(WorldXM, WorldYM - Spacing);
+	const float HY1 = SampleHeightMeters(WorldXM, WorldYM + Spacing);
+	const float DzDx = (HX1 - HX0) / (2.0f * Spacing);
+	const float DzDy = (HY1 - HY0) / (2.0f * Spacing);
+	Channels.SlopeDegrees = FMath::RadiansToDegrees(FMath::Atan(FMath::Sqrt(DzDx * DzDx + DzDy * DzDy)));
+
+	float MinLocalHeight = Channels.Terrain.HeightM;
+	float MaxLocalHeight = Channels.Terrain.HeightM;
+	constexpr int32 ReliefRingSamples = 8;
+	constexpr float ReliefRadiusM = 32.0f;
+	for (int32 Index = 0; Index < ReliefRingSamples; ++Index)
+	{
+		const float Theta = 2.0f * PI * static_cast<float>(Index) / static_cast<float>(ReliefRingSamples);
+		const float H = SampleHeightMeters(WorldXM + FMath::Cos(Theta) * ReliefRadiusM, WorldYM + FMath::Sin(Theta) * ReliefRadiusM);
+		MinLocalHeight = FMath::Min(MinLocalHeight, H);
+		MaxLocalHeight = FMath::Max(MaxLocalHeight, H);
+	}
+	Channels.ReliefM = MaxLocalHeight - MinLocalHeight;
+
+	Channels.IslandMask01 = FMath::Clamp(SmoothStep(-10.0f, 60.0f, Channels.Terrain.SignedShorelineDistanceM), 0.0f, 1.0f);
+	Channels.LandMask01 = 1.0f - Channels.Terrain.OceanMask;
+	Channels.BeachMask01 = FMath::Clamp(FMath::Max(Channels.Terrain.BeachRingMask, Channels.Terrain.ShorelineConstraintMask), 0.0f, 1.0f);
+	Channels.HazardMask01 = FMath::Clamp(Channels.Terrain.LavaCrustMask * 0.45f + Channels.Terrain.UnstableCrustMask * 0.65f + Channels.Terrain.HardBlockerMask, 0.0f, 1.0f);
+	Channels.SlopeMask01 = FMath::Clamp(Channels.SlopeDegrees / 55.0f, 0.0f, 1.0f);
+
+	Channels.ElevationBand = Channels.Terrain.HeightM < SeaLevelM ? 0 : (Channels.Terrain.HeightM < 60.0f ? 1 : (Channels.Terrain.HeightM < 350.0f ? 2 : (Channels.Terrain.HeightM < 950.0f ? 3 : 4)));
+	Channels.SlopeClass = Channels.SlopeDegrees < 12.0f ? 0 : (Channels.SlopeDegrees < 22.0f ? 1 : (Channels.SlopeDegrees < 32.0f ? 2 : (Channels.SlopeDegrees < 42.0f ? 3 : 4)));
+	Channels.ReliefClass = Channels.ReliefM < 4.0f ? 0 : (Channels.ReliefM < 16.0f ? 1 : (Channels.ReliefM < 48.0f ? 2 : 3));
+
+	Channels.PackedCoastChannel = static_cast<uint8>(FMath::Clamp(FMath::RoundToInt(Channels.BeachMask01 * 85.0f + Channels.Terrain.CoastalShelfMask * 85.0f + Channels.Terrain.OceanMask * 85.0f), 0, 255));
+	Channels.PackedLandformChannel = static_cast<uint8>(FMath::Clamp(FMath::RoundToInt(Channels.Terrain.RidgeMask * 85.0f + Channels.Terrain.GullyMask * 85.0f + Channels.Terrain.CraterMask * 85.0f), 0, 255));
+	Channels.PackedHazardChannel = static_cast<uint8>(FMath::Clamp(FMath::RoundToInt(Channels.HazardMask01 * 255.0f), 0, 255));
+
+	return Channels;
+}
+
+FJGTerrainChannelMetrics FJungleVolcanicIslandTerrainModel::BuildChannelMetrics(int32 SamplesPerSide)
+{
+	FJGTerrainChannelMetrics Metrics;
+	Metrics.DebugChannelCount = 15;
+	Metrics.CatchmentCount = PrimaryCatchmentCount;
+	const int32 ClampedSamplesPerSide = FMath::Max(2, SamplesPerSide);
+	const float StepM = WorldSizeM / static_cast<float>(ClampedSamplesPerSide - 1);
+	float SlopeTotal = 0.0f;
+
+	for (int32 Y = 0; Y < ClampedSamplesPerSide; ++Y)
+	{
+		for (int32 X = 0; X < ClampedSamplesPerSide; ++X)
+		{
+			const float WorldXM = -HalfExtentM + static_cast<float>(X) * StepM;
+			const float WorldYM = -HalfExtentM + static_cast<float>(Y) * StepM;
+			const FJGTerrainChannelSample Channels = SampleTerrainChannelsMeters(WorldXM, WorldYM, SourceReferenceSpacingM);
+
+			Metrics.MaxSlopeDegrees = FMath::Max(Metrics.MaxSlopeDegrees, Channels.SlopeDegrees);
+			Metrics.MaxReliefM = FMath::Max(Metrics.MaxReliefM, Channels.ReliefM);
+			Metrics.MaxBeachMask = FMath::Max(Metrics.MaxBeachMask, Channels.BeachMask01);
+			Metrics.MaxOceanMask = FMath::Max(Metrics.MaxOceanMask, Channels.Terrain.OceanMask);
+			Metrics.MaxHardBlockerMask = FMath::Max(Metrics.MaxHardBlockerMask, Channels.Terrain.HardBlockerMask);
+			Metrics.MaxHazardMask = FMath::Max(Metrics.MaxHazardMask, Channels.HazardMask01);
+			SlopeTotal += Channels.SlopeDegrees;
+			++Metrics.SampleCount;
+
+			if (Channels.BeachMask01 > 0.5f)
+			{
+				++Metrics.BeachChannelSamples;
+			}
+			if (Channels.Terrain.OceanMask > 0.5f)
+			{
+				++Metrics.OceanChannelSamples;
+			}
+			if (Channels.Terrain.HardBlockerMask > 0.5f)
+			{
+				++Metrics.HardBlockerSamples;
+			}
+			Metrics.SlopeClassCounts[FMath::Clamp<int32>(Channels.SlopeClass, 0, 4)]++;
+		}
+	}
+
+	Metrics.MeanSlopeDegrees = Metrics.SampleCount > 0 ? SlopeTotal / static_cast<float>(Metrics.SampleCount) : 0.0f;
+	return Metrics;
+}
+
+FString FJungleVolcanicIslandTerrainModel::BuildChannelMetricsLogLine(const FJGTerrainChannelMetrics& Metrics)
+{
+	return FString::Printf(
+		TEXT("id=JG_TERRAIN_CHANNELS_007 channels=%d samples=%d catchments=%d slope_max_deg=%.2f slope_mean_deg=%.2f relief_max_m=%.2f beach_mask_max=%.2f ocean_mask_max=%.2f hard_blocker_mask_max=%.2f hazard_mask_max=%.2f beach_samples=%d ocean_samples=%d hard_blocker_samples=%d slope_classes=%d/%d/%d/%d/%d source=canonical-terrain-channel-atlas"),
+		Metrics.DebugChannelCount,
+		Metrics.SampleCount,
+		Metrics.CatchmentCount,
+		Metrics.MaxSlopeDegrees,
+		Metrics.MeanSlopeDegrees,
+		Metrics.MaxReliefM,
+		Metrics.MaxBeachMask,
+		Metrics.MaxOceanMask,
+		Metrics.MaxHardBlockerMask,
+		Metrics.MaxHazardMask,
+		Metrics.BeachChannelSamples,
+		Metrics.OceanChannelSamples,
+		Metrics.HardBlockerSamples,
+		Metrics.SlopeClassCounts[0],
+		Metrics.SlopeClassCounts[1],
+		Metrics.SlopeClassCounts[2],
+		Metrics.SlopeClassCounts[3],
+		Metrics.SlopeClassCounts[4]);
+}
