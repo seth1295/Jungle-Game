@@ -7,23 +7,26 @@ description: PR gate workflow routing and active gate pointer.
 
 ## Active gate
 
-`Docs/PRPlan/006_ImplementationPRSequence.md`
+PR5 Batch 004 terrain implementation.
 
 ## Completed setup gate chain
 
-1. `docs/gates/000-green-to-go.md`
-2. `docs/gates/001-ue5-linux-validation.md`
-3. `docs/gates/002-engine-version-decision.md`
-4. `docs/gates/003-ue-project-bootstrap.md`
-5. `docs/gates/004-first-playable-slice-plan.md`
-6. `docs/gates/005-jungle-cell-0-implementation.md`
+Historical setup gates were removed with the intentionally deleted broad `docs/` folder. Use `.mex` memory and PR5 lifecycle files as the active gate source.
 
 ## Active implementation plan
 
-- `Docs/PRPlan/000_FirstPlayableImplementationRoadmap.md`
-- `Docs/PRPlan/006_ImplementationPRSequence.md`
+PR5 lifecycle state lives in `.mex`, `pr5lifecycle-precursor/**`, `pr5lifecycle-runtimefiles/**`, `handoffs/**`, `Source/**`, `scripts/**`, and `Images/**`.
 
-The active implementation plan defines the next sequential four-PR batch. The roadmap PR labels inside `Docs/PRPlan/` are planning labels; actual GitHub PR numbers may differ.
+Active Batch 004 files:
+
+- `pr5lifecycle-precursor/004/001_x6_world_scale_terrain_authority_prompt.md`
+- `pr5lifecycle-precursor/004/002_irregular_volcanic_catchments_anti_radial_prompt.md`
+- `pr5lifecycle-precursor/004/003_scaled_preview_acceptance_and_handoff_prompt.md`
+- `pr5lifecycle-runtimefiles/004/001_x6_world_scale_terrain_authority_research.md`
+- `pr5lifecycle-runtimefiles/004/002_irregular_volcanic_catchments_anti_radial_research.md`
+- `pr5lifecycle-runtimefiles/004/003_scaled_preview_acceptance_and_handoff_research.md`
+
+Broad `docs/**` and `Docs/**` folders were intentionally removed. Do not route future PR gates through deleted docs folders unless the user explicitly asks to recreate documentation structure.
 
 ## Routing rule
 
@@ -34,8 +37,8 @@ Before any PR lifecycle, load:
 3. `.mex/context/active-memory.md`
 4. `.mex/context/project.md`
 5. `.mex/context/pr-gates.md`
-6. `docs/PR_WORKFLOW.md`
-7. the active gate file listed above
+6. `.mex/patterns/pr5-implementation-workflow.md`
+7. relevant active PR5 lifecycle precursor/runtime files
 
 ## Enforcement rules
 
@@ -50,6 +53,7 @@ Before any PR lifecycle, load:
 - Execute PRs sequentially; do not run normal UE implementation PRs in parallel.
 - Plan up to four PRs ahead, but implement and merge one PR at a time.
 - Every completed PR must update `.mex/context/active-memory.md`; do not start the next implementation PR from stale `.mex` state.
+- PR5 workflow authority means actual game/source implementation unless the user explicitly asks for Markdown-only lifecycle files.
 - After the fourth PR in a sequential planning batch is complete, create a tracked fresh-chat handoff under `handoffs/` before starting the next batch.
 
 ## Completion policy

@@ -17,8 +17,8 @@ Load this file after `AGENTS.md`.
 Before any PR lifecycle, also load:
 
 - `.mex/context/pr-gates.md` — active gate pointer and gate enforcement rules.
-- `docs/PR_WORKFLOW.md` — standard PR-by-PR gate workflow.
-- the active gate file listed in `.mex/context/pr-gates.md`.
+- `.mex/patterns/pr5-implementation-workflow.md` — PR5 implementation rule: build actual game/source scope, not docs-only PRs unless explicitly requested.
+- the relevant `pr5lifecycle-precursor/**` and `pr5lifecycle-runtimefiles/**` files for the active batch.
 
 If the requested task conflicts with the active gate, stop and ask whether to change gates before editing files.
 

@@ -8,5 +8,6 @@ description: Pattern index for New Project.
 | Pattern | Use |
 |---|---|
 | `.mex/patterns/local-devspace-workflow.md` | Safe local DevSpace inspection and edits for this non-git project folder. |
+| `.mex/patterns/pr5-implementation-workflow.md` | PR5 implementation batches must build the actual approved game/source scope, not package docs-only lifecycle PRs unless explicitly requested. |
 
-Do not add git, PR, or merge patterns until the user explicitly asks to initialize or connect git for this project.
+Git/PR patterns are allowed only when the user explicitly authorizes lifecycle work for this project.

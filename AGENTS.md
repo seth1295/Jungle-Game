@@ -20,9 +20,9 @@ After reading this file, read `.mex/ROUTER.md` for current project state, routed
 
 Load `.mex/context/active-memory.md` first, then only the additional `.mex/context/*`, `.mex/patterns/*`, or `.agents/skills/*/SKILL.md` files relevant to the current task.
 
-Before any PR lifecycle, load `.mex/context/pr-gates.md`, `docs/PR_WORKFLOW.md`, and the active gate file listed in `.mex/context/pr-gates.md`.
+Before any PR lifecycle, load `.mex/context/pr-gates.md`, `.mex/patterns/pr5-implementation-workflow.md`, and any relevant `pr5lifecycle-precursor/**` / `pr5lifecycle-runtimefiles/**` files for the active batch.
 
-PR work is sequential. Plan up to four PRs ahead, execute one PR at a time, update `.mex/context/active-memory.md` for every completed PR, and after the fourth PR in a batch create a tracked fresh-chat handoff under `handoffs/` before starting the next batch.
+PR work is sequential. Plan up to four PRs ahead, execute one PR at a time, update `.mex/context/active-memory.md` for every completed PR, and after the fourth PR in a batch create a tracked fresh-chat handoff under `handoffs/` before starting the next batch. PR5 workflow authority means actual game/source implementation unless the user explicitly asks for Markdown-only lifecycle files.
 
 ## Current Project State
 
@@ -59,6 +59,7 @@ Project-local skills live in `.agents/skills/`:
 - `standard-pr-workflow`
 - `manual-coderabbit-loop`
 - `project-memory-maintenance`
+- `ue5-packaged-visual-capture`
 
 Load the matching skill before work that falls under it.
 
@@ -67,7 +68,7 @@ Load the matching skill before work that falls under it.
 Only after explicit user approval:
 
 1. Branch from clean updated `main` before modifying files when normal PR workflow is possible.
-2. Identify and follow the active PR gate.
+2. Identify and follow the active `.mex` / PR5 lifecycle gate.
 3. Keep each commit coherent and scoped.
 4. Open ready PRs only; no draft PRs unless requested.
 5. Add `@coderabbitai ignore` to PR bodies if using a manual CodeRabbit loop.

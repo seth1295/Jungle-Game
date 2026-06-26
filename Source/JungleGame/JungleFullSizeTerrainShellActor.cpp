@@ -55,8 +55,8 @@ void AJungleFullSizeTerrainShellActor::BuildShell()
 		BuildDebugCubeBlockout();
 	}
 
-	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell spawned: id=JG_FULL_TERRAIN_SHELL_002 extent_m=16256 review_points=8 source=runtime-source-authored-blockout"));
-	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell v2 ready: id=JG_FULL_TERRAIN_SHELL_003 grid=%dx%d extent_m=%.0f source=deterministic-procedural-heightfield cube_fallback=%s"), FJungleVolcanicIslandTerrainModel::RuntimePreviewVerticesPerSide, FJungleVolcanicIslandTerrainModel::RuntimePreviewVerticesPerSide, FullWorldExtentMeters, bSpawnDebugCubeBlockout ? TEXT("enabled") : TEXT("available"));
+	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell spawned: id=JG_FULL_TERRAIN_SHELL_004_X6 extent_m=%.0f review_points=8 source=runtime-source-authored-x6-terrain"), FullWorldExtentMeters);
+	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell v4 ready: id=JG_FULL_TERRAIN_SHELL_004_X6_ANTI_RADIAL grid=%dx%d extent_m=%.0f source=deterministic-procedural-heightfield cube_fallback=%s"), FJungleVolcanicIslandTerrainModel::RuntimePreviewVerticesPerSide, FJungleVolcanicIslandTerrainModel::RuntimePreviewVerticesPerSide, FullWorldExtentMeters, bSpawnDebugCubeBlockout ? TEXT("enabled") : TEXT("available"));
 	LogTerrainMetrics();
 }
 
@@ -197,15 +197,15 @@ void AJungleFullSizeTerrainShellActor::LogRuntimeMeshMetrics(const TArray<FJGTer
 
 void AJungleFullSizeTerrainShellActor::BuildDebugCubeBlockout()
 {
-	AddDebugBlock(FVector(0.0f, 0.0f, -160.0f), FVector(160.0f, 160.0f, 0.18f), TEXT("FullWorldLowlandBasin"));
-	AddDebugBlock(FVector(3600.0f, -1800.0f, -130.0f), FVector(110.0f, 24.0f, 0.12f), TEXT("FullWorldCreekValley"), -18.0f);
-	AddDebugBlock(FVector(-3200.0f, 2400.0f, 140.0f), FVector(95.0f, 16.0f, 1.0f), TEXT("FullWorldRidgeSpine"), 32.0f);
-	AddDebugBlock(FVector(-4100.0f, 3100.0f, 340.0f), FVector(38.0f, 12.0f, 1.8f), TEXT("FullWorldMountainShoulder"), 22.0f);
-	AddDebugBlock(FVector(6200.0f, -4800.0f, -175.0f), FVector(70.0f, 32.0f, 0.08f), TEXT("FullWorldCreekMouthCoast"), 10.0f);
-	AddDebugBlock(FVector(0.0f, -7200.0f, -220.0f), FVector(210.0f, 16.0f, 0.08f), TEXT("FullWorldSouthCoast"));
-	AddDebugBlock(FVector(0.0f, 7600.0f, -260.0f), FVector(220.0f, 14.0f, 0.1f), TEXT("FullWorldNorthOceanEdge"));
-	AddDebugBlock(FVector(7200.0f, 0.0f, -230.0f), FVector(14.0f, 220.0f, 0.1f), TEXT("FullWorldEastOceanEdge"));
-	AddDebugBlock(FVector(-7200.0f, 0.0f, -230.0f), FVector(14.0f, 220.0f, 0.1f), TEXT("FullWorldWestOceanEdge"));
+	AddDebugBlock(FVector(0.0f, 0.0f, -220.0f), FVector(960.0f, 960.0f, 0.18f), TEXT("FullWorldLowlandBasin_X6"));
+	AddDebugBlock(FVector(21600.0f, -10800.0f, -180.0f), FVector(660.0f, 144.0f, 0.12f), TEXT("FullWorldCreekValley_X6"), -18.0f);
+	AddDebugBlock(FVector(-19200.0f, 14400.0f, 520.0f), FVector(570.0f, 96.0f, 1.4f), TEXT("FullWorldIrregularRidgeSpine_X6"), 32.0f);
+	AddDebugBlock(FVector(-24600.0f, 18600.0f, 1280.0f), FVector(228.0f, 72.0f, 2.4f), TEXT("FullWorldMountainShoulder_X6"), 22.0f);
+	AddDebugBlock(FVector(37200.0f, -28800.0f, -190.0f), FVector(420.0f, 192.0f, 0.08f), TEXT("FullWorldCreekMouthCoast_X6"), 10.0f);
+	AddDebugBlock(FVector(0.0f, -43200.0f, -240.0f), FVector(1260.0f, 96.0f, 0.08f), TEXT("FullWorldSouthCoast_X6"));
+	AddDebugBlock(FVector(0.0f, 45600.0f, -280.0f), FVector(1320.0f, 84.0f, 0.1f), TEXT("FullWorldNorthOceanEdge_X6"));
+	AddDebugBlock(FVector(45600.0f, 0.0f, -250.0f), FVector(84.0f, 1320.0f, 0.1f), TEXT("FullWorldEastOceanEdge_X6"));
+	AddDebugBlock(FVector(-45600.0f, 0.0f, -250.0f), FVector(84.0f, 1320.0f, 0.1f), TEXT("FullWorldWestOceanEdge_X6"));
 }
 
 void AJungleFullSizeTerrainShellActor::AddDebugBlock(const FVector& LocalLocation, const FVector& Scale, FName Name, float LocalYawDegrees)
@@ -252,9 +252,9 @@ void AJungleFullSizeTerrainShellActor::MovePlayerToTerrainShellSmokeView()
 		return;
 	}
 
-	const FVector ViewLocation(145000.0f, -170000.0f, 18500.0f);
+	const FVector ViewLocation(870000.0f, -1020000.0f, 62000.0f);
 	const FRotator PawnRotation(0.0f, 38.0f, 0.0f);
-	const FRotator ViewRotation(-18.0f, 38.0f, 0.0f);
+	const FRotator ViewRotation(-12.0f, 38.0f, 0.0f);
 	PlayerPawn->SetActorLocationAndRotation(ViewLocation, PawnRotation, false, nullptr, ETeleportType::TeleportPhysics);
 	PlayerController->SetControlRotation(ViewRotation);
 	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell smoke view set at %s with rotation %s."), *ViewLocation.ToString(), *ViewRotation.ToString());

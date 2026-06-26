@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Export real PR5 Batch 003 island preview images from deterministic terrain data.
+"""Export real PR5 Batch 004 x6 island preview images from deterministic terrain data.
 
 This tool is deliberately not AI/image-generation. It mirrors the landed
 `FJungleVolcanicIslandTerrainModel` terrain math and writes labelled PNG evidence
 files from sampled height/mask data.
 
-Default output is tracked documentation evidence under:
-`Docs/World/TerrainPreview/`
+Default output is tracked terrain evidence under:
+`Images/TerrainPreview/`
 
 Default resolution is 1024 px so the primary island preview is readable without
-needing UE rendering or full 8129 x 8129 export.
+needing UE rendering or full 8129 x 8129 export at 12 m/sample.
 """
 
 from __future__ import annotations
@@ -22,14 +22,14 @@ import time
 import zlib
 from pathlib import Path
 
-WORLD_SIZE_M = 16256.0
+WORLD_SIZE_M = 97536.0
 HALF_EXTENT_M = WORLD_SIZE_M * 0.5
 SEA_LEVEL_M = 0.0
-MEAN_ISLAND_RADIUS_M = 7000.0
-MAX_ISLAND_RADIUS_M = 7350.0
-TARGET_PEAK_HEIGHT_M = 1400.0
-PRIMARY_CATCHMENT_COUNT = 14
-VERSION = "PR5_BATCH003_SHORE_FIXED_TERRAIN_PREVIEW"
+MEAN_ISLAND_RADIUS_M = 42000.0
+MAX_ISLAND_RADIUS_M = 44100.0
+TARGET_PEAK_HEIGHT_M = 3800.0
+PRIMARY_CATCHMENT_COUNT = 23
+VERSION = "PR5_BATCH004_X6_ANTI_RADIAL_TERRAIN_PREVIEW"
 
 
 def clamp(value: float, low: float, high: float) -> float:
@@ -53,12 +53,13 @@ def ring_mask(distance_m: float, center_m: float, half_width_m: float) -> float:
 
 def organic_island_radius_m(theta: float) -> float:
     broad_lobes = (
-        260.0 * math.sin(3.0 * theta + 0.70)
-        + 170.0 * math.sin(5.0 * theta - 1.10)
-        + 75.0 * math.sin(9.0 * theta + 2.30)
+        1560.0 * math.sin(3.0 * theta + 0.70)
+        + 1020.0 * math.sin(5.0 * theta - 1.10)
+        + 450.0 * math.sin(9.0 * theta + 2.30)
+        + 260.0 * math.sin(13.0 * theta - 0.80)
     )
-    bay_headland_warp = 95.0 * math.sin(2.0 * theta - 0.35) * math.sin(7.0 * theta + 1.60)
-    return clamp(MEAN_ISLAND_RADIUS_M + broad_lobes + bay_headland_warp, 6200.0, MAX_ISLAND_RADIUS_M)
+    bay_headland_warp = 570.0 * math.sin(2.0 * theta - 0.35) * math.sin(7.0 * theta + 1.60)
+    return clamp(MEAN_ISLAND_RADIUS_M + broad_lobes + bay_headland_warp, 37200.0, MAX_ISLAND_RADIUS_M)
 
 
 def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | int]:
@@ -84,71 +85,102 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
     else:
         coastal_land_height_m = lerp(62.0, 155.0, smooth_step(1100.0, 2300.0, landward_distance_m))
 
-    massif_center_x_m = -220.0
-    massif_center_y_m = 180.0
+    massif_center_x_m = -1320.0
+    massif_center_y_m = 1080.0
     massif_delta_x_m = world_x_m - massif_center_x_m
     massif_delta_y_m = world_y_m - massif_center_y_m
     massif_distance_m = math.hypot(massif_delta_x_m, massif_delta_y_m)
     massif_theta = math.atan2(massif_delta_y_m, massif_delta_x_m)
-    massif_normalized = clamp(massif_distance_m / 4350.0, 0.0, 1.3)
+    massif_normalized = clamp(massif_distance_m / 28250.0, 0.0, 1.35)
 
-    concave_shield = math.pow(clamp(1.0 - math.pow(massif_normalized, 1.55), 0.0, 1.0), 1.18)
-    upper_steepening = math.pow(clamp(1.0 - massif_distance_m / 1650.0, 0.0, 1.0), 2.2) * 165.0
-    shoulder_bench = math.exp(-math.pow((massif_distance_m - 2850.0) / 520.0, 2.0)) * 55.0
-    asymmetry = math.sin(world_x_m * 0.00042 + 0.9) * 24.0 + math.sin(world_y_m * 0.00036 - 1.7) * 18.0
-    coastal_protection = smooth_step(1250.0, 2400.0, landward_distance_m) * land_mask
-    massif_mask = clamp(smooth_step(0.04, 0.82, 1.0 - massif_normalized) * coastal_protection, 0.0, 1.0)
+    concave_shield = math.pow(clamp(1.0 - math.pow(massif_normalized, 1.42), 0.0, 1.0), 1.12)
+    upper_steepening = math.pow(clamp(1.0 - massif_distance_m / 9500.0, 0.0, 1.0), 2.05) * 420.0
+    shoulder_bench = math.exp(-math.pow((massif_distance_m - 17400.0) / 3300.0, 2.0)) * 185.0
+    asymmetry = math.sin(world_x_m * 0.000070 + 0.9) * 142.0 + math.sin(world_y_m * 0.000060 - 1.7) * 108.0 + math.sin((world_x_m + world_y_m) * 0.000040 + 2.1) * 70.0
+    coastal_protection = smooth_step(6200.0, 11800.0, landward_distance_m) * land_mask
+    massif_mask = clamp(smooth_step(0.035, 0.84, 1.0 - massif_normalized) * coastal_protection, 0.0, 1.0)
     massif_height_m = (TARGET_PEAK_HEIGHT_M * concave_shield + upper_steepening + shoulder_bench + asymmetry) * coastal_protection
 
-    normalized_catchment = (massif_theta + math.pi) / (2.0 * math.pi) * float(PRIMARY_CATCHMENT_COUNT)
-    wrapped_catchment = (normalized_catchment + float(PRIMARY_CATCHMENT_COUNT)) % float(PRIMARY_CATCHMENT_COUNT)
-    catchment_id = int(clamp(math.floor(wrapped_catchment), 0, PRIMARY_CATCHMENT_COUNT - 1))
-    nearest_ridge_index = round(wrapped_catchment) % PRIMARY_CATCHMENT_COUNT
-    ridge_theta = (float(nearest_ridge_index) / float(PRIMARY_CATCHMENT_COUNT)) * 2.0 * math.pi - math.pi
-    gully_theta = ((float(catchment_id) + 0.5) / float(PRIMARY_CATCHMENT_COUNT)) * 2.0 * math.pi - math.pi
-    ridge_delta = abs(math.atan2(math.sin(massif_theta - ridge_theta), math.cos(massif_theta - ridge_theta)))
-    gully_delta = abs(math.atan2(math.sin(massif_theta - gully_theta), math.cos(massif_theta - gully_theta)))
+    def angular_delta(a: float, b: float) -> float:
+        return abs(math.atan2(math.sin(a - b), math.cos(a - b)))
 
-    mid_slope_mask = smooth_step(1450.0, 2750.0, massif_distance_m) * (1.0 - smooth_step(5600.0, 6600.0, massif_distance_m)) * land_mask
-    ridge_mask = (1.0 - smooth_step(0.035, 0.125, ridge_delta)) * mid_slope_mask * smooth_step(1350.0, 2200.0, landward_distance_m)
-    gully_reach_mask = smooth_step(1800.0, 2900.0, massif_distance_m) * smooth_step(700.0, 1350.0, landward_distance_m) * land_mask
-    gully_mask = (1.0 - smooth_step(0.038, 0.120, gully_delta)) * gully_reach_mask
-    lahar_catchment = catchment_id in {1, 4, 7, 10, 12}
-    lahar_corridor_mask = gully_mask * smooth_step(2600.0, 4300.0, massif_distance_m) if lahar_catchment else 0.0
-    coastal_fan_mask = (1.0 - smooth_step(0.045, 0.150, gully_delta)) * smooth_step(260.0, 720.0, landward_distance_m) * (1.0 - smooth_step(1050.0, 1650.0, landward_distance_m)) * land_mask
-    ridge_height_m = ridge_mask * lerp(28.0, 96.0, smooth_step(2600.0, 4300.0, massif_distance_m))
-    gully_incision_m = gully_mask * (lerp(18.0, 72.0, smooth_step(2200.0, 5100.0, massif_distance_m)) + lahar_corridor_mask * 46.0)
-    fan_deposit_m = coastal_fan_mask * lerp(8.0, 26.0, smooth_step(380.0, 900.0, landward_distance_m))
+    def wrap_angle(a: float) -> float:
+        return math.atan2(math.sin(a), math.cos(a))
 
-    crater_center_x_m = massif_center_x_m + 115.0
-    crater_center_y_m = massif_center_y_m - 80.0
+    basin_angles = [-3.04, -2.73, -2.48, -2.13, -1.86, -1.57, -1.20, -0.98, -0.61, -0.33, -0.05, 0.29, 0.57, 0.92, 1.13, 1.46, 1.73, 2.03, 2.34, 2.57, 2.82, 3.03, 3.13]
+    basin_widths = [0.155, 0.110, 0.135, 0.175, 0.120, 0.160, 0.105, 0.185, 0.130, 0.115, 0.170, 0.145, 0.105, 0.190, 0.100, 0.155, 0.125, 0.180, 0.112, 0.148, 0.118, 0.090, 0.140]
+    basin_curves = [0.34, -0.18, 0.27, -0.31, 0.14, 0.42, -0.24, 0.19, -0.38, 0.25, -0.15, 0.33, -0.28, 0.16, -0.35, 0.22, 0.11, -0.29, 0.37, -0.12, 0.24, -0.41, 0.17]
+    basin_strengths = [0.92, 0.58, 0.74, 1.00, 0.63, 0.88, 0.52, 0.94, 0.70, 0.61, 0.97, 0.79, 0.55, 1.00, 0.50, 0.83, 0.69, 0.91, 0.57, 0.77, 0.60, 0.49, 0.72]
+
+    distance01 = clamp(massif_distance_m / 38000.0, 0.0, 1.0)
+    basin_domain_warp = 0.18 * math.sin(massif_distance_m * 0.00017 + massif_theta * 2.70) + 0.11 * math.sin(world_x_m * 0.000061 - world_y_m * 0.000047 + 0.8) + 0.07 * math.sin((world_x_m - world_y_m) * 0.000039 + massif_theta * 4.1)
+    warped_theta = wrap_angle(massif_theta + basin_domain_warp * smooth_step(0.08, 0.94, distance01))
+
+    catchment_id = 0
+    best_gully_delta = 999.0
+    for idx, angle in enumerate(basin_angles):
+        curved_center = wrap_angle(angle + basin_curves[idx] * 0.18 * smooth_step(0.16, 0.88, distance01))
+        delta = angular_delta(warped_theta, curved_center)
+        if delta < best_gully_delta:
+            best_gully_delta = delta
+            catchment_id = idx
+
+    best_ridge_delta = 999.0
+    for idx, angle in enumerate(basin_angles):
+        next_idx = (idx + 1) % PRIMARY_CATCHMENT_COUNT
+        boundary_b = basin_angles[next_idx] + (2.0 * math.pi if next_idx == 0 else 0.0)
+        boundary_angle = wrap_angle((angle + boundary_b) * 0.5 + 0.045 * math.sin(float(idx) * 1.91))
+        best_ridge_delta = min(best_ridge_delta, angular_delta(warped_theta, boundary_angle))
+
+    basin_width = basin_widths[catchment_id]
+    basin_strength = basin_strengths[catchment_id]
+    mid_slope_mask = smooth_step(5200.0, 14800.0, massif_distance_m) * (1.0 - smooth_step(35000.0, 40500.0, massif_distance_m)) * land_mask
+    ridge_breakup = clamp(0.72 + 0.20 * math.sin(massif_distance_m * 0.00029 + warped_theta * 5.3) + 0.14 * math.sin(world_x_m * 0.000083 + world_y_m * 0.000051), 0.38, 1.0)
+    gully_breakup = clamp(0.78 + 0.18 * math.sin(massif_distance_m * 0.00034 - warped_theta * 3.7) + 0.12 * math.sin(world_x_m * 0.000047 - world_y_m * 0.000089), 0.42, 1.0)
+    ridge_mask = (1.0 - smooth_step(0.042, 0.150 + basin_width * 0.18, best_ridge_delta)) * mid_slope_mask * smooth_step(5400.0, 10400.0, landward_distance_m) * ridge_breakup
+    gully_reach_mask = smooth_step(6500.0, 13200.0, massif_distance_m) * smooth_step(3300.0, 7400.0, landward_distance_m) * (1.0 - smooth_step(36500.0, 43000.0, massif_distance_m)) * land_mask
+    trunk_gully_mask = (1.0 - smooth_step(basin_width * 0.20, basin_width * 0.72, best_gully_delta)) * gully_reach_mask * basin_strength * gully_breakup
+    branch_angle_a = wrap_angle(basin_angles[catchment_id] + basin_curves[catchment_id] * 0.42 + math.sin(distance01 * 5.0 + float(catchment_id)) * 0.10)
+    branch_angle_b = wrap_angle(basin_angles[catchment_id] - basin_curves[catchment_id] * 0.35 + math.cos(distance01 * 4.0 + float(catchment_id) * 0.7) * 0.12)
+    branch_reach = smooth_step(10500.0, 18000.0, massif_distance_m) * (1.0 - smooth_step(28500.0, 39000.0, massif_distance_m)) * land_mask
+    secondary_branch_mask = max((1.0 - smooth_step(0.030, 0.085, angular_delta(warped_theta, branch_angle_a))) * branch_reach * 0.55, (1.0 - smooth_step(0.035, 0.095, angular_delta(warped_theta, branch_angle_b))) * branch_reach * 0.42)
+    gully_mask = clamp(trunk_gully_mask + secondary_branch_mask, 0.0, 1.0)
+    lahar_catchment = catchment_id in {2, 5, 8, 11, 13, 17, 20}
+    lahar_corridor_mask = trunk_gully_mask * smooth_step(12200.0, 22500.0, massif_distance_m) * (1.0 - smooth_step(36000.0, 43500.0, massif_distance_m)) if lahar_catchment else 0.0
+    coastal_fan_mask = (1.0 - smooth_step(basin_width * 0.30, basin_width * 0.95, best_gully_delta)) * smooth_step(1200.0, 3900.0, landward_distance_m) * (1.0 - smooth_step(7200.0, 11800.0, landward_distance_m)) * land_mask * basin_strength
+    ridge_height_m = ridge_mask * lerp(85.0, 310.0, smooth_step(10500.0, 28000.0, massif_distance_m))
+    gully_incision_m = gully_mask * (lerp(65.0, 260.0, smooth_step(9000.0, 33500.0, massif_distance_m)) + lahar_corridor_mask * 145.0)
+    fan_deposit_m = coastal_fan_mask * lerp(22.0, 82.0, smooth_step(1900.0, 6500.0, landward_distance_m))
+
+    crater_center_x_m = massif_center_x_m + 720.0
+    crater_center_y_m = massif_center_y_m - 520.0
     crater_delta_x_m = world_x_m - crater_center_x_m
     crater_delta_y_m = world_y_m - crater_center_y_m
     crater_yaw = 0.42
     crater_u = crater_delta_x_m * math.cos(crater_yaw) + crater_delta_y_m * math.sin(crater_yaw)
     crater_v = -crater_delta_x_m * math.sin(crater_yaw) + crater_delta_y_m * math.cos(crater_yaw)
-    crater_norm = math.sqrt(math.pow(crater_u / 390.0, 2.0) + math.pow(crater_v / 285.0, 2.0))
-    crater_mask = (1.0 - smooth_step(0.72, 1.02, crater_norm)) * massif_mask
-    rim_mask = ring_mask(crater_norm, 1.0, 0.24) * massif_mask
-    vent_distance_m = math.hypot(world_x_m - (crater_center_x_m - 75.0), world_y_m - (crater_center_y_m + 95.0))
-    vent_mask = (1.0 - smooth_step(70.0, 175.0, vent_distance_m)) * crater_mask
-    breach_delta = abs(math.atan2(math.sin(massif_theta + 0.82), math.cos(massif_theta + 0.82)))
-    breach_mask = (1.0 - smooth_step(0.050, 0.155, breach_delta)) * smooth_step(390.0, 720.0, massif_distance_m) * (1.0 - smooth_step(2100.0, 2850.0, massif_distance_m)) * massif_mask
-    fissure_mask = (1.0 - smooth_step(0.018, 0.052, breach_delta)) * smooth_step(1050.0, 1450.0, massif_distance_m) * (1.0 - smooth_step(2400.0, 3150.0, massif_distance_m)) * massif_mask
+    crater_norm = math.sqrt(math.pow(crater_u / 1850.0, 2.0) + math.pow(crater_v / 1320.0, 2.0))
+    crater_mask = (1.0 - smooth_step(0.72, 1.04, crater_norm)) * massif_mask
+    rim_mask = ring_mask(crater_norm, 1.0, 0.27) * massif_mask
+    vent_distance_m = math.hypot(world_x_m - (crater_center_x_m - 410.0), world_y_m - (crater_center_y_m + 520.0))
+    vent_mask = (1.0 - smooth_step(320.0, 840.0, vent_distance_m)) * crater_mask
+    breach_delta = angular_delta(warped_theta, -0.82)
+    breach_mask = (1.0 - smooth_step(0.040, 0.135, breach_delta)) * smooth_step(1850.0, 4200.0, massif_distance_m) * (1.0 - smooth_step(11800.0, 17800.0, massif_distance_m)) * massif_mask
+    fissure_mask = (1.0 - smooth_step(0.014, 0.045, breach_delta)) * smooth_step(5600.0, 8200.0, massif_distance_m) * (1.0 - smooth_step(18500.0, 26000.0, massif_distance_m)) * massif_mask
     broken_rim_mask = rim_mask * (1.0 - breach_mask)
     lava_crust_mask = clamp(crater_mask * 0.70 + vent_mask + breach_mask * 0.45 + fissure_mask * 0.60, 0.0, 1.0)
     unstable_crust_mask = clamp(vent_mask + fissure_mask + lava_crust_mask * 0.45, 0.0, 1.0)
     hard_blocker_mask = clamp(broken_rim_mask * 0.75 + vent_mask + fissure_mask * 0.85 + breach_mask * 0.35, 0.0, 1.0)
 
-    long_wave_undulation_m = math.sin(world_x_m * 0.0018 + world_y_m * 0.0011) * 8.0 + math.sin(world_x_m * 0.0027 - world_y_m * 0.0016) * 5.0
+    long_wave_undulation_m = math.sin(world_x_m * 0.00030 + world_y_m * 0.00018) * 46.0 + math.sin(world_x_m * 0.00045 - world_y_m * 0.00027) * 32.0 + math.sin(world_x_m * 0.00012 + massif_theta * 3.0) * 24.0
     terrain_process_height_m = (
         massif_height_m
         + long_wave_undulation_m * land_mask
         + ridge_height_m
         - gully_incision_m
         + fan_deposit_m
-        + broken_rim_mask * 82.0
-        - (crater_mask * 128.0 + vent_mask * 78.0 + breach_mask * 58.0 + fissure_mask * 32.0)
+        + broken_rim_mask * 260.0
+        - (crater_mask * 420.0 + vent_mask * 260.0 + breach_mask * 190.0 + fissure_mask * 110.0)
     )
     land_height_m = max(coastal_land_height_m - gully_incision_m * 0.18, coastal_land_height_m + terrain_process_height_m)
     raw_height_m = lerp(ocean_height_m, land_height_m, land_mask)
@@ -338,7 +370,7 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
                 color = (240.0, 238.0, 211.0)
             color_row.extend(rgb_to_byte(color))
 
-            h_norm = clamp((h + 145.0) / (1745.0 + 145.0), 0.0, 1.0)
+            h_norm = clamp((h + 145.0) / (4500.0 + 145.0), 0.0, 1.0)
             height_row.extend(rgb_to_byte((h_norm * 255.0, h_norm * 255.0, h_norm * 255.0)))
             s_norm = clamp(sl / 55.0, 0.0, 1.0)
             slope_row.extend(rgb_to_byte((s_norm * 255.0, s_norm * 255.0, s_norm * 255.0)))
@@ -357,7 +389,7 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
         slope_rows.append(slope_row)
         mask_rows.append(mask_row)
 
-    prefix = f"PR5_Batch003_Island_{resolution}px"
+    prefix = f"PR5_Batch004_X6_Island_{resolution}px"
     outputs = {
         "color_relief_png": output_dir / f"{prefix}_ColorRelief.png",
         "height_png": output_dir / f"{prefix}_Height.png",
@@ -387,8 +419,11 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
         "square_edge_samples": square_edge_samples,
         "slope_max_deg_preview": round(max_slope, 4),
         "elapsed_seconds": round(elapsed, 3),
+        "linear_scale_multiplier_vs_batch003": 6.0,
+        "area_scale_multiplier_vs_batch003": 36.0,
+        "morphology": "x6-irregular-basin-graph-anti-radial",
         "outputs": {key: str(path.as_posix()) for key, path in outputs.items()},
-        "note": "Tracked preview evidence generated from deterministic PR5 Batch 003 terrain math. Not an AI-generated image and not full 8129x8129 export.",
+        "note": "Tracked preview evidence generated from deterministic PR5 Batch 004 x6 anti-radial terrain math. Not an AI-generated image and not full 8129x8129 export.",
     }
     manifest_path = output_dir / f"{prefix}_Manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
@@ -396,9 +431,9 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
 
     readme = output_dir / "README.md"
     readme.write_text(
-        "# PR5 Batch 003 Terrain Preview Images\n\n"
-        "These files are labelled, tracked preview evidence generated from the deterministic PR5 Batch 003 terrain model. "
-        "They are not AI art, prompt renders, or UE screenshots.\n\n"
+        "# PR5 Batch 004 X6 Terrain Preview Images\n\n"
+        "These files are labelled, tracked terrain evidence generated from the deterministic PR5 Batch 004 x6 anti-radial terrain model. "
+        "They are not AI art, prompt renders, broad documentation, or UE screenshots.\n\n"
         f"Latest generated preview: `{prefix}`.\n\n"
         "## Files\n\n"
         f"- `{outputs['color_relief_png'].name}` — island color relief view with hillshade, coastline, beach, shelf, ridges, crater, and volcanic relief.\n"
@@ -408,9 +443,9 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
         f"- `{manifest_path.name}` — metrics and provenance for the generated preview.\n\n"
         "## Regenerate\n\n"
         "```bash\n"
-        f"python3 scripts/terrain-preview-export.py --resolution {resolution}\n"
+        f"python3 scripts/terrain-preview-export.py --resolution {resolution} --output-dir Images/TerrainPreview\n"
         "```\n\n"
-        "Full 8129 x 8129 export remains a later heavyweight export path.\n",
+        "Full 8129 x 8129 export at 12 m/sample remains a later heavyweight export path.\n",
         encoding="utf-8",
     )
     outputs["readme_md"] = readme
@@ -418,9 +453,9 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Export deterministic PR5 Batch 003 island preview PNGs.")
+    parser = argparse.ArgumentParser(description="Export deterministic PR5 Batch 004 x6 anti-radial island preview PNGs.")
     parser.add_argument("--resolution", type=int, default=1024, help="Preview resolution per side. Default: 1024.")
-    parser.add_argument("--output-dir", type=Path, default=Path("Docs/World/TerrainPreview"), help="Output directory for tracked preview evidence.")
+    parser.add_argument("--output-dir", type=Path, default=Path("Images/TerrainPreview"), help="Output directory for tracked terrain preview evidence.")
     args = parser.parse_args()
 
     if args.resolution < 64:

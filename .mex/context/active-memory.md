@@ -339,7 +339,7 @@ PR5 Batch 003 / 005 was GitHub PR #45 on branch `pr5-batch003-005-sea-level-coas
 
 ## 2026-06-27-pr5lifecycle-repo-files-correction
 
-status: active-unreviewed
+status: confirmed
 created: 2026-06-27
 source: user correction during PR5 Batch 003 recovery
 target: pr5lifecycle-precursor/**, pr5lifecycle-runtimefiles/**
@@ -350,7 +350,7 @@ Correction: `pr5lifecycle-precursor/**` and `pr5lifecycle-runtimefiles/**` are p
 
 ## 2026-06-27-pr5-batch003-006-runtime-mesh-resolution
 
-status: active-unreviewed
+status: confirmed
 created: 2026-06-27
 source: pr5lifecycle-runtimefiles/003/006_runtime_mesh_resolution_lod_streaming_research.md
 target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, Source/JungleGame/JungleFullSizeTerrainShellActor.h, Source/JungleGame/JungleFullSizeTerrainShellActor.cpp, pr5lifecycle-precursor/003/**, pr5lifecycle-runtimefiles/003/**
@@ -361,7 +361,7 @@ PR5 Batch 003 / 006 is the runtime mesh resolution, LOD, and terrain scale bridg
 
 ## 2026-06-27-pr5-batch003-007-terrain-mask-channels
 
-status: active-unreviewed
+status: confirmed
 created: 2026-06-27
 source: pr5lifecycle-runtimefiles/003/007_terrain_masks_channels_material_debug_research.md
 target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, Source/JungleGame/JungleFullSizeTerrainShellActor.cpp
@@ -372,7 +372,7 @@ PR5 Batch 003 / 007 adds terrain channel sample and metrics structures, debug ch
 
 ## 2026-06-27-pr5-batch003-008-topographic-export-evidence
 
-status: active-unreviewed
+status: confirmed
 created: 2026-06-27
 source: pr5lifecycle-runtimefiles/003/008_heightfield_export_topographic_comparison_research.md
 target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, Source/JungleGame/JungleFullSizeTerrainShellActor.cpp
@@ -383,7 +383,7 @@ PR5 Batch 003 / 008 adds topographic export/evidence metrics without writing hea
 
 ## 2026-06-27-pr5-batch003-009-generator-architecture
 
-status: active-unreviewed
+status: confirmed
 created: 2026-06-27
 source: pr5lifecycle-runtimefiles/003/009_large_terrain_generator_architecture_research.md
 target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, Source/JungleGame/JungleFullSizeTerrainShellActor.cpp
@@ -394,7 +394,7 @@ PR5 Batch 003 / 009 adds generator config identity, version ID `JG_TERRAIN_GENER
 
 ## 2026-06-27-pr5-batch003-010-acceptance-handoff
 
-status: active-unreviewed
+status: confirmed
 created: 2026-06-27
 source: pr5lifecycle-runtimefiles/003/010_full_terrain_batch_acceptance_and_handoff_research.md
 target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, Source/JungleGame/JungleFullSizeTerrainShellActor.cpp, handoffs/2026-06-27-pr5-batch-003-runtime-006-010.md
@@ -405,7 +405,7 @@ PR5 Batch 003 / 010 adds aggregate terrain batch acceptance metrics and tracked 
 
 ## 2026-06-27-pr5-batch003-shoreline-acceptance-fix
 
-status: active-unreviewed
+status: confirmed
 created: 2026-06-27
 source: derived topography preview after PR5 Batch 003 / 010
 target: Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp
@@ -416,11 +416,66 @@ This fix keeps the accepted 1743.77 m volcanic peak while hardening final coasta
 
 ## 2026-06-27-pr5-terrain-preview-image-exporter
 
-status: active-unreviewed
+status: confirmed
 created: 2026-06-27
 source: user request for a tool-rendered island image, not AI-generated imagery
-target: scripts/terrain-preview-export.py, Docs/World/TerrainPreview/**
-reason: The project needs a deterministic, labelled preview image exporter that renders the PR5 Batch 003 island from sampled terrain data rather than prompt-generated concept art.
+target: scripts/terrain-preview-export.py, Images/TerrainPreview/**
+reason: The project needs a deterministic, labelled preview image exporter that renders the PR5 Batch 003 island from sampled terrain data rather than prompt-generated concept art, without relying on deleted broad docs folders.
 review_by: 2026-07-27
 
-Added `scripts/terrain-preview-export.py`, a dependency-free Python PNG exporter that mirrors the PR5 Batch 003 terrain math and writes labelled, tracked documentation evidence under `Docs/World/TerrainPreview/`. Default preview resolution is 1024 px so the primary island preview is useful without UE rendering or full 8129 x 8129 export. Generated files include color relief, grayscale height, grayscale slope, RGB mask atlas, manifest JSON, and README. The 1024 px generated manifest reported height max 1750.4691 m, shoreline error max 0.0 m, beach continuity 100.0%, ocean below sea 100.0%, and square-edge ocean violations 0/4092. These files are intended as small tracked terrain evidence, not ignored scratch. Full 8129 x 8129 export remains a later heavyweight tool path.
+PR5 terrain preview tool was GitHub PR #52 on branch `pr5-terrain-preview-tool`. It added `scripts/terrain-preview-export.py`, a dependency-free Python PNG exporter that mirrors the PR5 Batch 003 terrain math and writes labelled, tracked terrain evidence under `Images/TerrainPreview/`. Default preview resolution is 1024 px so the primary island preview is useful without UE rendering or full 8129 x 8129 export. Generated files include color relief, grayscale height, grayscale slope, RGB mask atlas, manifest JSON, and README. The 1024 px generated manifest reported height max 1750.4691 m, shoreline error max 0.0 m, beach continuity 100.0%, ocean below sea 100.0%, and square-edge ocean violations 0/4092. These files are intended as small tracked terrain evidence, not ignored scratch, and must not be buried under deleted `Docs/World` structure. PR #52 landed on `main` via merge commit `6da06c8`; branch source commit was `17b65dd`. Full 8129 x 8129 export remains a later heavyweight tool path.
+
+## 2026-06-27-docs-folders-intentional-removal
+
+status: confirmed
+created: 2026-06-27
+source: user correction after terrain preview review
+target: docs/**, Docs/**, Images/TerrainPreview/**
+reason: User intentionally deleted broad `docs/` and `Docs/` folders because they were artificial planning/research spillover, not required project source. The only valuable output from that deleted structure was the terrain map generator output.
+review_by: 2026-07-27
+
+Treat deletion of broad `docs/**` and `Docs/**` folders as intentional cleanup, not repo damage. Do not restore those folders unless explicitly requested. Preserve PR5 lifecycle state under `pr5lifecycle-precursor/**` and `pr5lifecycle-runtimefiles/**`. Terrain preview evidence belongs under `Images/TerrainPreview/**`, not under deleted `Docs/World/TerrainPreview/**`. Future workflow references must avoid dead `docs/` / `Docs/` paths and use `.mex`, `pr5lifecycle-*`, `handoffs`, `Source`, `scripts`, and `Images` as appropriate.
+
+## 2026-06-27-pr5-batch003-complete-current-state
+
+status: confirmed
+created: 2026-06-27
+source: user-provided merged PR history and local git log
+target: .mex/context/active-memory.md, pr5lifecycle-precursor/004/**
+reason: `.mex` was stale and still represented PR5 Batch 003 006-010, shoreline fix, and terrain preview exporter as active-unreviewed despite PRs #46-#52 being merged.
+review_by: 2026-07-27
+
+PR5 Batch 003 is complete through GitHub PR #52. Merged history: #40 packaged smoke evidence, #41 terrain shell v2, #42 volcanic massif heightfield, #43 ridges/catchments/gullies, #44 crater/lava terrain hazards, #45 sea-level coast handoff, #46 runtime mesh resolution, #47 terrain mask channels, #48 topographic evidence, #49 generator architecture, #50 terrain acceptance handoff, #51 shoreline acceptance fix, and #52 terrain preview tool. Current terrain preview evidence proves coast acceptance is clean, but visual review shows the interior ridge/gully system still reads as procedural radial gear/fan blades. Next lane is PR5 Batch 004: a three-PR lifecycle focused on 6x world/map scale and fixing the image-proven radial terrain morphology while preserving the working coast/beach/shelf acceptance.
+
+## 2026-06-27-pr5-batch004-precursor-setup
+
+status: active-unreviewed
+created: 2026-06-27
+source: user request after Batch 003 terrain preview review
+target: pr5lifecycle-precursor/004/**
+reason: User requested a three-PR PR5 lifecycle precursor batch for the map-size increase and terrain defects shown by the generated preview images.
+review_by: 2026-07-27
+
+PR5 Batch 004 precursor setup contains three standalone researcher prompts: `001_x6_world_scale_terrain_authority_prompt.md`, `002_irregular_volcanic_catchments_anti_radial_prompt.md`, and `003_scaled_preview_acceptance_and_handoff_prompt.md`. Batch 004 scope is terrain-only: scale the world/map 6x in linear size, remove the image-proven gear/fan-blade radial ridge/gully morphology, and regenerate/save acceptance evidence under `Images/TerrainPreview/` while preserving the clean Batch 003 coast/beach/shelf metrics. Broad `docs/` and `Docs/` folders remain intentionally deleted and must not be restored as part of this lifecycle.
+
+## 2026-06-27-pr5-implementation-not-docs-workflow
+
+status: confirmed
+created: 2026-06-27
+source: user correction during Batch 004 merge workflow
+target: .mex/patterns/pr5-implementation-workflow.md, .mex/context/active-memory.md
+reason: User explicitly corrected that PR5 workflow/merge authority means run the actual implementation workflow and build game/source changes, not package precursor/runtime Markdown or docs-only changes as a fake implementation PR.
+review_by: 2026-07-27
+
+When the user gives PR5 workflow authority, merge authority, or says to run the workflow, implement the actual approved game/source scope for the batch. Use precursor/runtime files as inputs, not as the whole deliverable. Do not create docs-only, lifecycle-only, or prompt-file-only PRs unless the user explicitly asks for only Markdown deliverables. Batch implementation PRs should be substantial enough for the approved scope and should not default to tiny low-impact ~200 LOC paper changes when the requested terrain/game work needs a larger source implementation. Current Batch 004 implementation target is actual terrain source/tooling work: 6x linear world scale, anti-radial catchment/ridge/gully rewrite, and regenerated terrain preview evidence under `Images/TerrainPreview/`.
+
+## 2026-06-27-pr5-batch004-x6-anti-radial-implementation
+
+status: active-unreviewed
+created: 2026-06-27
+source: pr5lifecycle-runtimefiles/004/** and user merge/workflow correction
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.*, Source/JungleGame/JungleFullSizeTerrainShellActor.*, scripts/terrain-preview-export.py, Images/TerrainPreview/**
+reason: Batch 004 required actual game/source implementation, not docs-only packaging: increase world/map scale by 6x, remove image-proven radial gear/fan-blade ridge/gully morphology, and regenerate deterministic terrain preview evidence.
+review_by: 2026-07-27
+
+PR5 Batch 004 implementation changes the canonical volcanic island terrain authority from 16.256 km to 97.536 km world size, mean island radius from 7 km to 42 km, max island radius from 7.35 km to 44.1 km, target peak from 1400 m to 3800 m, and primary catchments from 14 equal radial sectors to 23 deterministic irregular basin anchors. The ridge/gully model now uses warped basin angles, per-basin width/curve/strength data, branch gullies, basin-specific lahar corridors, irregular coastal fans, larger crater/vent/fissure scale, and scaled runtime shell/smoke-view extents. The terrain preview exporter mirrors the Batch 004 x6 terrain math and generated `Images/TerrainPreview/PR5_Batch004_X6_Island_1024px_*`; manifest reports world_size_m 97536.0, height_max_m 4593.8807, shoreline_error_max_m 0.0, beach_continuity_pct 100.0, ocean_below_sea_pct 100.0, square_edge_ocean_violations 0, linear scale 6.0, area scale 36.0, and morphology `x6-irregular-basin-graph-anti-radial`. UE Build.sh is still environment-blocked because documented local Build.sh paths are absent; Python exporter syntax and generation passed.
