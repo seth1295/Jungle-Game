@@ -20,8 +20,16 @@ struct FJGTerrainSample
 	float GullyMask = 0.0f;
 	float LaharCorridorMask = 0.0f;
 	float CoastalFanMask = 0.0f;
+	float CraterMask = 0.0f;
+	float RimMask = 0.0f;
+	float VentMask = 0.0f;
+	float BreachMask = 0.0f;
+	float LavaCrustMask = 0.0f;
+	float UnstableCrustMask = 0.0f;
+	float HardBlockerMask = 0.0f;
 	float RidgeHeightM = 0.0f;
 	float GullyIncisionM = 0.0f;
+	float CraterDepressionM = 0.0f;
 	int32 CatchmentId = INDEX_NONE;
 };
 
@@ -37,6 +45,9 @@ struct FJGTerrainMetrics
 	float MaxRidgeMask = 0.0f;
 	float MaxGullyMask = 0.0f;
 	float MaxLaharCorridorMask = 0.0f;
+	float MaxCraterMask = 0.0f;
+	float MaxVentMask = 0.0f;
+	float MaxHardBlockerMask = 0.0f;
 	int32 SampleCount = 0;
 	int32 CatchmentCount = 14;
 	int32 OceanEdgeSampleCount = 0;
