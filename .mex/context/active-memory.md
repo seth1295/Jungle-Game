@@ -236,4 +236,15 @@ target: Source/JungleGame/JungleFullSizeWorldAuthoritySpec.h, Docs/World/FullSiz
 reason: PR5 runtime batch 002 file 001 is being consumed as the first sequential implementation PR input.
 review_by: 2026-07-26
 
-PR5 Batch 002 / 001 establishes the first full-size world authority shell. The project-owned target world path is defined as `/Game/JungleGame/Maps/WLD_JungleIsland_Full`; existing template OpenWorld use is documented as a temporary bridge only because no project-owned map asset is present yet. Cell 0 remains a review anchor only. Validation: `git diff --check` and `git diff --cached --check` passed. Next target after this PR lands is runtime file 002 deterministic full-size terrain source.
+PR5 Batch 002 / 001 establishes the first full-size world authority shell. The project-owned target world path is defined as `/Game/JungleGame/Maps/WLD_JungleIsland_Full`; existing template OpenWorld use is documented as a temporary bridge only because no project-owned map asset is present yet. Cell 0 remains a review anchor only. Validation: `git diff --check` and `git diff --cached --check` passed. PR #36 landed on `main` as `9376897`. Next target is runtime file 002 deterministic full-size terrain source.
+
+## 2026-06-26-pr5-batch002-002-deterministic-terrain-source
+
+status: active-unreviewed
+created: 2026-06-26
+source: pr5lifecycle-runtimefiles/002/002_deterministic_full_size_terrain_source_research.md
+target: Docs/World/FullSizeTerrainSource.md
+reason: PR5 runtime batch 002 file 002 is being consumed as the second sequential implementation PR input.
+review_by: 2026-07-26
+
+PR5 Batch 002 / 002 defines the deterministic full-size terrain source contract: 8129 by 8129 vertices, 2 m source spacing, 16.256 km square domain, fixed config identity, required derived channels, developer-only review point intents, and generated artifact policy. Full generated rasters remain ignored by default. Next target after this PR lands is runtime file 003 full-size terrain in-game shell.
