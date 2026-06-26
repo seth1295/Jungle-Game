@@ -621,3 +621,80 @@ FString FJungleVolcanicIslandTerrainModel::BuildTopographicMetricsLogLine(const 
 		Metrics.SlopeHistogram[3],
 		Metrics.SlopeHistogram[4]);
 }
+
+FJGTerrainGeneratorConfig FJungleVolcanicIslandTerrainModel::BuildDefaultGeneratorConfig()
+{
+	FJGTerrainGeneratorConfig Config;
+	Config.WorldSizeMeters = WorldSizeM;
+	Config.SeaLevelMeters = SeaLevelM;
+	Config.TargetPeakMeters = TargetPeakHeightM;
+	Config.SourceVerticesPerSide = SourceReferenceVerticesPerSide;
+	Config.RuntimeTilesPerSideValue = RuntimeTilesPerSide;
+	return Config;
+}
+
+FString FJungleVolcanicIslandTerrainModel::BuildGeneratorConfigFingerprint(const FJGTerrainGeneratorConfig& Config)
+{
+	uint32 Hash = 2166136261u;
+	const auto MixUInt = [&Hash](uint32 Value)
+	{
+		Hash ^= Value;
+		Hash *= 16777619u;
+	};
+	const auto MixFloat = [&MixUInt](float Value)
+	{
+		MixUInt(static_cast<uint32>(FMath::RoundToInt(Value * 100.0f)));
+	};
+
+	MixUInt(GetTypeHash(Config.GeneratorId));
+	MixUInt(GetTypeHash(Config.VersionId));
+	MixUInt(static_cast<uint32>(Config.Seed));
+	MixFloat(Config.WorldSizeMeters);
+	MixFloat(Config.SeaLevelMeters);
+	MixFloat(Config.TargetPeakMeters);
+	MixUInt(static_cast<uint32>(Config.SourceVerticesPerSide));
+	MixUInt(static_cast<uint32>(Config.RuntimeTilesPerSideValue));
+	MixUInt(static_cast<uint32>(Config.ChannelCount));
+	MixUInt(Config.bCanonicalCoastline ? 1u : 0u);
+	MixUInt(Config.bDeterministicSampling ? 1u : 0u);
+	MixUInt(Config.bRuntimeMeshBridgeEnabled ? 1u : 0u);
+	MixUInt(Config.bTopographicEvidenceEnabled ? 1u : 0u);
+
+	return FString::Printf(TEXT("%08x"), Hash);
+}
+
+FJGTerrainGeneratorArchitectureMetrics FJungleVolcanicIslandTerrainModel::BuildGeneratorArchitectureMetrics(const FJGTerrainGeneratorConfig& Config)
+{
+	FJGTerrainGeneratorArchitectureMetrics Metrics;
+	Metrics.ConfigFingerprint = BuildGeneratorConfigFingerprint(Config);
+	Metrics.SourceVerticesPerSide = Config.SourceVerticesPerSide;
+	Metrics.RuntimeTilesPerSideValue = Config.RuntimeTilesPerSideValue;
+	Metrics.ChannelCount = Config.ChannelCount;
+	Metrics.ValidationStageCount = 4;
+	Metrics.bWorldSizeMatches = FMath::IsNearlyEqual(Config.WorldSizeMeters, WorldSizeM, 0.01f);
+	Metrics.bSeaLevelMatches = FMath::IsNearlyEqual(Config.SeaLevelMeters, SeaLevelM, 0.01f);
+	Metrics.bSourceResolutionMatches = Config.SourceVerticesPerSide == SourceReferenceVerticesPerSide;
+	Metrics.bCoastInvariantOwnedBySource = Config.bCanonicalCoastline;
+	Metrics.bRuntimeMeshBridgeEnabled = Config.bRuntimeMeshBridgeEnabled;
+	Metrics.bTopographicEvidenceEnabled = Config.bTopographicEvidenceEnabled;
+	Metrics.bArchitectureValid = Metrics.bWorldSizeMatches && Metrics.bSeaLevelMatches && Metrics.bSourceResolutionMatches && Metrics.bCoastInvariantOwnedBySource && Config.bDeterministicSampling && Metrics.bRuntimeMeshBridgeEnabled && Metrics.bTopographicEvidenceEnabled;
+	return Metrics;
+}
+
+FString FJungleVolcanicIslandTerrainModel::BuildGeneratorArchitectureLogLine(const FJGTerrainGeneratorArchitectureMetrics& Metrics)
+{
+	return FString::Printf(
+		TEXT("id=JG_TERRAIN_GENERATOR_009 fingerprint=%s source_vertices=%d runtime_tiles_per_side=%d channels=%d validation_stages=%d world_size_match=%s sea_level_match=%s source_resolution_match=%s coast_source_owned=%s runtime_mesh_bridge=%s topographic_evidence=%s architecture_valid=%s"),
+		*Metrics.ConfigFingerprint,
+		Metrics.SourceVerticesPerSide,
+		Metrics.RuntimeTilesPerSideValue,
+		Metrics.ChannelCount,
+		Metrics.ValidationStageCount,
+		Metrics.bWorldSizeMatches ? TEXT("true") : TEXT("false"),
+		Metrics.bSeaLevelMatches ? TEXT("true") : TEXT("false"),
+		Metrics.bSourceResolutionMatches ? TEXT("true") : TEXT("false"),
+		Metrics.bCoastInvariantOwnedBySource ? TEXT("true") : TEXT("false"),
+		Metrics.bRuntimeMeshBridgeEnabled ? TEXT("true") : TEXT("false"),
+		Metrics.bTopographicEvidenceEnabled ? TEXT("true") : TEXT("false"),
+		Metrics.bArchitectureValid ? TEXT("true") : TEXT("false"));
+}

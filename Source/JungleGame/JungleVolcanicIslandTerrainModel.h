@@ -180,6 +180,39 @@ struct FJGTerrainTopographicMetrics
 	int32 SlopeHistogram[5] = {0, 0, 0, 0, 0};
 };
 
+struct FJGTerrainGeneratorConfig
+{
+	FName GeneratorId = TEXT("JG_VOLCANIC_ISLAND_BATCH003");
+	FName VersionId = TEXT("JG_TERRAIN_GENERATOR_009");
+	int32 Seed = 3009;
+	float WorldSizeMeters = 16256.0f;
+	float SeaLevelMeters = 0.0f;
+	float TargetPeakMeters = 1400.0f;
+	int32 SourceVerticesPerSide = 8129;
+	int32 RuntimeTilesPerSideValue = 32;
+	int32 ChannelCount = 15;
+	bool bCanonicalCoastline = true;
+	bool bDeterministicSampling = true;
+	bool bRuntimeMeshBridgeEnabled = true;
+	bool bTopographicEvidenceEnabled = true;
+};
+
+struct FJGTerrainGeneratorArchitectureMetrics
+{
+	FString ConfigFingerprint;
+	int32 SourceVerticesPerSide = 0;
+	int32 RuntimeTilesPerSideValue = 0;
+	int32 ChannelCount = 0;
+	int32 ValidationStageCount = 0;
+	bool bWorldSizeMatches = false;
+	bool bSeaLevelMatches = false;
+	bool bSourceResolutionMatches = false;
+	bool bCoastInvariantOwnedBySource = false;
+	bool bRuntimeMeshBridgeEnabled = false;
+	bool bTopographicEvidenceEnabled = false;
+	bool bArchitectureValid = false;
+};
+
 class JUNGLEGAME_API FJungleVolcanicIslandTerrainModel
 {
 public:
@@ -218,6 +251,10 @@ public:
 	static FString BuildChannelMetricsLogLine(const FJGTerrainChannelMetrics& Metrics);
 	static FJGTerrainTopographicMetrics BuildTopographicMetrics(int32 ExportVerticesPerSide = RuntimePreviewVerticesPerSide);
 	static FString BuildTopographicMetricsLogLine(const FJGTerrainTopographicMetrics& Metrics);
+	static FJGTerrainGeneratorConfig BuildDefaultGeneratorConfig();
+	static FString BuildGeneratorConfigFingerprint(const FJGTerrainGeneratorConfig& Config);
+	static FJGTerrainGeneratorArchitectureMetrics BuildGeneratorArchitectureMetrics(const FJGTerrainGeneratorConfig& Config);
+	static FString BuildGeneratorArchitectureLogLine(const FJGTerrainGeneratorArchitectureMetrics& Metrics);
 
 private:
 	static float SmoothStep(float Edge0, float Edge1, float Value);
