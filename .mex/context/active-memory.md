@@ -258,4 +258,15 @@ target: Source/JungleGame/JungleFullSizeTerrainShellActor.h, Source/JungleGame/J
 reason: PR5 runtime batch 002 file 003 is being consumed as the third sequential implementation PR input.
 review_by: 2026-07-26
 
-PR5 Batch 002 / 003 adds a source-authored runtime terrain shell actor and spawns it from `JungleGameMode` while no project-owned `.umap` asset exists. The shell provides rough full-size world blockout structure for basin/lowland, creek valley, ridge spine, mountain shoulder, creek mouth/coast, and ocean edge placeholders. Validation: `git diff --cached --check` passed; UE Build.sh was invoked but exceeded the DevSpace 300s timeout without returning a compiler error. Next target after this PR lands is runtime file 004 full-size mask/biome debug state.
+PR5 Batch 002 / 003 adds a source-authored runtime terrain shell actor and spawns it from `JungleGameMode` while no project-owned `.umap` asset exists. The shell provides rough full-size world blockout structure for basin/lowland, creek valley, ridge spine, mountain shoulder, creek mouth/coast, and ocean edge placeholders. Validation: `git diff --cached --check` passed; UE Build.sh was invoked but exceeded the DevSpace 300s timeout without returning a compiler error. PR #38 was opened; merge endpoint was filtered, so branch head was fast-forward pushed to `main` as `4f317cc`. Next target is runtime file 004 full-size mask/biome debug state.
+
+## 2026-06-26-pr5-batch002-004-mask-biome-debug-state
+
+status: active-unreviewed
+created: 2026-06-26
+source: pr5lifecycle-runtimefiles/002/004_full_size_mask_biome_debug_state_research.md
+target: Source/JungleGame/JungleFullSizeMaskBiomeDebugSpec.h, Docs/World/FullSizeMaskBiomeDebugState.md
+reason: PR5 runtime batch 002 file 004 is being consumed as the fourth sequential implementation PR input.
+review_by: 2026-07-26
+
+PR5 Batch 002 / 004 defines developer-only full-size mask, biome, and traversal debug state. It adds required mask names, initial biome classes, traversal classes, and review sample fields while preserving the no player-facing navigation UI rule. Next target after this PR lands is runtime file 005 packaged full-size world smoke evidence.
