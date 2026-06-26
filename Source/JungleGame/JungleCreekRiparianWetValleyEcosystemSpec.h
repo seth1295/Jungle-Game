@@ -35,6 +35,288 @@ enum class EJungleCreekEvidenceCue : uint8
 	FalseBankOpening,
 };
 
+enum class EJungleCreekReachClass : uint8
+{
+	HeadwaterSeep,
+	EphemeralGully,
+	NarrowCreek,
+	WetValley,
+	Cascade,
+	Waterfall,
+	LowlandCreek,
+	CreekMouth,
+	TidalReach,
+};
+
+enum class EJungleCreekBankAffordance : uint8
+{
+	OpenTravel,
+	SlowTravel,
+	CarefulFooting,
+	SoftBlocker,
+	HardBlocker,
+	FalseAffordance,
+	RouteTrap,
+	CrossingApproach,
+	ForcedDetour,
+};
+
+enum class EJungleCreekCrossingValidity : uint8
+{
+	ValidPrimary,
+	ValidRisky,
+	FalseCrossing,
+	Blocked,
+	WeatherChanged,
+	NeedsReview,
+};
+
+enum class EJungleCreekCrossingType : uint8
+{
+	DryRockHop,
+	ShallowWade,
+	RootStep,
+	FallenLog,
+	GravelBar,
+	BoulderChoke,
+	NarrowPinch,
+	PoolEdgeSkirt,
+	UnsafeFlooded,
+	FalseCrossing,
+};
+
+enum class EJungleWaterSoundAnchorType : uint8
+{
+	Trickle,
+	Riffle,
+	Run,
+	Rapid,
+	Cascade,
+	Waterfall,
+	DeepPool,
+	DebrisJam,
+	Confluence,
+	CreekMouth,
+	FrogWetBand,
+	InsectWetBand,
+	RainDrip,
+	ValleyMuffle,
+};
+
+enum class EJungleCreekAcousticMaskState : uint8
+{
+	ClearDirectional,
+	VegetationMuffled,
+	ValleyReverb,
+	RainMasked,
+	WaterfallDominant,
+	ConfluenceConfused,
+	NightBiophonyDense,
+};
+
+enum class EJungleRiparianRainState : uint8
+{
+	DryBaseline,
+	LightRain,
+	HeavyRain,
+	StormBurst,
+	PostRainRising,
+	PostRainFalling,
+};
+
+enum class EJungleCreekFlowSpeedClass : uint8
+{
+	Still,
+	Slow,
+	Moderate,
+	Fast,
+	FloodPulse,
+};
+
+enum class EJungleCreekBedSurface : uint8
+{
+	SandMud,
+	Gravel,
+	Cobble,
+	Boulder,
+	Bedrock,
+	RootMat,
+	Debris,
+};
+
+enum class EJungleCreekBankShape : uint8
+{
+	LowShelf,
+	SlopedMud,
+	RootStep,
+	RootedToe,
+	Undercut,
+	CutBank,
+	BoulderStep,
+	VegetationGap,
+	SwampMargin,
+};
+
+enum class EJungleCreekVisibilityClass : uint8
+{
+	Clear,
+	PartiallyOccluded,
+	Glare,
+	FoamObscured,
+	RainObscured,
+	NightObscured,
+};
+
+enum class EJungleCreekRiskLevel : uint8
+{
+	Low,
+	Medium,
+	High,
+	Unsafe,
+};
+
+enum class EJungleCreekVegetationRisk : uint8
+{
+	None,
+	Snag,
+	DenseExit,
+	WaitAWhile,
+	Deadfall,
+};
+
+enum class EJungleCreekRouteEvidence : uint8
+{
+	WaterDirection,
+	ShallowRiffle,
+	ExposedStone,
+	LowOppositeBank,
+	DeepPoolDarkWater,
+	UndercutExitBank,
+	RainSwollen,
+	SlipperyRockSheen,
+	DenseExitVegetation,
+	DebrisJamBlock,
+};
+
+enum class EJungleCreekDebugView : uint8
+{
+	FlowDirection,
+	ReachClass,
+	BankAffordance,
+	Wetness,
+	CrossingCandidates,
+	CrossingValidity,
+	RouteEvidence,
+	RouteTraps,
+	SoundAnchors,
+	RainResponse,
+};
+
+/** Data-asset-shaped source contract for later reflected creek reach assets. */
+struct UCreekReachDataAsset
+{
+	FName ReachId;
+	int32 CatchmentId = INDEX_NONE;
+	int32 DrainageOrder = 0;
+	FVector FlowDirectionVector = FVector::ForwardVector;
+	FName DownstreamNodeId;
+	TArray<FName> UpstreamNodeIds;
+	FName NearestOutletId;
+	EJungleCreekReachClass ReachClass = EJungleCreekReachClass::NarrowCreek;
+	float ReachSlope = 0.0f;
+	float ValleyConfinement = 0.0f;
+	float BankAsymmetry = 0.0f;
+	EJungleRiparianRainState RecentRainResponse = EJungleRiparianRainState::DryBaseline;
+	bool bHasTidalInfluence = false;
+	float CrossingDensityBudget = 0.0f;
+};
+
+struct FCreekReachRuntimeState
+{
+	FName ReachId;
+	EJungleRiparianRainState RainState = EJungleRiparianRainState::DryBaseline;
+	EJungleCreekFlowSpeedClass FlowSpeedClass = EJungleCreekFlowSpeedClass::Slow;
+	float NormalizedWetness = 0.0f;
+	float NormalizedAudioMasking = 0.0f;
+	bool bEphemeralGullyActive = false;
+	bool bCrossingsMayHaveChanged = false;
+};
+
+struct FCreekCrossingCandidate
+{
+	FName CandidateId;
+	FName CreekReachId;
+	int32 CatchmentId = INDEX_NONE;
+	FVector WorldLocation = FVector::ZeroVector;
+	FName EntryBankSide;
+	FName ExitBankSide;
+	FVector ApproachVector = FVector::ForwardVector;
+	FVector ExitVector = FVector::ForwardVector;
+	FVector FlowDirectionVector = FVector::ForwardVector;
+	float ChannelWidthM = 0.0f;
+	float WaterDepthEstimateM = 0.0f;
+	EJungleCreekFlowSpeedClass FlowSpeedClass = EJungleCreekFlowSpeedClass::Slow;
+	EJungleCreekBedSurface BedSurface = EJungleCreekBedSurface::Gravel;
+	EJungleCreekBankShape BankEntryShape = EJungleCreekBankShape::LowShelf;
+	EJungleCreekBankShape BankExitShape = EJungleCreekBankShape::LowShelf;
+	EJungleCreekVisibilityClass VisibilityClass = EJungleCreekVisibilityClass::Clear;
+	EJungleCreekRiskLevel FootingRisk = EJungleCreekRiskLevel::Low;
+	EJungleCreekRiskLevel WaterRisk = EJungleCreekRiskLevel::Low;
+	EJungleCreekVegetationRisk VegetationRisk = EJungleCreekVegetationRisk::None;
+	EJungleRiparianRainState RecentRainState = EJungleRiparianRainState::DryBaseline;
+	TArray<EJungleCreekRouteEvidence> PlayerReadableEvidence;
+	EJungleCreekCrossingValidity ValidationStatus = EJungleCreekCrossingValidity::NeedsReview;
+	EJungleCreekCrossingType CrossingType = EJungleCreekCrossingType::ShallowWade;
+	FName DebugReason;
+
+	bool HasApproachChannelAndExit() const
+	{
+		return !EntryBankSide.IsNone() && !ExitBankSide.IsNone() && FlowDirectionVector.SizeSquared() > UE_SMALL_NUMBER;
+	}
+};
+
+struct FRiparianBiomeOutput
+{
+	FName OutputId;
+	EJungleCreekRiparianWetValleyZone Zone = EJungleCreekRiparianWetValleyZone::RiparianBench;
+	EJunglePCGSpawnRuleKind RuleKind = EJunglePCGSpawnRuleKind::GroundClutterPlaceholder;
+	EJunglePCGTerrainFrictionClass FrictionClass = EJunglePCGTerrainFrictionClass::ReadablePlantFriction;
+	TArray<FName> RequiredMasks;
+	bool bDeveloperOnly = true;
+};
+
+struct FWaterSoundAnchor
+{
+	FName AnchorId;
+	FName CreekReachId;
+	EJungleWaterSoundAnchorType AnchorType = EJungleWaterSoundAnchorType::Run;
+	EJungleCreekAcousticMaskState AcousticMaskState = EJungleCreekAcousticMaskState::ClearDirectional;
+	float RadiusMeters = 24.0f;
+	float NormalizedMasking = 0.0f;
+	bool bDeveloperOnly = true;
+};
+
+struct FRouteEvidencePoint
+{
+	FName EvidenceId;
+	FName CreekReachId;
+	FVector WorldLocation = FVector::ZeroVector;
+	EJungleCreekRouteEvidence Evidence = EJungleCreekRouteEvidence::WaterDirection;
+	float EvidenceStrength = 1.0f;
+	bool bDeveloperOnly = true;
+};
+
+struct FWetValleyRiskZone
+{
+	FName RiskZoneId;
+	FName CreekReachId;
+	EJungleCreekBankAffordance Affordance = EJungleCreekBankAffordance::SlowTravel;
+	EJungleCreekRiskLevel FootingRisk = EJungleCreekRiskLevel::Medium;
+	EJungleCreekVegetationRisk VegetationRisk = EJungleCreekVegetationRisk::Snag;
+	float NormalizedWetness = 0.0f;
+	float NormalizedVisibilityLoss = 0.0f;
+};
+
 /** Reviewable contract for a future creek/riparian PCG rule. */
 struct FJungleCreekRiparianRuleContract
 {
@@ -59,7 +341,7 @@ struct FJungleCreekRiparianRuleContract
 
 struct FJungleCreekRiparianWetValleyEcosystemSpec
 {
-	static constexpr int32 EcosystemPassVersion = 1;
+	static constexpr int32 EcosystemPassVersion = 2;
 	static constexpr float ChannelEdgeMeters = 8.0f;
 	static constexpr float CreekBankAffordanceMeters = 24.0f;
 	static constexpr float RiparianBenchMeters = 48.0f;
@@ -100,6 +382,66 @@ struct FJungleCreekRiparianWetValleyEcosystemSpec
 			&& Sample.GetMaskValue(TEXT("affordance_zone")) >= MinimumCrossingAffordance
 			&& Sample.GetMaskValue(TEXT("footing_risk")) <= MaximumCrossingFootingRisk
 			&& Sample.GetMaskValue(TEXT("hard_blocker")) < FJungleEcosystemMaskSpec::HardBlockerThreshold;
+	}
+
+	static EJungleCreekBankAffordance ClassifyBankAffordance(float BankSlopeDegrees, float NormalizedWetness, float VegetationFriction, EJungleCreekBankShape BankShape)
+	{
+		if (BankShape == EJungleCreekBankShape::CutBank || BankShape == EJungleCreekBankShape::Undercut || BankSlopeDegrees > 38.0f)
+		{
+			return EJungleCreekBankAffordance::HardBlocker;
+		}
+
+		if ((BankShape == EJungleCreekBankShape::SlopedMud || BankShape == EJungleCreekBankShape::SwampMargin) && NormalizedWetness >= 0.75f)
+		{
+			return EJungleCreekBankAffordance::CarefulFooting;
+		}
+
+		if (VegetationFriction >= 0.80f)
+		{
+			return EJungleCreekBankAffordance::SoftBlocker;
+		}
+
+		if (VegetationFriction >= 0.60f && (BankShape == EJungleCreekBankShape::VegetationGap || BankShape == EJungleCreekBankShape::RootedToe))
+		{
+			return EJungleCreekBankAffordance::FalseAffordance;
+		}
+
+		if (BankSlopeDegrees <= 12.0f && NormalizedWetness <= 0.45f && VegetationFriction <= 0.35f)
+		{
+			return EJungleCreekBankAffordance::OpenTravel;
+		}
+
+		return EJungleCreekBankAffordance::SlowTravel;
+	}
+
+	static EJungleCreekCrossingValidity ResolveCrossingValidity(const FCreekCrossingCandidate& Candidate)
+	{
+		if (!Candidate.HasApproachChannelAndExit())
+		{
+			return EJungleCreekCrossingValidity::NeedsReview;
+		}
+
+		if (Candidate.RecentRainState == EJungleRiparianRainState::StormBurst || Candidate.FlowSpeedClass == EJungleCreekFlowSpeedClass::FloodPulse)
+		{
+			return EJungleCreekCrossingValidity::WeatherChanged;
+		}
+
+		if (Candidate.WaterRisk == EJungleCreekRiskLevel::Unsafe || Candidate.FootingRisk == EJungleCreekRiskLevel::Unsafe)
+		{
+			return EJungleCreekCrossingValidity::Blocked;
+		}
+
+		if (Candidate.BankExitShape == EJungleCreekBankShape::Undercut || Candidate.VegetationRisk == EJungleCreekVegetationRisk::DenseExit)
+		{
+			return EJungleCreekCrossingValidity::FalseCrossing;
+		}
+
+		if (Candidate.WaterRisk == EJungleCreekRiskLevel::High || Candidate.FootingRisk == EJungleCreekRiskLevel::High)
+		{
+			return EJungleCreekCrossingValidity::ValidRisky;
+		}
+
+		return EJungleCreekCrossingValidity::ValidPrimary;
 	}
 
 	static EJungleCreekRiparianWetValleyZone ClassifyCreekZone(const FJunglePCGBiomeInputSample& Sample)
@@ -180,6 +522,65 @@ struct FJungleCreekRiparianWetValleyEcosystemSpec
 			TEXT("soft_blocker"),
 			TEXT("affordance_zone"),
 			TEXT("false_affordance"),
+			TEXT("M_Creek_ChannelCore"),
+			TEXT("M_Creek_WettedBed"),
+			TEXT("M_Creek_BankToe"),
+			TEXT("M_Creek_UpperBankBench"),
+			TEXT("M_Creek_RiparianDense"),
+			TEXT("M_Creek_WetValleyFloor"),
+			TEXT("M_Creek_MudPatch"),
+			TEXT("M_Creek_DebrisJam"),
+			TEXT("M_Creek_CrossingCandidate"),
+			TEXT("M_Creek_HardBlocker"),
+			TEXT("M_Creek_RouteTrap"),
+		};
+	}
+
+	static TArray<FString> RouteEvidenceNames()
+	{
+		return {
+			TEXT("RouteEvidence_WaterDirection"),
+			TEXT("RouteEvidence_ShallowRiffle"),
+			TEXT("RouteEvidence_ExposedStone"),
+			TEXT("RouteEvidence_LowOppositeBank"),
+			TEXT("RouteEvidence_DeepPoolDarkWater"),
+			TEXT("RouteEvidence_UndercutExitBank"),
+			TEXT("RouteEvidence_RainSwollen"),
+			TEXT("RouteEvidence_SlipperyRockSheen"),
+			TEXT("RouteEvidence_DenseExitVegetation"),
+			TEXT("RouteEvidence_DebrisJamBlock"),
+		};
+	}
+
+	static TArray<FString> SoundAnchorNames()
+	{
+		return {
+			TEXT("SA_Creek_Trickle"),
+			TEXT("SA_Creek_Riffle"),
+			TEXT("SA_Creek_Run"),
+			TEXT("SA_Creek_Cascade"),
+			TEXT("SA_Creek_Waterfall"),
+			TEXT("SA_Creek_Confluence"),
+			TEXT("SA_Riparian_FrogBand"),
+			TEXT("SA_Riparian_InsectWetEdge"),
+			TEXT("SA_Rain_CanopyDrip"),
+			TEXT("SA_Valley_MuffledDistantWater"),
+		};
+	}
+
+	static TArray<FString> DebugViewNames()
+	{
+		return {
+			TEXT("DBG_Creek_FlowDirection"),
+			TEXT("DBG_Creek_ReachClass"),
+			TEXT("DBG_Creek_BankAffordance"),
+			TEXT("DBG_Creek_Wetness"),
+			TEXT("DBG_Creek_CrossingCandidates"),
+			TEXT("DBG_Creek_CrossingValidity"),
+			TEXT("DBG_Creek_RouteEvidence"),
+			TEXT("DBG_Creek_RouteTraps"),
+			TEXT("DBG_Creek_SoundAnchors"),
+			TEXT("DBG_Creek_RainResponse"),
 		};
 	}
 
@@ -252,6 +653,9 @@ struct FJungleCreekRiparianWetValleyEcosystemSpec
 			TEXT("water_sound_anchor"),
 			TEXT("creek_false_affordance"),
 			TEXT("leech_tick_placeholder_risk_note"),
+			TEXT("creek_reach_continuity"),
+			TEXT("creek_crossing_exit_plausible"),
+			TEXT("creek_rain_response_debug"),
 		};
 	}
 };

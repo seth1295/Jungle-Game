@@ -193,3 +193,14 @@ reason: PR5 runtime file 002 was consumed as the second sequential implementatio
 review_by: 2026-07-26
 
 PR5-run 002 is GitHub PR #32 on branch `pr5-run-002`. Commits `57408c8` and `ac45cd4` implement source-level biome mask/traversal contracts: canonical normalized mask vocabulary, traversal classes/rules, developer-only debug view/report specs, traversal resistance composition, false-affordance classification, and explicit guard fields preventing debug/mask data from becoming player-facing navigation UI. Validation: `git diff --cached --check` passed for source commits; forbidden navigation UI keyword scan on the new source/header returned no matches; CodeRabbit light review initially found two valid contract issues and rerun after fixes returned no findings. UE compile/package validation remains blocked locally because documented Unreal Engine Build.sh/UnrealEditor paths are not present under `/run/media/seth` or `/mnt/ue5`. Next PR5 target after PR #32 merges and local `main` syncs is runtime file 003 creek/riparian/wet-valley ecosystem contracts. Four-PR handoff is not due yet; PR5-run 002 is position 2/5 in batch 001 runtime consumption. PR #32 landed on `main` as `8939503`, and local `main` was synced clean after merge.
+
+## 2026-06-26-pr5-run-003-riparian-wet-valley-contracts
+
+status: active-unreviewed
+created: 2026-06-26
+source: pr5lifecycle-runtimefiles/001/003_creek_riparian_wet_valley_research.md
+target: Source/JungleGame/JungleCreekRiparianWetValleyEcosystemSpec.h
+reason: PR5 runtime file 003 was consumed as the third sequential implementation PR input.
+review_by: 2026-07-26
+
+PR5-run 003 is GitHub PR #33 on branch `pr5-run-003`, commit `1bef01f`. It expands the riparian/wet-valley source contract with reach metadata, crossing candidates, rain-state response, sound anchors, route evidence, debug views, and bank/crossing classification helpers. Validation: `git diff --check` passed; the new source/header scan returned no forbidden navigation drift matches; the mounted UE Build.sh was invoked but exceeded the DevSpace 300s timeout without returning a compiler error; local CodeRabbit CLI hit its review quota, but GitHub PR checks showed CodeRabbit passing. Next PR5 target after PR #33 merges and local `main` syncs is runtime file 004 ridge/slope/canopy orientation contracts. Four-PR handoff is not due yet; PR5-run 003 is position 3/5 in batch 001 runtime consumption.
