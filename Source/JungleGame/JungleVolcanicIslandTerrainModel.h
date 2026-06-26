@@ -62,6 +62,40 @@ struct FJGTerrainMetrics
 	int32 SquareEdgeOceanViolationCount = 0;
 };
 
+struct FJGTerrainRuntimeTileDesc
+{
+	int32 TileX = 0;
+	int32 TileY = 0;
+	int32 LodIndex = 0;
+	int32 VerticesPerSide = 0;
+	float MinXM = 0.0f;
+	float MinYM = 0.0f;
+	float MaxXM = 0.0f;
+	float MaxYM = 0.0f;
+	float SpacingM = 0.0f;
+	bool bCollisionEnabled = false;
+	FName TileName;
+};
+
+struct FJGTerrainRuntimeMeshMetrics
+{
+	int32 TileCount = 0;
+	int32 CollisionTileCount = 0;
+	int32 TotalVertexCount = 0;
+	int32 TotalTriangleCount = 0;
+	int32 NearLodTileCount = 0;
+	int32 MidLodTileCount = 0;
+	int32 FarLodTileCount = 0;
+	float RuntimeTileSizeM = 0.0f;
+	float SourceReferenceSpacingM = 0.0f;
+	float RuntimeMinSpacingM = TNumericLimits<float>::Max();
+	float RuntimeMaxSpacingM = 0.0f;
+	float MaxAdjacentSeamAbsErrorM = 0.0f;
+	float MaxShorelineAbsErrorM = 0.0f;
+	int32 AdjacentSeamSampleCount = 0;
+	int32 ShorelineSampleCount = 0;
+};
+
 class JUNGLEGAME_API FJungleVolcanicIslandTerrainModel
 {
 public:
@@ -73,14 +107,31 @@ public:
 	static constexpr float TargetPeakHeightM = 1400.0f;
 	static constexpr int32 PrimaryCatchmentCount = 14;
 	static constexpr int32 RuntimePreviewVerticesPerSide = 129;
+	static constexpr int32 SourceReferenceVerticesPerSide = 8129;
+	static constexpr int32 RuntimeTilesPerSide = 32;
+	static constexpr int32 RuntimeNearTileVerticesPerSide = 129;
+	static constexpr int32 RuntimeMidTileVerticesPerSide = 65;
+	static constexpr int32 RuntimeFarTileVerticesPerSide = 33;
+	static constexpr int32 RuntimeValidationTilesPerSide = 5;
+
+	static constexpr float SourceReferenceSpacingM = WorldSizeM / static_cast<float>(SourceReferenceVerticesPerSide - 1);
+	static constexpr float RuntimeTileSizeM = WorldSizeM / static_cast<float>(RuntimeTilesPerSide);
+	static constexpr float RuntimeNearTileSpacingM = RuntimeTileSizeM / static_cast<float>(RuntimeNearTileVerticesPerSide - 1);
+	static constexpr float RuntimeMidTileSpacingM = RuntimeTileSizeM / static_cast<float>(RuntimeMidTileVerticesPerSide - 1);
+	static constexpr float RuntimeFarTileSpacingM = RuntimeTileSizeM / static_cast<float>(RuntimeFarTileVerticesPerSide - 1);
 
 	static FJGTerrainSample SampleTerrainMeters(float WorldXM, float WorldYM);
 	static float SampleHeightMeters(float WorldXM, float WorldYM);
 	static float OrganicIslandRadiusMeters(float ThetaRadians);
 	static FJGTerrainMetrics BuildMetrics(int32 SamplesPerSide = RuntimePreviewVerticesPerSide);
 	static FString BuildMetricsLogLine(const FJGTerrainMetrics& Metrics);
+	static FJGTerrainRuntimeTileDesc BuildRuntimeTileDesc(int32 TileX, int32 TileY, int32 LodIndex, bool bCollisionEnabled);
+	static void BuildRuntimeValidationTileDescs(TArray<FJGTerrainRuntimeTileDesc>& OutTiles);
+	static FJGTerrainRuntimeMeshMetrics BuildRuntimeMeshMetrics(const TArray<FJGTerrainRuntimeTileDesc>& Tiles);
+	static FString BuildRuntimeMeshMetricsLogLine(const FJGTerrainRuntimeMeshMetrics& Metrics);
 
 private:
 	static float SmoothStep(float Edge0, float Edge1, float Value);
 	static float RingMask(float DistanceM, float CenterM, float HalfWidthM);
+	static int32 VerticesPerSideForLod(int32 LodIndex);
 };

@@ -336,3 +336,25 @@ reason: PR5 Batch 003 requires the island perimeter to resolve through a sea-lev
 review_by: 2026-07-26
 
 PR5 Batch 003 / 005 was GitHub PR #45 on branch `pr5-batch003-005-sea-level-coast`. It added shoreline constraint, shoreline error, beach width, beach continuity, and square-edge ocean violation metrics to `FJungleVolcanicIslandTerrainModel`; runtime metrics advanced to `JG_VOLCANIC_TERRAIN_005`; and the batch handoff `handoffs/2026-06-26-pr5-batch-003-runtime-001-005.md` records the stop point. Validation: `git diff --check` and `git diff --cached --check` passed; forbidden navigation UI scan produced only existing deny-rule documentation matches; documented local Unreal Build.sh paths were missing, so UBT validation was environment-blocked rather than source-failed; GitHub CodeRabbit checks passed. PR #45 landed on `main` as `1171fee`. PR5 Batch 003 is stopped at runtime file 005 by user instruction. Do not start runtime file 006 unless explicitly requested.
+
+## 2026-06-27-pr5lifecycle-repo-files-correction
+
+status: active-unreviewed
+created: 2026-06-27
+source: user correction during PR5 Batch 003 recovery
+target: pr5lifecycle-precursor/**, pr5lifecycle-runtimefiles/**
+reason: PR5 lifecycle precursor and runtime research files are repo-owned lifecycle state, not disposable local scratch; future workers must not advise or perform untracking, cleaning, deletion, or stash workflows that hide/remove these files from the working tree without explicit lifecycle-file handling.
+review_by: 2026-07-27
+
+Correction: `pr5lifecycle-precursor/**` and `pr5lifecycle-runtimefiles/**` are project repository files and must remain part of PR5 lifecycle state. Batch 003 files under `pr5lifecycle-precursor/003/` and `pr5lifecycle-runtimefiles/003/` were recovered after a stash workflow moved untracked lifecycle files out of the working tree. Treat these lifecycle folders as implementation inputs and repo state that should be tracked/restored deliberately, not ignored as temporary docs. Before any future PR5 implementation, confirm the relevant lifecycle files exist and are not accidentally omitted from the intended PR/state commit.
+
+## 2026-06-27-pr5-batch003-006-runtime-mesh-resolution
+
+status: active-unreviewed
+created: 2026-06-27
+source: pr5lifecycle-runtimefiles/003/006_runtime_mesh_resolution_lod_streaming_research.md
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, Source/JungleGame/JungleFullSizeTerrainShellActor.h, Source/JungleGame/JungleFullSizeTerrainShellActor.cpp, pr5lifecycle-precursor/003/**, pr5lifecycle-runtimefiles/003/**
+reason: PR5 Batch 003 runtime file 006 continues from the landed runtime 005 coast state into a canonical-source tiled runtime mesh bridge, LOD/collision descriptors, source-reference resolution identity, seam/shoreline metrics, and tracked lifecycle-file restoration.
+review_by: 2026-07-27
+
+PR5 Batch 003 / 006 is the runtime mesh resolution, LOD, and terrain scale bridge. It records Batch 003 lifecycle precursor/runtime files as repo state, adds source-reference resolution constants for the 8129 x 8129 / 2 m full-island target, adds runtime tile descriptors for a 32 x 32 tile grid with near/mid/far vertex density, converts the terrain shell to build deterministic validation mesh sections from the canonical volcanic terrain source, enables collision only for near validation tiles, and logs `JG_TERRAIN_RUNTIME_006` metrics for tile counts, vertices, triangles, collision tiles, LOD ring counts, spacing, seam samples, and shoreline error. Validation so far: source diff whitespace passed; full cached diff check is blocked by restored historical lifecycle Markdown trailing whitespace that predates this code path and should be normalized separately or explicitly accepted when tracking those repo files. Next target after landing is PR5 Batch 003 / 007: terrain masks, channels, and material/debug state.

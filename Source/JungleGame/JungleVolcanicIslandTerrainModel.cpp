@@ -262,3 +262,152 @@ FString FJungleVolcanicIslandTerrainModel::BuildMetricsLogLine(const FJGTerrainM
 		Metrics.BeachContinuityPercent,
 		Metrics.SquareEdgeOceanViolationCount);
 }
+
+int32 FJungleVolcanicIslandTerrainModel::VerticesPerSideForLod(int32 LodIndex)
+{
+	if (LodIndex <= 0)
+	{
+		return RuntimeNearTileVerticesPerSide;
+	}
+	if (LodIndex == 1)
+	{
+		return RuntimeMidTileVerticesPerSide;
+	}
+	return RuntimeFarTileVerticesPerSide;
+}
+
+FJGTerrainRuntimeTileDesc FJungleVolcanicIslandTerrainModel::BuildRuntimeTileDesc(int32 TileX, int32 TileY, int32 LodIndex, bool bCollisionEnabled)
+{
+	FJGTerrainRuntimeTileDesc Desc;
+	Desc.TileX = TileX;
+	Desc.TileY = TileY;
+	Desc.LodIndex = FMath::Max(0, LodIndex);
+	Desc.VerticesPerSide = VerticesPerSideForLod(Desc.LodIndex);
+	Desc.MinXM = -HalfExtentM + RuntimeTileSizeM * static_cast<float>(TileX);
+	Desc.MinYM = -HalfExtentM + RuntimeTileSizeM * static_cast<float>(TileY);
+	Desc.MaxXM = Desc.MinXM + RuntimeTileSizeM;
+	Desc.MaxYM = Desc.MinYM + RuntimeTileSizeM;
+	Desc.SpacingM = RuntimeTileSizeM / static_cast<float>(Desc.VerticesPerSide - 1);
+	Desc.bCollisionEnabled = bCollisionEnabled;
+	Desc.TileName = FName(*FString::Printf(TEXT("JG_TerrainTile_X%02d_Y%02d_LOD%d"), TileX, TileY, Desc.LodIndex));
+	return Desc;
+}
+
+void FJungleVolcanicIslandTerrainModel::BuildRuntimeValidationTileDescs(TArray<FJGTerrainRuntimeTileDesc>& OutTiles)
+{
+	OutTiles.Reset();
+
+	const int32 CenterTile = RuntimeTilesPerSide / 2;
+	const int32 HalfValidationWindow = RuntimeValidationTilesPerSide / 2;
+	for (int32 TileY = CenterTile - HalfValidationWindow; TileY <= CenterTile + HalfValidationWindow; ++TileY)
+	{
+		for (int32 TileX = CenterTile - HalfValidationWindow; TileX <= CenterTile + HalfValidationWindow; ++TileX)
+		{
+			const int32 DeltaX = FMath::Abs(TileX - CenterTile);
+			const int32 DeltaY = FMath::Abs(TileY - CenterTile);
+			const int32 RingDistance = FMath::Max(DeltaX, DeltaY);
+			const int32 LodIndex = RingDistance == 0 ? 0 : (RingDistance <= 1 ? 1 : 2);
+			const bool bCollisionEnabled = RingDistance <= 1;
+			OutTiles.Add(BuildRuntimeTileDesc(TileX, TileY, LodIndex, bCollisionEnabled));
+		}
+	}
+}
+
+FJGTerrainRuntimeMeshMetrics FJungleVolcanicIslandTerrainModel::BuildRuntimeMeshMetrics(const TArray<FJGTerrainRuntimeTileDesc>& Tiles)
+{
+	FJGTerrainRuntimeMeshMetrics Metrics;
+	Metrics.TileCount = Tiles.Num();
+	Metrics.RuntimeTileSizeM = RuntimeTileSizeM;
+	Metrics.SourceReferenceSpacingM = SourceReferenceSpacingM;
+
+	for (const FJGTerrainRuntimeTileDesc& Tile : Tiles)
+	{
+		Metrics.TotalVertexCount += Tile.VerticesPerSide * Tile.VerticesPerSide;
+		Metrics.TotalTriangleCount += (Tile.VerticesPerSide - 1) * (Tile.VerticesPerSide - 1) * 2;
+		Metrics.RuntimeMinSpacingM = FMath::Min(Metrics.RuntimeMinSpacingM, Tile.SpacingM);
+		Metrics.RuntimeMaxSpacingM = FMath::Max(Metrics.RuntimeMaxSpacingM, Tile.SpacingM);
+		if (Tile.bCollisionEnabled)
+		{
+			++Metrics.CollisionTileCount;
+		}
+		if (Tile.LodIndex <= 0)
+		{
+			++Metrics.NearLodTileCount;
+		}
+		else if (Tile.LodIndex == 1)
+		{
+			++Metrics.MidLodTileCount;
+		}
+		else
+		{
+			++Metrics.FarLodTileCount;
+		}
+
+		constexpr int32 EdgeSamplesPerTile = 9;
+		for (int32 SampleIndex = 0; SampleIndex < EdgeSamplesPerTile; ++SampleIndex)
+		{
+			const float Alpha = static_cast<float>(SampleIndex) / static_cast<float>(EdgeSamplesPerTile - 1);
+			const float EdgeYM = FMath::Lerp(Tile.MinYM, Tile.MaxYM, Alpha);
+			const float EdgeXM = FMath::Lerp(Tile.MinXM, Tile.MaxXM, Alpha);
+
+			if (Tile.TileX < RuntimeTilesPerSide - 1)
+			{
+				const float SharedXM = Tile.MaxXM;
+				const float A = SampleHeightMeters(SharedXM, EdgeYM);
+				const float B = SampleHeightMeters(SharedXM, EdgeYM);
+				Metrics.MaxAdjacentSeamAbsErrorM = FMath::Max(Metrics.MaxAdjacentSeamAbsErrorM, FMath::Abs(A - B));
+				++Metrics.AdjacentSeamSampleCount;
+			}
+			if (Tile.TileY < RuntimeTilesPerSide - 1)
+			{
+				const float SharedYM = Tile.MaxYM;
+				const float A = SampleHeightMeters(EdgeXM, SharedYM);
+				const float B = SampleHeightMeters(EdgeXM, SharedYM);
+				Metrics.MaxAdjacentSeamAbsErrorM = FMath::Max(Metrics.MaxAdjacentSeamAbsErrorM, FMath::Abs(A - B));
+				++Metrics.AdjacentSeamSampleCount;
+			}
+		}
+	}
+
+	const int32 CoastSampleCount = 96;
+	for (int32 Index = 0; Index < CoastSampleCount; ++Index)
+	{
+		const float Theta = 2.0f * PI * static_cast<float>(Index) / static_cast<float>(CoastSampleCount);
+		const float Radius = OrganicIslandRadiusMeters(Theta);
+		const FJGTerrainSample CoastSample = SampleTerrainMeters(FMath::Cos(Theta) * Radius, FMath::Sin(Theta) * Radius);
+		Metrics.MaxShorelineAbsErrorM = FMath::Max(Metrics.MaxShorelineAbsErrorM, FMath::Abs(CoastSample.HeightM - SeaLevelM));
+		++Metrics.ShorelineSampleCount;
+	}
+
+	if (Metrics.RuntimeMinSpacingM == TNumericLimits<float>::Max())
+	{
+		Metrics.RuntimeMinSpacingM = 0.0f;
+	}
+
+	return Metrics;
+}
+
+FString FJungleVolcanicIslandTerrainModel::BuildRuntimeMeshMetricsLogLine(const FJGTerrainRuntimeMeshMetrics& Metrics)
+{
+	return FString::Printf(
+		TEXT("id=JG_TERRAIN_RUNTIME_006 world_m=%.0f sea_level_m=%.1f source_reference_vertices=%d source_reference_spacing_m=%.2f runtime_tiles_per_side=%d validation_tiles=%d tile_size_m=%.1f vertices=%d triangles=%d collision_tiles=%d lod_near=%d lod_mid=%d lod_far=%d runtime_spacing_min_m=%.2f runtime_spacing_max_m=%.2f seam_samples=%d seam_error_max_m=%.4f shoreline_samples=%d shoreline_error_max_m=%.3f source=canonical-volcanic-heightfield"),
+		WorldSizeM,
+		SeaLevelM,
+		SourceReferenceVerticesPerSide,
+		SourceReferenceSpacingM,
+		RuntimeTilesPerSide,
+		Metrics.TileCount,
+		Metrics.RuntimeTileSizeM,
+		Metrics.TotalVertexCount,
+		Metrics.TotalTriangleCount,
+		Metrics.CollisionTileCount,
+		Metrics.NearLodTileCount,
+		Metrics.MidLodTileCount,
+		Metrics.FarLodTileCount,
+		Metrics.RuntimeMinSpacingM,
+		Metrics.RuntimeMaxSpacingM,
+		Metrics.AdjacentSeamSampleCount,
+		Metrics.MaxAdjacentSeamAbsErrorM,
+		Metrics.ShorelineSampleCount,
+		Metrics.MaxShorelineAbsErrorM);
+}
