@@ -49,8 +49,9 @@ Before any PR lifecycle, load:
 - Only one gate should be active at a time.
 - Execute PRs sequentially; do not run normal UE implementation PRs in parallel.
 - Plan up to four PRs ahead, but implement and merge one PR at a time.
+- Every completed PR must update `.mex/context/active-memory.md`; do not start the next implementation PR from stale `.mex` state.
 - After the fourth PR in a sequential planning batch is complete, create a tracked fresh-chat handoff under `handoffs/` before starting the next batch.
 
 ## Completion policy
 
-A gate is complete only when its exit criteria pass, CodeRabbit is clean or valid findings are resolved, and the PR is merged to `main` with local `main` synced cleanly.
+A gate is complete only when its exit criteria pass, CodeRabbit is clean or valid findings are resolved, `.mex/context/active-memory.md` is updated for the completed PR, and the PR is merged to `main` with local `main` synced cleanly.

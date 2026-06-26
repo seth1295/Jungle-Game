@@ -32,10 +32,12 @@ If the active gate is unclear, missing, or conflicts with the user's current ins
 12. Run CodeRabbit when requested or when the workflow requires it.
 13. Fix only valid in-scope findings.
 14. Rerun required validation and CodeRabbit after fixes.
-15. Merge only when explicitly authorized and all gates pass.
-16. After merge, sync local `main` and confirm clean status.
-17. If this PR completes the fourth PR in the current sequential planning batch, create a fresh-chat handoff file under `handoffs/` before starting the next batch.
-18. Read the next gate before starting the next PR.
+15. Update `.mex/context/active-memory.md` for this PR before merge when possible, or immediately after landing if the merge path requires a direct cherry-pick/push workaround.
+16. Merge only when explicitly authorized and all gates pass.
+17. After merge, sync local `main` and confirm clean status.
+18. Verify `.mex/context/active-memory.md` records the completed PR state, validation result, next target, and any active blocker before starting more implementation.
+19. If this PR completes the fourth PR in the current sequential planning batch, create a fresh-chat handoff file under `handoffs/` before starting the next batch.
+20. Read the next gate before starting the next PR.
 
 ## Gate states
 
@@ -58,8 +60,9 @@ Plan work in batches of four upcoming PRs, but execute only one PR at a time:
 4. Sync local `main`.
 5. Implement the next PR in the batch.
 6. Repeat until all four PRs in the batch are complete.
-7. Create a handoff file under `handoffs/`.
-8. Then reassess and define the next four-PR batch.
+7. Update `.mex/context/active-memory.md` for every completed PR in the batch; do not defer all memory updates until the batch handoff.
+8. Create a handoff file under `handoffs/`.
+9. Then reassess and define the next four-PR batch.
 
 This is not parallel execution. Multiple active implementation branches should not be used for normal UE work because maps, config, World Partition assets, PCG graphs, and generated editor files are merge-conflict-prone.
 
@@ -71,6 +74,21 @@ Each PR in a four-PR batch must state:
 - forbidden scope;
 - validation expectations;
 - whether it must update the batch handoff.
+
+## Per-PR `.mex` memory requirement
+
+Every completed PR must update `.mex/context/active-memory.md`. This is a hard lifecycle requirement, not an optional cleanup task.
+
+Each PR memory update must record:
+
+- the completed roadmap/PR label and actual GitHub PR number when known;
+- branch or commit landed;
+- validation performed and result;
+- next intended target;
+- current blockers or explicit pauses;
+- whether the four-PR batch handoff is due.
+
+If a PR is landed through an unusual path such as direct cherry-pick, direct push, or tool-blocked PR merge workaround, the `.mex` update is still required before starting the next implementation PR.
 
 ## Fresh-chat handoff requirement
 

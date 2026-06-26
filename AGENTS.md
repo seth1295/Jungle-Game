@@ -22,7 +22,7 @@ Load `.mex/context/active-memory.md` first, then only the additional `.mex/conte
 
 Before any PR lifecycle, load `.mex/context/pr-gates.md`, `docs/PR_WORKFLOW.md`, and the active gate file listed in `.mex/context/pr-gates.md`.
 
-PR work is sequential. Plan up to four PRs ahead, execute one PR at a time, and after the fourth PR in a batch create a tracked fresh-chat handoff under `handoffs/` before starting the next batch.
+PR work is sequential. Plan up to four PRs ahead, execute one PR at a time, update `.mex/context/active-memory.md` for every completed PR, and after the fourth PR in a batch create a tracked fresh-chat handoff under `handoffs/` before starting the next batch.
 
 ## Current Project State
 
@@ -73,7 +73,8 @@ Only after explicit user approval:
 5. Add `@coderabbitai ignore` to PR bodies if using a manual CodeRabbit loop.
 6. Do not merge unless explicitly authorized.
 7. Do not run normal UE implementation PRs in parallel; use sequential four-PR planning batches.
-8. After completing the fourth PR in a sequential batch, create or update a handoff file under `handoffs/` for the next fresh DevSpace chat.
+8. Before merging or immediately after landing any PR, update `.mex/context/active-memory.md` with the completed PR state, validation result, next target, and any active blocker.
+9. After completing the fourth PR in a sequential batch, create or update a handoff file under `handoffs/` for the next fresh DevSpace chat.
 
 ## Final Summary
 
