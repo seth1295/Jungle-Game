@@ -1,6 +1,6 @@
 # PR5 Batch 006 Terrain Calibration Preview Images
 
-These files are labelled, tracked terrain evidence generated from the deterministic PR5 Batch 006 terrain calibration model. They are not AI art, prompt renders, broad documentation, or UE screenshots.
+These preview image files are labelled, tracked terrain evidence generated from the deterministic PR5 Batch 006 terrain calibration model. They are not AI art, prompt renders, or UE screenshots.
 
 Latest generated preview: `PR5_Batch006_TerrainCalibration_1024px`.
 
