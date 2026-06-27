@@ -7,7 +7,7 @@ description: PR gate workflow routing and active gate pointer.
 
 ## Active gate
 
-Self-iterative runtime 010 is in final merge gate on PR #71. Runtime 010 acceptance is limited to visible terrain with the player/camera on the playable surface. UBT, offscreen visual smoke, tracked evidence under `Images/InGameEvidence/010/`, repo image inspection, and CodeRabbit rerun are clean. Merge PR #71 when repository checks allow, then sync local `main` and wait for explicit user instruction before starting another runtime.
+Self-iterative runtime 010 is complete on PR #71. Runtime 010 acceptance was limited to visible terrain with the player/camera on the playable surface. UBT, offscreen visual smoke, tracked evidence under `Images/InGameEvidence/010/`, repo image inspection, and CodeRabbit rerun were clean. PR #71 is merged into `main`; wait for explicit user instruction before starting another runtime.
 
 ## Completed setup gate chain
 
