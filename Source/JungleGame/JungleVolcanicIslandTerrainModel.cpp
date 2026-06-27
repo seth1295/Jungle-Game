@@ -96,9 +96,13 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 	const float ShieldBreakupM = MassifMask * CoastalProtection * (
 		FMath::Sin(WorldXM * 0.00021f + WorldYM * 0.00013f + 0.7f) * 115.0f +
 		FMath::Sin(WorldXM * 0.00011f - WorldYM * 0.00019f - 1.3f) * 88.0f);
-	const float MidlandBreakupM = CoastalProtection * SmoothStep(5200.0f, 12800.0f, LandwardDistanceM) * (1.0f - SmoothStep(33500.0f, 43000.0f, LandwardDistanceM)) * (
+	const float MidlandMask = CoastalProtection * SmoothStep(5200.0f, 12800.0f, LandwardDistanceM) * (1.0f - SmoothStep(33500.0f, 43000.0f, LandwardDistanceM));
+	const float MidlandBreakupM = MidlandMask * (
 		FMath::Sin(WorldXM * 0.000155f - WorldYM * 0.000091f + 2.2f) * 78.0f +
-		FMath::Sin(WorldXM * 0.000097f + WorldYM * 0.000173f - 0.4f) * 56.0f);
+		FMath::Sin(WorldXM * 0.000097f + WorldYM * 0.000173f - 0.4f) * 56.0f +
+		FMath::Sin(WorldXM * 0.000291f + WorldYM * 0.000217f + 1.7f) * 34.0f);
+	const float TerraceFragmentM = MidlandMask * (FMath::Sin((WorldXM + 0.45f * WorldYM) * 0.00034f + 0.8f) > 0.42f ? 1.0f : 0.0f) * (1.0f - SmoothStep(0.18f, 0.38f, FMath::Abs(FMath::Sin((WorldXM - 0.27f * WorldYM) * 0.00019f - 1.1f)))) * 52.0f;
+	const float ScarpFragmentM = MidlandMask * SmoothStep(0.42f, 0.82f, FMath::Abs(FMath::Sin(WorldXM * 0.000071f - WorldYM * 0.000113f))) * FMath::Sin((WorldXM - WorldYM) * 0.000082f + 2.6f) * 46.0f;
 	const float RegionNorthwest = FMath::Exp(-(FMath::Square((WorldXM + 22600.0f) / 25500.0f) + FMath::Square((WorldYM - 19800.0f) / 18800.0f)));
 	const float RegionNortheast = FMath::Exp(-(FMath::Square((WorldXM - 18800.0f) / 21400.0f) + FMath::Square((WorldYM - 16600.0f) / 16600.0f)));
 	const float RegionSouthwest = FMath::Exp(-(FMath::Square((WorldXM + 17200.0f) / 23600.0f) + FMath::Square((WorldYM + 9800.0f) / 21400.0f)));
@@ -323,7 +327,7 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 		FMath::Sin(WorldXM * 0.00030f + WorldYM * 0.00018f) * 46.0f +
 		FMath::Sin(WorldXM * 0.00045f - WorldYM * 0.00027f) * 32.0f +
 		FMath::Sin(WorldXM * 0.00012f + MassifTheta * 3.0f) * 24.0f;
-	const float VolcanoDisabledProcessHeightM = BasementHeightM + RegionalLandformHeightM - CentralSaddleCutM + SecondaryUplandPushM + ShieldBreakupM + MidlandBreakupM + LongWaveUndulationM * LandMask + DetailSupportHeightM + RidgeHeightM - GullyIncisionM - StreamPowerIncisionM - HillslopeDiffusionM + FanDepositM + HydrologyFanDepositionM;
+	const float VolcanoDisabledProcessHeightM = BasementHeightM + RegionalLandformHeightM - CentralSaddleCutM + SecondaryUplandPushM + ShieldBreakupM + MidlandBreakupM + TerraceFragmentM + ScarpFragmentM + LongWaveUndulationM * LandMask + DetailSupportHeightM + RidgeHeightM - GullyIncisionM - StreamPowerIncisionM - HillslopeDiffusionM + FanDepositM + HydrologyFanDepositionM;
 	const float ActiveVolcanoContributionM = BroaderVolcanicHighlandMask * 180.0f + ActiveConeMask * 600.0f + SecondaryConeMask * 85.0f + OldLavaBenchMask * 42.0f + LavaFlowMask * 32.0f + RimRaiseM - CraterDepressionM - CollapseScarMask * 310.0f;
 	const float TerrainProcessHeightM = VolcanoDisabledProcessHeightM + ActiveVolcanoContributionM;
 	const float VolcanoDisabledLandHeightM = FMath::Max(CoastalLandHeightM - GullyIncisionM * 0.18f, CoastalLandHeightM + VolcanoDisabledProcessHeightM);

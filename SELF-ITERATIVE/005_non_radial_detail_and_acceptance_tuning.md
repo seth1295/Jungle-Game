@@ -2,7 +2,7 @@
 
 ## Status
 
-planned-runtime
+implemented-runtime
 
 ## Goal
 
@@ -65,3 +65,22 @@ Should improve:
 - diagnostic honesty so old radial spokes cannot pass again.
 
 If images still do not look good enough after this runtime, stop at five PRs and report remaining morphology debt instead of silently continuing.
+
+## Result
+
+Runtime 005 added non-radial local midland detail, terrace fragments, and scarp fragments in source and exporter. Generated evidence in `Images/TerrainPreview/008/` preserves the hard coast gates and keeps ridge/gully polar lock low:
+
+- `shoreline_error_max_m: 0.0`
+- `beach_continuity_pct: 100.0`
+- `ocean_below_sea_pct: 100.0`
+- `square_edge_ocean_violations: 0`
+- `ridge_gully_angular_lock_score: 0.08918`
+- `volcano_dominance_pct: 10.8915`
+
+The loop did not fully solve Batch006 terrain morphology inside the five-PR budget. The generated image is substantially less turbine-like than `003`, but still synthetic: the broad highland remains too smooth and the catchment debug domains remain too concentrated. Final remaining failing evidence:
+
+- `catchment_angular_concentration_score: 0.95995`
+- `morphology_diagnostics_accepted: false`
+- `dem_calibration_accepted: false`
+
+Stop after runtime 005 unless the user explicitly authorizes another self-iterative loop or extends the PR budget.

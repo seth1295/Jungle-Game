@@ -7,7 +7,7 @@ description: PR gate workflow routing and active gate pointer.
 
 ## Active gate
 
-Self-iterative Batch006 morphology loop is active. Current runtime file is `SELF-ITERATIVE/004_domain_blend_and_midland_landform_breakup.md`; max loop budget is five PRs or until generated terrain preview images look good by tool inspection. Runtime 004 is domain-blend/midland-softening and must land before implementing runtime 005, the final allowed PR in this loop.
+Self-iterative Batch006 morphology loop is at final runtime `SELF-ITERATIVE/005_non_radial_detail_and_acceptance_tuning.md`. The current user-authorized loop budget is five PRs maximum; after runtime 005 lands, stop and report remaining Batch006 terrain morphology debt unless the user explicitly authorizes another loop.
 
 ## Completed setup gate chain
 

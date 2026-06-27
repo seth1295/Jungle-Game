@@ -646,3 +646,14 @@ reason: Runtime 003 improved the old radial/bullseye failure but left graph-doma
 review_by: 2026-07-27
 
 Runtime 004 reduces ridge/gully carving strength and adds independent midland breakup in source and exporter. Generated evidence under `Images/TerrainPreview/007/` keeps coast/beach/ocean gates clean and maintains low ridge/gully angular lock at `0.08918`. The image is less polygonal, but now too smooth in central/midland highlands; `catchment_angular_concentration_score` remains `0.95995` and `morphology_diagnostics_accepted` remains false. `SELF-ITERATIVE/005_non_radial_detail_and_acceptance_tuning.md` is the next and final runtime file allowed by the current five-PR loop.
+
+## 2026-06-27-self-iterative-batch006-runtime-005
+
+status: active-unreviewed
+created: 2026-06-27
+source: SELF-ITERATIVE/005_non_radial_detail_and_acceptance_tuning.md, Images/TerrainPreview/008
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, scripts/terrain-preview-export.py, Images/TerrainPreview/008/**
+reason: Runtime 004 reduced graph-domain plate visibility but made the central/midland highlands too smooth, so runtime 005 adds non-radial local terrain detail as the final allowed PR in the five-PR loop.
+review_by: 2026-07-27
+
+Runtime 005 adds non-radial local midland detail, terrace fragments, and scarp fragments in source and exporter. Generated evidence under `Images/TerrainPreview/008/` preserves hard coast gates and low ridge/gully polar lock: shoreline error 0.0 m, beach continuity 100.0%, ocean below sea 100.0%, square-edge ocean violations 0, ridge/gully angular lock `0.08918`, and volcano dominance `10.8915%`. The five-PR loop did not fully solve Batch006 terrain morphology: final image is much less turbine-like than `003`, but still synthetic and broad in the highland; `catchment_angular_concentration_score` remains `0.95995`, `morphology_diagnostics_accepted` remains false, and `dem_calibration_accepted` remains false. After runtime 005 lands, stop and report remaining morphology debt unless the user explicitly extends the loop.

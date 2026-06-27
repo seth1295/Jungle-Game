@@ -114,10 +114,16 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
         math.sin(world_x_m * 0.00021 + world_y_m * 0.00013 + 0.7) * 115.0
         + math.sin(world_x_m * 0.00011 - world_y_m * 0.00019 - 1.3) * 88.0
     )
-    midland_breakup_m = coastal_protection * smooth_step(5200.0, 12800.0, landward_distance_m) * (1.0 - smooth_step(33500.0, 43000.0, landward_distance_m)) * (
+    midland_mask = coastal_protection * smooth_step(5200.0, 12800.0, landward_distance_m) * (1.0 - smooth_step(33500.0, 43000.0, landward_distance_m))
+    midland_breakup_m = midland_mask * (
         math.sin(world_x_m * 0.000155 - world_y_m * 0.000091 + 2.2) * 78.0
         + math.sin(world_x_m * 0.000097 + world_y_m * 0.000173 - 0.4) * 56.0
+        + math.sin(world_x_m * 0.000291 + world_y_m * 0.000217 + 1.7) * 34.0
     )
+    terrace_fragment_m = midland_mask * (
+        math.sin((world_x_m + 0.45 * world_y_m) * 0.00034 + 0.8) > 0.42
+    ) * (1.0 - smooth_step(0.18, 0.38, abs(math.sin((world_x_m - 0.27 * world_y_m) * 0.00019 - 1.1)))) * 52.0
+    scarp_fragment_m = midland_mask * smooth_step(0.42, 0.82, abs(math.sin(world_x_m * 0.000071 - world_y_m * 0.000113))) * math.sin((world_x_m - world_y_m) * 0.000082 + 2.6) * 46.0
     region_northwest = math.exp(-(((world_x_m + 22600.0) / 25500.0) ** 2 + ((world_y_m - 19800.0) / 18800.0) ** 2))
     region_northeast = math.exp(-(((world_x_m - 18800.0) / 21400.0) ** 2 + ((world_y_m - 16600.0) / 16600.0) ** 2))
     region_southwest = math.exp(-(((world_x_m + 17200.0) / 23600.0) ** 2 + ((world_y_m + 9800.0) / 21400.0) ** 2))
@@ -264,6 +270,8 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
         + secondary_upland_push_m
         + shield_breakup_m
         + midland_breakup_m
+        + terrace_fragment_m
+        + scarp_fragment_m
         + long_wave_undulation_m * land_mask
         + ridge_height_m
         - gully_incision_m
