@@ -4,16 +4,20 @@
 #include "Engine/StaticMeshActor.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
+#include "HAL/FileManager.h"
 #include "JungleCrossingActor.h"
 #include "JungleFireActor.h"
 #include "JungleGame.h"
 #include "JungleMarkerActor.h"
+#include "JungleVolcanicIslandTerrainModel.h"
 #include "JungleWatcherCueActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
+#include "Misc/Paths.h"
 #include "TimerManager.h"
 #include "UObject/ConstructorHelpers.h"
+#include "UnrealClient.h"
 
 AJungleCell0Director::AJungleCell0Director()
 {
@@ -42,8 +46,8 @@ void AJungleCell0Director::BeginPlay()
 
 void AJungleCell0Director::ConfigureLargeWorldPlacement(const FVector& NewCellOrigin, const FRotator& NewCellRotation, bool bMovePlayerToEntryPoint)
 {
-	CellOrigin = NewCellOrigin;
 	CellRotation = FRotator(0.0f, NewCellRotation.Yaw, 0.0f);
+	CellOrigin = BuildSurfaceAlignedCellOrigin(NewCellOrigin, CellRotation);
 	AnchorMode = EJungleCell0AnchorMode::PlacedWorldLocation;
 	bMovePlayerToEntryOnBeginPlay = bMovePlayerToEntryPoint;
 	PlayerEntryMoveAttemptsRemaining = 30;
@@ -224,10 +228,26 @@ void AJungleCell0Director::TakeVisualSmokeShot()
 		return;
 	}
 
-	UE_LOG(LogJungleGame, Display, TEXT("Cell 0 visual smoke shot requested."));
-	GEngine->Exec(GetWorld(), TEXT("HighResShot 1920x1080"));
+	FString TrackedEvidencePath;
+	if (FParse::Value(FCommandLine::Get(), TEXT("JungleTrackedVisualEvidence="), TrackedEvidencePath))
+	{
+		if (FPaths::IsRelative(TrackedEvidencePath))
+		{
+			TrackedEvidencePath = FPaths::Combine(FPaths::ProjectDir(), TrackedEvidencePath);
+		}
+
+		IFileManager::Get().MakeDirectory(*FPaths::GetPath(TrackedEvidencePath), true);
+		UE_LOG(LogJungleGame, Display, TEXT("Cell 0 tracked visual smoke shot requested: %s."), *TrackedEvidencePath);
+		FScreenshotRequest::RequestScreenshot(TrackedEvidencePath, false, false);
+	}
+	else
+	{
+		UE_LOG(LogJungleGame, Display, TEXT("Cell 0 visual smoke shot requested."));
+		GEngine->Exec(GetWorld(), TEXT("HighResShot 1920x1080"));
+	}
+
 	FTimerHandle ExitTimer;
-	GetWorldTimerManager().SetTimer(ExitTimer, this, &AJungleCell0Director::ExitAfterVisualSmokeShot, 1.5f, false);
+	GetWorldTimerManager().SetTimer(ExitTimer, this, &AJungleCell0Director::ExitAfterVisualSmokeShot, 3.0f, false);
 }
 
 void AJungleCell0Director::ExitAfterVisualSmokeShot()
@@ -270,9 +290,32 @@ void AJungleCell0Director::CapturePlacedWorldAnchor()
 {
 	if (!bHasConfiguredPlacement)
 	{
-		CellOrigin = GetActorLocation();
 		CellRotation = FRotator(0.0f, GetActorRotation().Yaw, 0.0f);
+		CellOrigin = BuildSurfaceAlignedCellOrigin(GetActorLocation(), CellRotation);
 	}
+}
+
+FVector AJungleCell0Director::BuildSurfaceAlignedCellOrigin(const FVector& RequestedCellOrigin, const FRotator& RequestedCellRotation) const
+{
+	static constexpr float PlayableGroundTopLocalZCm = -90.0f;
+	static constexpr float TerrainClearanceCm = 12.0f;
+
+	const FRotator FlatRotation(0.0f, RequestedCellRotation.Yaw, 0.0f);
+	const FVector EntryProbeWorld = RequestedCellOrigin + FlatRotation.RotateVector(FVector(PlayerEntryLocalLocation.X, PlayerEntryLocalLocation.Y, 0.0f));
+	const float TerrainSurfaceCm = FJungleVolcanicIslandTerrainModel::SampleHeightMeters(EntryProbeWorld.X * 0.01f, EntryProbeWorld.Y * 0.01f) * 100.0f;
+
+	FVector SurfaceAlignedOrigin = RequestedCellOrigin;
+	SurfaceAlignedOrigin.Z = TerrainSurfaceCm - PlayableGroundTopLocalZCm + TerrainClearanceCm;
+
+	UE_LOG(LogJungleGame, Display, TEXT("Cell 0 surface alignment: requested_origin=%s aligned_origin=%s entry_probe=%s terrain_surface_cm=%.1f ground_top_local_z_cm=%.1f clearance_cm=%.1f."),
+		*RequestedCellOrigin.ToString(),
+		*SurfaceAlignedOrigin.ToString(),
+		*EntryProbeWorld.ToString(),
+		TerrainSurfaceCm,
+		PlayableGroundTopLocalZCm,
+		TerrainClearanceCm);
+
+	return SurfaceAlignedOrigin;
 }
 
 void AJungleCell0Director::MovePlayerToCellEntryPoint()

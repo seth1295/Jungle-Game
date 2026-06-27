@@ -45,6 +45,7 @@ private:
 	void CapturePlayerAnchor();
 	void CapturePlacedWorldAnchor();
 	void MovePlayerToCellEntryPoint();
+	FVector BuildSurfaceAlignedCellOrigin(const FVector& RequestedCellOrigin, const FRotator& RequestedCellRotation) const;
 	FVector ToWorld(const FVector& LocalLocation) const;
 	FRotator ToWorldRotation(float LocalYawDegrees = 0.0f) const;
 	void AddCube(const FVector& LocalLocation, const FVector& Scale, const FName Name, float LocalYawDegrees = 0.0f);

@@ -7,7 +7,7 @@ description: PR gate workflow routing and active gate pointer.
 
 ## Active gate
 
-Self-iterative Batch006 morphology loop extension through runtime 009 is in final merge gate on PR #70. Runtime 009 generated tracked final preview evidence under `Images/TerrainPreview/009/` and CodeRabbit rerun returned no findings. After PR #70 lands and local `main` syncs, compile if Unreal build tooling is available; otherwise record the environment blocker.
+Self-iterative runtime 010 is active for the in-game Cell 0 surface-spawn regression. Runtime 010 acceptance is limited to visible terrain with the player/camera on the playable surface. It must use `SELF-ITERATIVE/010_cell0_surface_spawn_alignment.md`, compile with UBT, inspect in-game visual-smoke evidence, track accepted evidence under `Images/InGameEvidence/010/`, then PR/CodeRabbit/merge when clean.
 
 ## Completed setup gate chain
 
