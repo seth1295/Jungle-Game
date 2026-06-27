@@ -7,7 +7,7 @@ description: PR gate workflow routing and active gate pointer.
 
 ## Active gate
 
-PR5 Batch 004 terrain implementation.
+PR5 Batch 005 terrain math implementation.
 
 ## Completed setup gate chain
 
@@ -17,14 +17,18 @@ Historical setup gates were removed with the intentionally deleted broad `docs/`
 
 PR5 lifecycle state lives in `.mex`, `pr5lifecycle-precursor/**`, `pr5lifecycle-runtimefiles/**`, `handoffs/**`, `Source/**`, `scripts/**`, and `Images/**`.
 
-Active Batch 004 files:
+Active Batch 005 files:
 
-- `pr5lifecycle-precursor/004/001_x6_world_scale_terrain_authority_prompt.md`
-- `pr5lifecycle-precursor/004/002_irregular_volcanic_catchments_anti_radial_prompt.md`
-- `pr5lifecycle-precursor/004/003_scaled_preview_acceptance_and_handoff_prompt.md`
-- `pr5lifecycle-runtimefiles/004/001_x6_world_scale_terrain_authority_research.md`
-- `pr5lifecycle-runtimefiles/004/002_irregular_volcanic_catchments_anti_radial_research.md`
-- `pr5lifecycle-runtimefiles/004/003_scaled_preview_acceptance_and_handoff_research.md`
+- `pr5lifecycle-precursor/005/001_geomorphology_math_core_foundation_prompt.md`
+- `pr5lifecycle-precursor/005/002_hydrology_erosion_catchment_solver_prompt.md`
+- `pr5lifecycle-precursor/005/003_ridge_valley_graph_and_landform_regions_prompt.md`
+- `pr5lifecycle-precursor/005/004_volcanic_subsystem_lava_collapse_rift_prompt.md`
+- `pr5lifecycle-precursor/005/005_multi_scale_noise_feature_grammar_prompt.md`
+- `pr5lifecycle-runtimefiles/005/001_geomorphology_math_core_foundation_research.md`
+- `pr5lifecycle-runtimefiles/005/002_hydrology_erosion_catchment_solver_research.md`
+- `pr5lifecycle-runtimefiles/005/003_ridge_valley_graph_and_landform_regions_research.md`
+- `pr5lifecycle-runtimefiles/005/004_volcanic_subsystem_lava_collapse_rift_research.md`
+- `pr5lifecycle-runtimefiles/005/005_multi_scale_noise_feature_grammar_research.md`
 
 Broad `docs/**` and `Docs/**` folders were intentionally removed. Do not route future PR gates through deleted docs folders unless the user explicitly asks to recreate documentation structure.
 

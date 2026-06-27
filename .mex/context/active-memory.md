@@ -533,4 +533,15 @@ target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/
 reason: PR5 Batch 005 runtime file 003 requires stable graph-owned landform region identity so the interior terrain is not just a crater-centered height formula.
 review_by: 2026-07-27
 
-PR5 Batch 005 / 003 is GitHub PR #57 on branch `pr5-batch005-003-ridge-valley-regions`, source commit `c8fe299`. It raises the terrain graph contract to 24 major regions, adds graph-owned landform class IDs, and exposes upland block, basin floor, saddle/pass, old terrace, scarp, secondary hill, and volcano apron masks while preserving coast/beach/ocean constraints. Validation so far: `git diff --check` passed and `JungleGameEditor Linux Development` UBT succeeded. Manual CodeRabbit review is required before merge. Next target after PR #57 merges and local `main` syncs is PR5 Batch 005 / 004 volcanic subsystem lava, collapse, and rift math.
+PR5 Batch 005 / 003 is GitHub PR #57 on branch `pr5-batch005-003-ridge-valley-regions`, source commit `c8fe299`. It raises the terrain graph contract to 24 major regions, adds graph-owned landform class IDs, and exposes upland block, basin floor, saddle/pass, old terrace, scarp, secondary hill, and volcano apron masks while preserving coast/beach/ocean constraints. Validation: `git diff --check` passed, CodeRabbit status passed, and `JungleGameEditor Linux Development` UBT succeeded. PR #57 landed on `main` as merge commit `4756d90`. Next target is PR5 Batch 005 / 004 volcanic subsystem lava, collapse, and rift math.
+
+## 2026-06-27-pr5-batch005-004-compact-volcanic-subsystem
+
+status: confirmed
+created: 2026-06-27
+source: pr5lifecycle-runtimefiles/005/004_volcanic_subsystem_lava_collapse_rift_research.md
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, .mex/context/pr-gates.md
+reason: PR5 Batch 005 runtime file 004 requires the active volcano to become a compact terrain subsystem owned by the island graph, with lava/collapse/rift masks and bounded acceptance evidence.
+review_by: 2026-07-27
+
+PR5 Batch 005 / 004 is GitHub PR #58 on branch `pr5-batch005-004-volcanic-subsystem`, source commit `f3d04ae`. It adds active cone, broader volcanic highland, collapse scar, rift line, lava flow, old lava bench, and secondary cone terrain masks; replaces broad massif-owned active contribution with a bounded local volcanic contribution; advances generator identity to `JG_VOLCANIC_SUBSYSTEM_005_004`; and adds compact-volcano acceptance wiring while preserving coast/beach/ocean constraints. Validation so far: `git diff --check` passed and `JungleGameEditor Linux Development` UBT succeeded. This PR also corrects stale `.mex/context/pr-gates.md` text from Batch 004 to Batch 005 so future PR5 runtime work routes through the current terrain-math lane. Manual CodeRabbit review is required before merge. Next target after PR #58 merges and local `main` syncs is PR5 Batch 005 / 005 multi-scale noise and feature grammar.
