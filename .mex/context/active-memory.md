@@ -501,3 +501,14 @@ reason: User explicitly confirmed PR5 lifecycle folders and terrain preview imag
 review_by: 2026-07-27
 
 PR5 lifecycle prompt/runtime folders and terrain preview image evidence are repo-owned tracked state, not local scratch. Current tracking change moves terrain preview evidence into numbered run folders under `Images/TerrainPreview/001/` and `Images/TerrainPreview/002/`, tracks Batch 005 and Batch 006 precursor/runtime files, preserves broad `docs/` and `Docs/` removal intent, and records that this tracking PR is intentionally run without a CodeRabbit review loop by explicit user instruction.
+
+## 2026-06-27-pr5-batch005-001-geomorphology-core
+
+status: confirmed
+created: 2026-06-27
+source: pr5lifecycle-runtimefiles/005/001_geomorphology_math_core_foundation_research.md
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp
+reason: PR5 Batch 005 runtime file 001 requires the terrain authority to move from crater-owned island math toward a geomorphology-first foundation where volcano-disabled terrain remains structurally meaningful.
+review_by: 2026-07-27
+
+PR5 Batch 005 / 001 is GitHub PR #55 on branch `pr5-batch005-001-geomorphology-core`, source commit `72e0a8a`. It adds basement and regional landform height fields, eight deterministic landform region weights/IDs, a volcano-disabled height evidence path using the same coast clamp, a separated bounded active-volcano contribution, updated generator identity `JG_TERRAIN_MATH_CORE_005_001`, and acceptance fields for volcano-disabled terrain and landform-region authority. Validation so far: `git diff --check` passed for source changes. PR body includes `@coderabbitai ignore` and `@coderabbit ignore`; manual CodeRabbit review is required before merge. Next target after PR #55 merges and local `main` syncs is PR5 Batch 005 / 002 hydrology, erosion, and catchment solver.

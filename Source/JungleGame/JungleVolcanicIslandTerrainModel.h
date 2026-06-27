@@ -19,6 +19,11 @@ struct FJGTerrainSample
 	float BeachWidthM = 0.0f;
 	float MassifMask = 0.0f;
 	float MassifHeightM = 0.0f;
+	float BasementHeightM = 0.0f;
+	float RegionalLandformHeightM = 0.0f;
+	float VolcanoDisabledHeightM = 0.0f;
+	float ActiveVolcanoContributionM = 0.0f;
+	float LandformRegionWeight = 0.0f;
 	float RidgeMask = 0.0f;
 	float GullyMask = 0.0f;
 	float LaharCorridorMask = 0.0f;
@@ -34,6 +39,7 @@ struct FJGTerrainSample
 	float GullyIncisionM = 0.0f;
 	float CraterDepressionM = 0.0f;
 	int32 CatchmentId = INDEX_NONE;
+	int32 LandformRegionId = INDEX_NONE;
 };
 
 struct FJGTerrainMetrics
@@ -53,8 +59,12 @@ struct FJGTerrainMetrics
 	float MaxCraterMask = 0.0f;
 	float MaxVentMask = 0.0f;
 	float MaxHardBlockerMask = 0.0f;
+	float MaxVolcanoDisabledHeightM = TNumericLimits<float>::Lowest();
+	float MaxActiveVolcanoContributionM = 0.0f;
+	float MaxLandformRegionWeight = 0.0f;
 	int32 SampleCount = 0;
 	int32 CatchmentCount = 14;
+	int32 LandformRegionCount = 0;
 	int32 OceanEdgeSampleCount = 0;
 	int32 ShorelineSampleCount = 0;
 	int32 BeachSampleCount = 0;
@@ -182,9 +192,9 @@ struct FJGTerrainTopographicMetrics
 
 struct FJGTerrainGeneratorConfig
 {
-	FName GeneratorId = TEXT("JG_VOLCANIC_ISLAND_BATCH004_X6");
-	FName VersionId = TEXT("JG_TERRAIN_GENERATOR_004_X6_ANTI_RADIAL");
-	int32 Seed = 4004;
+	FName GeneratorId = TEXT("JG_TERRAIN_MATH_CORE_005");
+	FName VersionId = TEXT("JG_TERRAIN_MATH_CORE_005_001");
+	int32 Seed = 5001;
 	float WorldSizeMeters = 97536.0f;
 	float SeaLevelMeters = 0.0f;
 	float TargetPeakMeters = 3800.0f;
@@ -195,6 +205,8 @@ struct FJGTerrainGeneratorConfig
 	bool bDeterministicSampling = true;
 	bool bRuntimeMeshBridgeEnabled = true;
 	bool bTopographicEvidenceEnabled = true;
+	bool bGeomorphologyCoreEnabled = true;
+	bool bActiveVolcanoBounded = true;
 };
 
 struct FJGTerrainGeneratorArchitectureMetrics
@@ -210,6 +222,8 @@ struct FJGTerrainGeneratorArchitectureMetrics
 	bool bCoastInvariantOwnedBySource = false;
 	bool bRuntimeMeshBridgeEnabled = false;
 	bool bTopographicEvidenceEnabled = false;
+	bool bGeomorphologyCoreEnabled = false;
+	bool bActiveVolcanoBounded = false;
 	bool bArchitectureValid = false;
 };
 
@@ -218,9 +232,12 @@ struct FJGTerrainBatchAcceptanceMetrics
 	FString AcceptedTerrainVersion;
 	FString GeneratorFingerprint;
 	int32 RuntimeFilesAccepted = 0;
-	int32 RuntimeFilesExpected = 3;
+	int32 RuntimeFilesExpected = 5;
 	int32 RequiredLogTokenCount = 0;
+	int32 LandformRegionCount = 0;
 	float PeakHeightM = 0.0f;
+	float VolcanoDisabledPeakM = 0.0f;
+	float ActiveVolcanoContributionMaxM = 0.0f;
 	float ShorelineErrorMaxM = 0.0f;
 	float BeachContinuityPercent = 0.0f;
 	float OceanBelowSeaPercent = 0.0f;
@@ -235,6 +252,8 @@ struct FJGTerrainBatchAcceptanceMetrics
 	bool bChannelsAccepted = false;
 	bool bTopographicEvidenceAccepted = false;
 	bool bArchitectureAccepted = false;
+	bool bVolcanoDisabledTerrainAccepted = false;
+	bool bLandformRegionAuthorityAccepted = false;
 	bool bBatchAccepted = false;
 };
 
@@ -248,6 +267,7 @@ public:
 	static constexpr float MaxIslandRadiusM = 44100.0f;
 	static constexpr float TargetPeakHeightM = 3800.0f;
 	static constexpr int32 PrimaryCatchmentCount = 23;
+	static constexpr int32 LandformRegionCount = 8;
 	static constexpr int32 RuntimePreviewVerticesPerSide = 129;
 	static constexpr int32 SourceReferenceVerticesPerSide = 8129;
 	static constexpr int32 RuntimeTilesPerSide = 32;
