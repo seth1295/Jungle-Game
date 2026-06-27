@@ -7,7 +7,7 @@ description: PR gate workflow routing and active gate pointer.
 
 ## Active gate
 
-PR5 Batch 005 terrain math implementation.
+PR5 Batch 006 terrain calibration suite is complete in PR #60; next implementation gate is unset until user review or explicit next-lane instruction.
 
 ## Completed setup gate chain
 
@@ -17,18 +17,27 @@ Historical setup gates were removed with the intentionally deleted broad `docs/`
 
 PR5 lifecycle state lives in `.mex`, `pr5lifecycle-precursor/**`, `pr5lifecycle-runtimefiles/**`, `handoffs/**`, `Source/**`, `scripts/**`, and `Images/**`.
 
-Active Batch 005 files:
+Batch 005 is complete and must not be reopened unless explicitly requested. Batch 006 terrain calibration suite is implemented in PR #60 from runtime files 001 through 005. Do not reopen Batch 006 unless the user explicitly asks for a fix or follow-up review. The next implementation gate is intentionally unset after PR #60 until user review or a new explicit PR5 batch/lane instruction.
 
-- `pr5lifecycle-precursor/005/001_geomorphology_math_core_foundation_prompt.md`
-- `pr5lifecycle-precursor/005/002_hydrology_erosion_catchment_solver_prompt.md`
-- `pr5lifecycle-precursor/005/003_ridge_valley_graph_and_landform_regions_prompt.md`
-- `pr5lifecycle-precursor/005/004_volcanic_subsystem_lava_collapse_rift_prompt.md`
-- `pr5lifecycle-precursor/005/005_multi_scale_noise_feature_grammar_prompt.md`
-- `pr5lifecycle-runtimefiles/005/001_geomorphology_math_core_foundation_research.md`
-- `pr5lifecycle-runtimefiles/005/002_hydrology_erosion_catchment_solver_research.md`
-- `pr5lifecycle-runtimefiles/005/003_ridge_valley_graph_and_landform_regions_research.md`
-- `pr5lifecycle-runtimefiles/005/004_volcanic_subsystem_lava_collapse_rift_research.md`
-- `pr5lifecycle-runtimefiles/005/005_multi_scale_noise_feature_grammar_research.md`
+Active Batch 006 precursor files:
+
+- `pr5lifecycle-precursor/006/001_dem_benchmarking_real_volcanic_islands_prompt.md`
+- `pr5lifecycle-precursor/006/002_offline_generator_runtime_bridge_architecture_prompt.md`
+- `pr5lifecycle-precursor/006/003_morphology_validation_preview_suite_prompt.md`
+- `pr5lifecycle-precursor/006/004_terrain_math_implementation_pr_sequence_prompt.md`
+- `pr5lifecycle-precursor/006/005_full_terrain_math_acceptance_handoff_prompt.md`
+
+Active Batch 006 runtime files:
+
+- `pr5lifecycle-runtimefiles/006/001_dem_benchmarking_real_volcanic_islands_research.md`
+- `pr5lifecycle-runtimefiles/006/002_offline_generator_runtime_bridge_architecture_research.md`
+- `pr5lifecycle-runtimefiles/006/003_morphology_validation_preview_suite_research.md`
+- `pr5lifecycle-runtimefiles/006/004_terrain_math_implementation_pr_sequence_research.md`
+- `pr5lifecycle-runtimefiles/006/005_full_terrain_math_acceptance_handoff_research.md`
+
+Removed duplicate runtime file `pr5lifecycle-runtimefiles/006/001_geomorphology_math_core_foundation_research(1).md` must not be restored or treated as valid Batch 006 input.
+
+Batch 006 output evidence is generated under `Images/TerrainPreview/003/`. Do not overwrite `Images/TerrainPreview/001/`, `Images/TerrainPreview/002/`, or `Images/TerrainPreview/003/` in later work; create the next numbered preview run folder when new accepted terrain evidence is required.
 
 Broad `docs/**` and `Docs/**` folders were intentionally removed. Do not route future PR gates through deleted docs folders unless the user explicitly asks to recreate documentation structure.
 
