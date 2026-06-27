@@ -24,6 +24,13 @@ struct FJGTerrainSample
 	float VolcanoDisabledHeightM = 0.0f;
 	float ActiveVolcanoContributionM = 0.0f;
 	float LandformRegionWeight = 0.0f;
+	float UplandBlockMask = 0.0f;
+	float BasinFloorMask = 0.0f;
+	float SaddlePassMask = 0.0f;
+	float OldTerraceMask = 0.0f;
+	float ScarpMask = 0.0f;
+	float SecondaryHillMask = 0.0f;
+	float VolcanoApronMask = 0.0f;
 	float RidgeMask = 0.0f;
 	float GullyMask = 0.0f;
 	float LaharCorridorMask = 0.0f;
@@ -49,6 +56,7 @@ struct FJGTerrainSample
 	float CraterDepressionM = 0.0f;
 	int32 CatchmentId = INDEX_NONE;
 	int32 LandformRegionId = INDEX_NONE;
+	int32 LandformClassId = INDEX_NONE;
 };
 
 struct FJGTerrainMetrics
@@ -210,8 +218,8 @@ struct FJGTerrainTopographicMetrics
 struct FJGTerrainGeneratorConfig
 {
 	FName GeneratorId = TEXT("JG_TERRAIN_MATH_CORE_005");
-	FName VersionId = TEXT("JG_HYDROLOGY_EROSION_005_002");
-	int32 Seed = 5002;
+	FName VersionId = TEXT("JG_RIDGE_VALLEY_GRAPH_005_003");
+	int32 Seed = 5003;
 	float WorldSizeMeters = 97536.0f;
 	float SeaLevelMeters = 0.0f;
 	float TargetPeakMeters = 3800.0f;
@@ -225,6 +233,7 @@ struct FJGTerrainGeneratorConfig
 	bool bGeomorphologyCoreEnabled = true;
 	bool bActiveVolcanoBounded = true;
 	bool bHydrologySolverEnabled = true;
+	bool bRidgeValleyGraphEnabled = true;
 };
 
 struct FJGTerrainGeneratorArchitectureMetrics
@@ -243,6 +252,7 @@ struct FJGTerrainGeneratorArchitectureMetrics
 	bool bGeomorphologyCoreEnabled = false;
 	bool bActiveVolcanoBounded = false;
 	bool bHydrologySolverEnabled = false;
+	bool bRidgeValleyGraphEnabled = false;
 	bool bArchitectureValid = false;
 };
 
@@ -291,7 +301,7 @@ public:
 	static constexpr float MaxIslandRadiusM = 44100.0f;
 	static constexpr float TargetPeakHeightM = 3800.0f;
 	static constexpr int32 PrimaryCatchmentCount = 23;
-	static constexpr int32 LandformRegionCount = 8;
+	static constexpr int32 LandformRegionCount = 24;
 	static constexpr int32 RuntimePreviewVerticesPerSide = 129;
 	static constexpr int32 SourceReferenceVerticesPerSide = 8129;
 	static constexpr int32 RuntimeTilesPerSide = 32;

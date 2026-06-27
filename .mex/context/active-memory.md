@@ -522,4 +522,15 @@ target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/
 reason: PR5 Batch 005 runtime file 002 requires graph/solver-style drainage evidence and bounded erosion/deposition shaping instead of crater-centered radial drainage.
 review_by: 2026-07-27
 
-PR5 Batch 005 / 002 is GitHub PR #56 on branch `pr5-batch005-002-hydrology-erosion`, source commit `f191fd5`. It adds source-owned hydrology evidence fields for flow accumulation, trunk/tributary stream masks, watershed divide masks, stream order, outlet IDs, stream-power incision, hillslope diffusion, hydrology fan deposition, hydrology solver config identity `JG_HYDROLOGY_EROSION_005_002`, and hydrology acceptance gates while preserving locked coast/beach/ocean constraints. Validation so far: `git diff --check` passed and `JungleGameEditor Linux Development` UBT succeeded after an initial DevSpace timeout/retry; manual CodeRabbit review is required before merge. Next target after PR #56 merges and local `main` syncs is PR5 Batch 005 / 003 ridge-valley graph and landform regions.
+PR5 Batch 005 / 002 is GitHub PR #56 on branch `pr5-batch005-002-hydrology-erosion`, source commit `f191fd5`. It adds source-owned hydrology evidence fields for flow accumulation, trunk/tributary stream masks, watershed divide masks, stream order, outlet IDs, stream-power incision, hillslope diffusion, hydrology fan deposition, hydrology solver config identity `JG_HYDROLOGY_EROSION_005_002`, and hydrology acceptance gates while preserving locked coast/beach/ocean constraints. Validation: `git diff --check` passed, CodeRabbit status passed, and `JungleGameEditor Linux Development` UBT succeeded after an initial DevSpace timeout/retry. PR #56 landed on `main` as merge commit `e067d40`. Next target is PR5 Batch 005 / 003 ridge-valley graph and landform regions.
+
+## 2026-06-27-pr5-batch005-003-ridge-valley-regions
+
+status: confirmed
+created: 2026-06-27
+source: pr5lifecycle-runtimefiles/005/003_ridge_valley_graph_and_landform_regions_research.md
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp
+reason: PR5 Batch 005 runtime file 003 requires stable graph-owned landform region identity so the interior terrain is not just a crater-centered height formula.
+review_by: 2026-07-27
+
+PR5 Batch 005 / 003 is GitHub PR #57 on branch `pr5-batch005-003-ridge-valley-regions`, source commit `c8fe299`. It raises the terrain graph contract to 24 major regions, adds graph-owned landform class IDs, and exposes upland block, basin floor, saddle/pass, old terrace, scarp, secondary hill, and volcano apron masks while preserving coast/beach/ocean constraints. Validation so far: `git diff --check` passed and `JungleGameEditor Linux Development` UBT succeeded. Manual CodeRabbit review is required before merge. Next target after PR #57 merges and local `main` syncs is PR5 Batch 005 / 004 volcanic subsystem lava, collapse, and rift math.
