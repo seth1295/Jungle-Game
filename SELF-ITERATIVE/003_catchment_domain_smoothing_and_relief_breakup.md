@@ -2,7 +2,7 @@
 
 ## Status
 
-planned-runtime
+implemented-runtime
 
 ## Goal
 
@@ -58,3 +58,16 @@ The next preview should visibly reduce blocky/polygon catchment edges and center
 - image review should show naturalized domains rather than obvious polygons.
 
 If images still look bad after this runtime, write `SELF-ITERATIVE/004_<scope>.md` from the new evidence.
+
+## Result
+
+Runtime 003 added asymmetric shield breakup, stronger saddle cuts, secondary upland pushes, and softened ridge/domain breakup in source and exporter. Generated evidence in `Images/TerrainPreview/006/` shows visible improvement over `005`: peak moved off the old bullseye, volcano dominance dropped to `10.3481%`, and coast/beach/ocean gates remain clean.
+
+Still not final:
+
+- color relief retains large blocky graph-domain plates;
+- central highland still reads too smooth and broad;
+- catchment-domain metric remains high: `catchment_angular_concentration_score: 0.95995`;
+- `morphology_diagnostics_accepted: false`.
+
+Next runtime: `SELF-ITERATIVE/004_domain_blend_and_midland_landform_breakup.md`.

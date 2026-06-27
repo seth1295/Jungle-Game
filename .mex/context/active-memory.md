@@ -624,3 +624,14 @@ reason: Runtime 001 proved the shared polar-sector basis caused Batch006 turbine
 review_by: 2026-07-27
 
 Runtime 002 implements curved graph-domain catchments in the terrain source and preview exporter. Generated evidence under `Images/TerrainPreview/005/` keeps coast/beach/ocean gates clean and reduces polar ridge/gully lock from `0.97187` to `0.08188`, but the terrain is not final: color relief still shows blocky catchment domains and a broad center-owned shield, and `catchment_angular_concentration_score` remains high at `0.95995`. `SELF-ITERATIVE/003_catchment_domain_smoothing_and_relief_breakup.md` is the next runtime file if runtime 002 lands cleanly.
+
+## 2026-06-27-self-iterative-batch006-runtime-003
+
+status: active-unreviewed
+created: 2026-06-27
+source: SELF-ITERATIVE/003_catchment_domain_smoothing_and_relief_breakup.md, Images/TerrainPreview/006
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, scripts/terrain-preview-export.py, Images/TerrainPreview/006/**
+reason: Runtime 002 removed most ridge/gully polar lock but left blocky graph-domain plates and a broad center-owned shield, so runtime 003 adds asymmetric shield breakup and softened ridge/domain breakup.
+review_by: 2026-07-27
+
+Runtime 003 adds asymmetric shield breakup, stronger saddle cuts, secondary upland pushes, and softened ridge/domain breakup in source and exporter. Generated evidence under `Images/TerrainPreview/006/` keeps coast/beach/ocean gates clean, drops volcano dominance to `10.3481%`, moves the peak off the old crater-center bullseye, and keeps ridge/gully angular lock low at `0.08918`. Images are improved but not final: large graph-domain plates remain visible and `catchment_angular_concentration_score` remains `0.95995`. `SELF-ITERATIVE/004_domain_blend_and_midland_landform_breakup.md` is the next runtime file if runtime 003 lands cleanly.

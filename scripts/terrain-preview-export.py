@@ -99,7 +99,21 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
     asymmetry = math.sin(world_x_m * 0.000070 + 0.9) * 142.0 + math.sin(world_y_m * 0.000060 - 1.7) * 108.0 + math.sin((world_x_m + world_y_m) * 0.000040 + 2.1) * 70.0
     coastal_protection = smooth_step(6200.0, 11800.0, landward_distance_m) * land_mask
     massif_mask = clamp(smooth_step(0.035, 0.84, 1.0 - massif_normalized) * coastal_protection, 0.0, 1.0)
-    massif_height_m = (TARGET_PEAK_HEIGHT_M * concave_shield + upper_steepening + shoulder_bench + asymmetry) * coastal_protection
+    shield_asymmetry_mask = clamp(0.78 + 0.13 * math.sin(world_x_m * 0.000082 - world_y_m * 0.000049 + 1.4) + 0.09 * math.sin((world_x_m + world_y_m) * 0.000067 - 0.6), 0.58, 1.06)
+    massif_height_m = (TARGET_PEAK_HEIGHT_M * concave_shield + upper_steepening + shoulder_bench + asymmetry) * coastal_protection * shield_asymmetry_mask
+    central_saddle_cut_m = coastal_protection * (
+        math.exp(-(((world_x_m + 10400.0) / 16400.0) ** 2 + ((world_y_m - 6400.0) / 5200.0) ** 2)) * 420.0
+        + math.exp(-(((world_x_m - 11600.0) / 14800.0) ** 2 + ((world_y_m + 8200.0) / 6100.0) ** 2)) * 360.0
+        + math.exp(-(((world_x_m + 2400.0) / 8800.0) ** 2 + ((world_y_m + 15800.0) / 7600.0) ** 2)) * 280.0
+    )
+    secondary_upland_push_m = coastal_protection * (
+        math.exp(-(((world_x_m + 21200.0) / 11800.0) ** 2 + ((world_y_m + 9400.0) / 9200.0) ** 2)) * 285.0
+        + math.exp(-(((world_x_m - 23800.0) / 10400.0) ** 2 + ((world_y_m - 11800.0) / 9800.0) ** 2)) * 250.0
+    )
+    shield_breakup_m = massif_mask * coastal_protection * (
+        math.sin(world_x_m * 0.00021 + world_y_m * 0.00013 + 0.7) * 115.0
+        + math.sin(world_x_m * 0.00011 - world_y_m * 0.00019 - 1.3) * 88.0
+    )
     region_northwest = math.exp(-(((world_x_m + 22600.0) / 25500.0) ** 2 + ((world_y_m - 19800.0) / 18800.0) ** 2))
     region_northeast = math.exp(-(((world_x_m - 18800.0) / 21400.0) ** 2 + ((world_y_m - 16600.0) / 16600.0) ** 2))
     region_southwest = math.exp(-(((world_x_m + 17200.0) / 23600.0) ** 2 + ((world_y_m + 9800.0) / 21400.0) ** 2))
@@ -199,9 +213,9 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
     basin_width = basin_widths[catchment_id]
     basin_strength = basin_strengths[catchment_id]
     mid_slope_mask = smooth_step(5200.0, 14800.0, massif_distance_m) * (1.0 - smooth_step(35000.0, 40500.0, massif_distance_m)) * land_mask
-    ridge_breakup = clamp(0.72 + 0.20 * math.sin(massif_distance_m * 0.00029 + warped_theta * 5.3) + 0.14 * math.sin(world_x_m * 0.000083 + world_y_m * 0.000051), 0.38, 1.0)
-    gully_breakup = clamp(0.78 + 0.18 * math.sin(massif_distance_m * 0.00034 - warped_theta * 3.7) + 0.12 * math.sin(world_x_m * 0.000047 - world_y_m * 0.000089), 0.42, 1.0)
-    ridge_mask = (1.0 - smooth_step(0.042, 0.150 + basin_width * 0.18, best_ridge_delta)) * mid_slope_mask * smooth_step(5400.0, 10400.0, landward_distance_m) * ridge_breakup
+    ridge_breakup = clamp(0.56 + 0.26 * math.sin(massif_distance_m * 0.00029 + warped_theta * 5.3) + 0.20 * math.sin(world_x_m * 0.000083 + world_y_m * 0.000051) + 0.12 * math.sin((world_x_m - world_y_m) * 0.000117 + graph_best_t * 6.0), 0.22, 1.0)
+    gully_breakup = clamp(0.70 + 0.20 * math.sin(massif_distance_m * 0.00034 - warped_theta * 3.7) + 0.16 * math.sin(world_x_m * 0.000047 - world_y_m * 0.000089), 0.34, 1.0)
+    ridge_mask = (1.0 - smooth_step(0.030, 0.240 + basin_width * 0.24, best_ridge_delta)) * mid_slope_mask * smooth_step(5400.0, 10400.0, landward_distance_m) * ridge_breakup * (0.62 + 0.38 * smooth_step(0.08, 0.26, best_gully_delta))
     gully_reach_mask = smooth_step(6500.0, 13200.0, massif_distance_m) * smooth_step(3300.0, 7400.0, landward_distance_m) * (1.0 - smooth_step(36500.0, 43000.0, massif_distance_m)) * land_mask
     trunk_gully_mask = (1.0 - smooth_step(basin_width * 0.20, basin_width * 0.72, best_gully_delta)) * gully_reach_mask * basin_strength * gully_breakup
     branch_angle_a = wrap_angle(warped_theta + basin_curves[catchment_id] * 0.58 + math.sin(graph_best_t * 6.0 + float(catchment_id)) * 0.18)
@@ -242,6 +256,9 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
         basement_height_m
         + regional_landform_height_m
         + massif_height_m
+        - central_saddle_cut_m
+        + secondary_upland_push_m
+        + shield_breakup_m
         + long_wave_undulation_m * land_mask
         + ridge_height_m
         - gully_incision_m
