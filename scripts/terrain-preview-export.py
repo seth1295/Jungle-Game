@@ -151,6 +151,51 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
         boundary_angle = wrap_angle((angle + boundary_b) * 0.5 + 0.045 * math.sin(float(idx) * 1.91))
         best_ridge_delta = min(best_ridge_delta, angular_delta(warped_theta, boundary_angle))
 
+    graph_source_x = [-29200.0, -24400.0, -19600.0, -12600.0, -6900.0, -2200.0, 6800.0, 13200.0, 21200.0, 28200.0, 32600.0, 25000.0, 16500.0, 8600.0, -1200.0, -9600.0, -17800.0, -25200.0, -31800.0, -34200.0, -25400.0, -13800.0, -4200.0]
+    graph_source_y = [22600.0, 11800.0, 32600.0, -6800.0, 24600.0, 4200.0, 19800.0, -14800.0, 7200.0, -2200.0, 18400.0, -27800.0, -35400.0, 31800.0, -23600.0, 14600.0, -18800.0, -31200.0, -4200.0, 8200.0, 28600.0, -36600.0, 35400.0]
+    graph_outlet_x = [-41000.0, -43800.0, -28600.0, -35800.0, -16800.0, -6200.0, 7200.0, 22800.0, 39800.0, 43000.0, 30400.0, 15600.0, 3400.0, -7200.0, -19800.0, -32600.0, -42000.0, -30000.0, -43600.0, -39000.0, -11800.0, 8400.0, 22400.0]
+    graph_outlet_y = [9200.0, -6200.0, 33800.0, -24600.0, 39800.0, 42000.0, 41400.0, -36600.0, 16600.0, -10600.0, 30000.0, -41400.0, -43000.0, 40200.0, -38600.0, 27800.0, -16000.0, -34000.0, 17600.0, 29600.0, 38000.0, -42400.0, 35600.0]
+    graph_curve = [0.42, -0.35, 0.56, -0.48, 0.31, -0.62, 0.46, -0.28, 0.64, -0.52, 0.24, -0.44, 0.58, -0.36, 0.49, -0.41, 0.33, -0.57, 0.27, -0.46, 0.39, -0.32, 0.51]
+    graph_width_m = [4700.0, 3900.0, 5200.0, 4400.0, 4300.0, 5600.0, 4800.0, 5100.0, 4500.0, 4200.0, 5400.0, 4900.0, 5300.0, 4600.0, 5000.0, 4100.0, 4700.0, 5500.0, 4300.0, 5200.0, 4500.0, 4800.0, 5100.0]
+    graph_best_cost = 999.0
+    graph_second_cost = 999.0
+    graph_best_perp_m = 999999.0
+    graph_best_t = 0.0
+    graph_best_tangent = warped_theta
+    for idx in range(PRIMARY_CATCHMENT_COUNT):
+        ax = graph_source_x[idx]
+        ay = graph_source_y[idx]
+        bx = graph_outlet_x[idx]
+        by = graph_outlet_y[idx]
+        vx = bx - ax
+        vy = by - ay
+        line_len_sq = max(vx * vx + vy * vy, 1.0)
+        t = clamp(((world_x_m - ax) * vx + (world_y_m - ay) * vy) / line_len_sq, -0.18, 1.18)
+        tc = clamp(t, 0.0, 1.0)
+        line_len = math.sqrt(line_len_sq)
+        nx = -vy / line_len
+        ny = vx / line_len
+        curve_offset_m = graph_curve[idx] * math.sin(tc * math.pi) * (3600.0 + 1100.0 * math.sin(float(idx) * 1.73))
+        cx = lerp(ax, bx, tc) + nx * curve_offset_m
+        cy = lerp(ay, by, tc) + ny * curve_offset_m
+        perp_m = math.hypot(world_x_m - cx, world_y_m - cy)
+        endpoint_penalty = max(0.0, -t) * 1.4 + max(0.0, t - 1.0) * 1.4
+        source_affinity = 0.18 * math.sin(world_x_m * 0.000031 + float(idx) * 0.73) + 0.14 * math.sin(world_y_m * 0.000027 - float(idx) * 0.51)
+        cost = perp_m / graph_width_m[idx] + endpoint_penalty - source_affinity
+        if cost < graph_best_cost:
+            graph_second_cost = graph_best_cost
+            graph_best_cost = cost
+            catchment_id = idx
+            graph_best_perp_m = perp_m
+            graph_best_t = tc
+            curve_derivative = graph_curve[idx] * math.cos(tc * math.pi) * math.pi * (3600.0 + 1100.0 * math.sin(float(idx) * 1.73)) / line_len
+            graph_best_tangent = math.atan2(vy + ny * curve_derivative, vx + nx * curve_derivative)
+        elif cost < graph_second_cost:
+            graph_second_cost = cost
+    warped_theta = wrap_angle(graph_best_tangent)
+    best_gully_delta = clamp((graph_best_perp_m / graph_width_m[catchment_id]) * 0.16, 0.0, 0.45)
+    best_ridge_delta = clamp((graph_second_cost - graph_best_cost) * 0.18, 0.0, 0.45)
+
     basin_width = basin_widths[catchment_id]
     basin_strength = basin_strengths[catchment_id]
     mid_slope_mask = smooth_step(5200.0, 14800.0, massif_distance_m) * (1.0 - smooth_step(35000.0, 40500.0, massif_distance_m)) * land_mask
@@ -159,14 +204,14 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
     ridge_mask = (1.0 - smooth_step(0.042, 0.150 + basin_width * 0.18, best_ridge_delta)) * mid_slope_mask * smooth_step(5400.0, 10400.0, landward_distance_m) * ridge_breakup
     gully_reach_mask = smooth_step(6500.0, 13200.0, massif_distance_m) * smooth_step(3300.0, 7400.0, landward_distance_m) * (1.0 - smooth_step(36500.0, 43000.0, massif_distance_m)) * land_mask
     trunk_gully_mask = (1.0 - smooth_step(basin_width * 0.20, basin_width * 0.72, best_gully_delta)) * gully_reach_mask * basin_strength * gully_breakup
-    branch_angle_a = wrap_angle(basin_angles[catchment_id] + basin_curves[catchment_id] * 0.42 + math.sin(distance01 * 5.0 + float(catchment_id)) * 0.10)
-    branch_angle_b = wrap_angle(basin_angles[catchment_id] - basin_curves[catchment_id] * 0.35 + math.cos(distance01 * 4.0 + float(catchment_id) * 0.7) * 0.12)
+    branch_angle_a = wrap_angle(warped_theta + basin_curves[catchment_id] * 0.58 + math.sin(graph_best_t * 6.0 + float(catchment_id)) * 0.18)
+    branch_angle_b = wrap_angle(warped_theta - basin_curves[catchment_id] * 0.52 + math.cos(graph_best_t * 5.0 + float(catchment_id) * 0.7) * 0.20)
     branch_reach = smooth_step(10500.0, 18000.0, massif_distance_m) * (1.0 - smooth_step(28500.0, 39000.0, massif_distance_m)) * land_mask
     secondary_branch_mask = max((1.0 - smooth_step(0.030, 0.085, angular_delta(warped_theta, branch_angle_a))) * branch_reach * 0.55, (1.0 - smooth_step(0.035, 0.095, angular_delta(warped_theta, branch_angle_b))) * branch_reach * 0.42)
     gully_mask = clamp(trunk_gully_mask + secondary_branch_mask, 0.0, 1.0)
     lahar_catchment = catchment_id in {2, 5, 8, 11, 13, 17, 20}
     lahar_corridor_mask = trunk_gully_mask * smooth_step(12200.0, 22500.0, massif_distance_m) * (1.0 - smooth_step(36000.0, 43500.0, massif_distance_m)) if lahar_catchment else 0.0
-    coastal_fan_mask = (1.0 - smooth_step(basin_width * 0.30, basin_width * 0.95, best_gully_delta)) * smooth_step(1200.0, 3900.0, landward_distance_m) * (1.0 - smooth_step(7200.0, 11800.0, landward_distance_m)) * land_mask * basin_strength
+    coastal_fan_mask = (1.0 - smooth_step(basin_width * 0.30, basin_width * 0.95, best_gully_delta)) * smooth_step(1200.0, 3900.0, landward_distance_m) * (1.0 - smooth_step(7200.0, 11800.0, landward_distance_m)) * land_mask * basin_strength * smooth_step(0.55, 0.98, graph_best_t)
     ridge_height_m = ridge_mask * lerp(85.0, 310.0, smooth_step(10500.0, 28000.0, massif_distance_m))
     gully_incision_m = gully_mask * (lerp(65.0, 260.0, smooth_step(9000.0, 33500.0, massif_distance_m)) + lahar_corridor_mask * 145.0)
     fan_deposit_m = coastal_fan_mask * lerp(22.0, 82.0, smooth_step(1900.0, 6500.0, landward_distance_m))
@@ -216,8 +261,8 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
     height_m = lerp(shore_locked_height_m, beach_accepted_height_m, beach_acceptance_mask)
 
     ridge_gully_mask = max(ridge_mask, gully_mask)
-    angular_lock_delta = min(best_gully_delta, best_ridge_delta)
-    ridge_gully_angular_lock = 1.0 - smooth_step(0.035, 0.220, angular_lock_delta)
+    angular_lock_delta = angular_delta(massif_theta, basin_angles[catchment_id])
+    ridge_gully_angular_lock = 1.0 - clamp(angular_lock_delta / 0.30, 0.0, 1.0)
 
     return {
         "height_m": height_m,

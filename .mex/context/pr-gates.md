@@ -7,7 +7,7 @@ description: PR gate workflow routing and active gate pointer.
 
 ## Active gate
 
-Self-iterative Batch006 morphology loop is active. Current runtime file is `SELF-ITERATIVE/001_batch006_radial_morphology_diagnosis.md`; max loop budget is five PRs or until generated terrain preview images look good by tool inspection. Runtime 001 is diagnostic/gate-focused and must land before implementing runtime 002.
+Self-iterative Batch006 morphology loop is active. Current runtime file is `SELF-ITERATIVE/002_non_radial_catchment_graph_rewrite.md`; max loop budget is five PRs or until generated terrain preview images look good by tool inspection. Runtime 002 is source/tool parity for non-radial graph catchments and must land before implementing runtime 003.
 
 ## Completed setup gate chain
 

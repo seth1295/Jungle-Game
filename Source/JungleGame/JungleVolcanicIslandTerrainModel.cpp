@@ -146,7 +146,7 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 		0.18f * FMath::Sin(MassifDistanceM * 0.00017f + MassifTheta * 2.70f) +
 		0.11f * FMath::Sin(WorldXM * 0.000061f - WorldYM * 0.000047f + 0.8f) +
 		0.07f * FMath::Sin((WorldXM - WorldYM) * 0.000039f + MassifTheta * 4.1f);
-	const float WarpedTheta = WrapAngle(MassifTheta + BasinDomainWarp * SmoothStep(0.08f, 0.94f, Distance01));
+	float WarpedTheta = WrapAngle(MassifTheta + BasinDomainWarp * SmoothStep(0.08f, 0.94f, Distance01));
 
 	int32 CatchmentId = 0;
 	float BestGullyDelta = TNumericLimits<float>::Max();
@@ -175,6 +175,58 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 		BestRidgeDelta = FMath::Min(BestRidgeDelta, AngularDelta(WarpedTheta, BoundaryAngle));
 	}
 
+	static constexpr float GraphSourceX[PrimaryCatchmentCount] = { -29200.0f, -24400.0f, -19600.0f, -12600.0f, -6900.0f, -2200.0f, 6800.0f, 13200.0f, 21200.0f, 28200.0f, 32600.0f, 25000.0f, 16500.0f, 8600.0f, -1200.0f, -9600.0f, -17800.0f, -25200.0f, -31800.0f, -34200.0f, -25400.0f, -13800.0f, -4200.0f };
+	static constexpr float GraphSourceY[PrimaryCatchmentCount] = { 22600.0f, 11800.0f, 32600.0f, -6800.0f, 24600.0f, 4200.0f, 19800.0f, -14800.0f, 7200.0f, -2200.0f, 18400.0f, -27800.0f, -35400.0f, 31800.0f, -23600.0f, 14600.0f, -18800.0f, -31200.0f, -4200.0f, 8200.0f, 28600.0f, -36600.0f, 35400.0f };
+	static constexpr float GraphOutletX[PrimaryCatchmentCount] = { -41000.0f, -43800.0f, -28600.0f, -35800.0f, -16800.0f, -6200.0f, 7200.0f, 22800.0f, 39800.0f, 43000.0f, 30400.0f, 15600.0f, 3400.0f, -7200.0f, -19800.0f, -32600.0f, -42000.0f, -30000.0f, -43600.0f, -39000.0f, -11800.0f, 8400.0f, 22400.0f };
+	static constexpr float GraphOutletY[PrimaryCatchmentCount] = { 9200.0f, -6200.0f, 33800.0f, -24600.0f, 39800.0f, 42000.0f, 41400.0f, -36600.0f, 16600.0f, -10600.0f, 30000.0f, -41400.0f, -43000.0f, 40200.0f, -38600.0f, 27800.0f, -16000.0f, -34000.0f, 17600.0f, 29600.0f, 38000.0f, -42400.0f, 35600.0f };
+	static constexpr float GraphCurve[PrimaryCatchmentCount] = { 0.42f, -0.35f, 0.56f, -0.48f, 0.31f, -0.62f, 0.46f, -0.28f, 0.64f, -0.52f, 0.24f, -0.44f, 0.58f, -0.36f, 0.49f, -0.41f, 0.33f, -0.57f, 0.27f, -0.46f, 0.39f, -0.32f, 0.51f };
+	static constexpr float GraphWidthM[PrimaryCatchmentCount] = { 4700.0f, 3900.0f, 5200.0f, 4400.0f, 4300.0f, 5600.0f, 4800.0f, 5100.0f, 4500.0f, 4200.0f, 5400.0f, 4900.0f, 5300.0f, 4600.0f, 5000.0f, 4100.0f, 4700.0f, 5500.0f, 4300.0f, 5200.0f, 4500.0f, 4800.0f, 5100.0f };
+	float GraphBestCost = TNumericLimits<float>::Max();
+	float GraphSecondCost = TNumericLimits<float>::Max();
+	float GraphBestPerpM = TNumericLimits<float>::Max();
+	float GraphBestT = 0.0f;
+	float GraphBestTangent = WarpedTheta;
+	for (int32 GraphIndex = 0; GraphIndex < PrimaryCatchmentCount; ++GraphIndex)
+	{
+		const float AX = GraphSourceX[GraphIndex];
+		const float AY = GraphSourceY[GraphIndex];
+		const float BX = GraphOutletX[GraphIndex];
+		const float BY = GraphOutletY[GraphIndex];
+		const float VX = BX - AX;
+		const float VY = BY - AY;
+		const float LineLenSq = FMath::Max(VX * VX + VY * VY, 1.0f);
+		const float T = FMath::Clamp(((WorldXM - AX) * VX + (WorldYM - AY) * VY) / LineLenSq, -0.18f, 1.18f);
+		const float TC = FMath::Clamp(T, 0.0f, 1.0f);
+		const float LineLen = FMath::Sqrt(LineLenSq);
+		const float NX = -VY / LineLen;
+		const float NY = VX / LineLen;
+		const float CurveAmplitudeM = 3600.0f + 1100.0f * FMath::Sin(static_cast<float>(GraphIndex) * 1.73f);
+		const float CurveOffsetM = GraphCurve[GraphIndex] * FMath::Sin(TC * PI) * CurveAmplitudeM;
+		const float CX = FMath::Lerp(AX, BX, TC) + NX * CurveOffsetM;
+		const float CY = FMath::Lerp(AY, BY, TC) + NY * CurveOffsetM;
+		const float PerpM = FVector2D(WorldXM - CX, WorldYM - CY).Size();
+		const float EndpointPenalty = FMath::Max(0.0f, -T) * 1.4f + FMath::Max(0.0f, T - 1.0f) * 1.4f;
+		const float SourceAffinity = 0.18f * FMath::Sin(WorldXM * 0.000031f + static_cast<float>(GraphIndex) * 0.73f) + 0.14f * FMath::Sin(WorldYM * 0.000027f - static_cast<float>(GraphIndex) * 0.51f);
+		const float Cost = PerpM / GraphWidthM[GraphIndex] + EndpointPenalty - SourceAffinity;
+		if (Cost < GraphBestCost)
+		{
+			GraphSecondCost = GraphBestCost;
+			GraphBestCost = Cost;
+			CatchmentId = GraphIndex;
+			GraphBestPerpM = PerpM;
+			GraphBestT = TC;
+			const float CurveDerivative = GraphCurve[GraphIndex] * FMath::Cos(TC * PI) * PI * CurveAmplitudeM / LineLen;
+			GraphBestTangent = FMath::Atan2(VY + NY * CurveDerivative, VX + NX * CurveDerivative);
+		}
+		else if (Cost < GraphSecondCost)
+		{
+			GraphSecondCost = Cost;
+		}
+	}
+	WarpedTheta = WrapAngle(GraphBestTangent);
+	BestGullyDelta = FMath::Clamp((GraphBestPerpM / GraphWidthM[CatchmentId]) * 0.16f, 0.0f, 0.45f);
+	BestRidgeDelta = FMath::Clamp((GraphSecondCost - GraphBestCost) * 0.18f, 0.0f, 0.45f);
+
 	const float BasinWidth = BasinWidths[CatchmentId];
 	const float BasinStrength = BasinStrengths[CatchmentId];
 	const float MidSlopeMask = SmoothStep(5200.0f, 14800.0f, MassifDistanceM) * (1.0f - SmoothStep(35000.0f, 40500.0f, MassifDistanceM)) * LandMask;
@@ -183,8 +235,8 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 	const float RidgeMask = (1.0f - SmoothStep(0.042f, 0.150f + BasinWidth * 0.18f, BestRidgeDelta)) * MidSlopeMask * SmoothStep(5400.0f, 10400.0f, LandwardDistanceM) * RidgeBreakup;
 	const float GullyReachMask = SmoothStep(6500.0f, 13200.0f, MassifDistanceM) * SmoothStep(3300.0f, 7400.0f, LandwardDistanceM) * (1.0f - SmoothStep(36500.0f, 43000.0f, MassifDistanceM)) * LandMask;
 	const float TrunkGullyMask = (1.0f - SmoothStep(BasinWidth * 0.20f, BasinWidth * 0.72f, BestGullyDelta)) * GullyReachMask * BasinStrength * GullyBreakup;
-	const float BranchAngleA = WrapAngle(BasinAngles[CatchmentId] + BasinCurves[CatchmentId] * 0.42f + FMath::Sin(Distance01 * 5.0f + static_cast<float>(CatchmentId)) * 0.10f);
-	const float BranchAngleB = WrapAngle(BasinAngles[CatchmentId] - BasinCurves[CatchmentId] * 0.35f + FMath::Cos(Distance01 * 4.0f + static_cast<float>(CatchmentId) * 0.7f) * 0.12f);
+	const float BranchAngleA = WrapAngle(WarpedTheta + BasinCurves[CatchmentId] * 0.58f + FMath::Sin(GraphBestT * 6.0f + static_cast<float>(CatchmentId)) * 0.18f);
+	const float BranchAngleB = WrapAngle(WarpedTheta - BasinCurves[CatchmentId] * 0.52f + FMath::Cos(GraphBestT * 5.0f + static_cast<float>(CatchmentId) * 0.7f) * 0.20f);
 	const float BranchReach = SmoothStep(10500.0f, 18000.0f, MassifDistanceM) * (1.0f - SmoothStep(28500.0f, 39000.0f, MassifDistanceM)) * LandMask;
 	const float SecondaryBranchMask = FMath::Max(
 		(1.0f - SmoothStep(0.030f, 0.085f, AngularDelta(WarpedTheta, BranchAngleA))) * BranchReach * 0.55f,
@@ -192,7 +244,7 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 	const float GullyMask = FMath::Clamp(TrunkGullyMask + SecondaryBranchMask, 0.0f, 1.0f);
 	const bool bLaharCatchment = CatchmentId == 2 || CatchmentId == 5 || CatchmentId == 8 || CatchmentId == 11 || CatchmentId == 13 || CatchmentId == 17 || CatchmentId == 20;
 	const float LaharCorridorMask = bLaharCatchment ? TrunkGullyMask * SmoothStep(12200.0f, 22500.0f, MassifDistanceM) * (1.0f - SmoothStep(36000.0f, 43500.0f, MassifDistanceM)) : 0.0f;
-	const float CoastalFanMask = (1.0f - SmoothStep(BasinWidth * 0.30f, BasinWidth * 0.95f, BestGullyDelta)) * SmoothStep(1200.0f, 3900.0f, LandwardDistanceM) * (1.0f - SmoothStep(7200.0f, 11800.0f, LandwardDistanceM)) * LandMask * BasinStrength;
+	const float CoastalFanMask = (1.0f - SmoothStep(BasinWidth * 0.30f, BasinWidth * 0.95f, BestGullyDelta)) * SmoothStep(1200.0f, 3900.0f, LandwardDistanceM) * (1.0f - SmoothStep(7200.0f, 11800.0f, LandwardDistanceM)) * LandMask * BasinStrength * SmoothStep(0.55f, 0.98f, GraphBestT);
 	const float RidgeHeightM = RidgeMask * FMath::Lerp(85.0f, 310.0f, SmoothStep(10500.0f, 28000.0f, MassifDistanceM));
 	const float GullyIncisionM = GullyMask * (FMath::Lerp(65.0f, 260.0f, SmoothStep(9000.0f, 33500.0f, MassifDistanceM)) + LaharCorridorMask * 145.0f);
 	const float FanDepositM = CoastalFanMask * FMath::Lerp(22.0f, 82.0f, SmoothStep(1900.0f, 6500.0f, LandwardDistanceM));

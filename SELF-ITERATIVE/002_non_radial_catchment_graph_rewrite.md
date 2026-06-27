@@ -2,7 +2,7 @@
 
 ## Status
 
-planned-runtime
+implemented-runtime
 
 ## Goal
 
@@ -56,3 +56,19 @@ The next generated manifest should aim for:
 - visibly reduced turbine/fan-blade morphology in color relief, radial diagnostic, and catchment preview.
 
 If the numeric gates improve but the image still looks bad, write `SELF-ITERATIVE/003_<scope>.md` from the new evidence instead of claiming completion.
+
+## Result
+
+Runtime 002 replaced the ridge/gully polar-sector basis with deterministic curved graph-domain catchments in both the preview exporter and C++ terrain source. Generated evidence in `Images/TerrainPreview/005/` shows the turbine spokes are reduced and ridge/gully angular lock now passes:
+
+- `ridge_gully_angular_lock_score: 0.08188`
+- `shoreline_error_max_m: 0.0`
+- `beach_continuity_pct: 100.0`
+- `ocean_below_sea_pct: 100.0`
+- `square_edge_ocean_violations: 0`
+
+The images are still not good enough. They now read less like fan blades but still show blocky catchment domains and a broad center-owned volcanic shield. Remaining failing metric:
+
+- `catchment_angular_concentration_score: 0.95995`
+
+Next runtime: `SELF-ITERATIVE/003_catchment_domain_smoothing_and_relief_breakup.md`.

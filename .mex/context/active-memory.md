@@ -613,3 +613,14 @@ review_by: 2026-07-27
 First self-iterative runtime file is `SELF-ITERATIVE/001_batch006_radial_morphology_diagnosis.md`. Scope: diagnose the Batch006 radial morphology failure using terrain source, Batch006 calibration source, preview exporter, manifest metrics, repo image viewing, generated diagnostics, checks/builds where available, and CodeRabbit during PR lifecycle. The first runtime unit is diagnostic/gate-focused: make the current failure measurable so a later terrain math rewrite targets the verified cause rather than guessing from images alone. New terrain preview evidence must use the next numbered `Images/TerrainPreview/` folder and must not overwrite `001`, `002`, or `003`.
 
 Runtime 001 diagnosis result: terrain source and exporter assign catchments from warped polar angle around the massif center, and ridge/gully masks use the same angular-delta basis. Generated evidence under `Images/TerrainPreview/004/` preserved clean coast/beach/ocean gates but correctly fails new morphology diagnostics: `catchment_angular_concentration_score: 0.98963`, `ridge_gully_angular_lock_score: 0.97187`, `morphology_diagnostics_accepted: false`, and `dem_calibration_accepted: false`. `SELF-ITERATIVE/002_non_radial_catchment_graph_rewrite.md` is now the next runtime file if PR1 lands cleanly.
+
+## 2026-06-27-self-iterative-batch006-runtime-002
+
+status: active-unreviewed
+created: 2026-06-27
+source: SELF-ITERATIVE/002_non_radial_catchment_graph_rewrite.md, Images/TerrainPreview/005
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, scripts/terrain-preview-export.py, Images/TerrainPreview/005/**
+reason: Runtime 001 proved the shared polar-sector basis caused Batch006 turbine morphology, so runtime 002 replaces catchment/ridge/gully ownership with curved graph-domain paths in source and preview tooling.
+review_by: 2026-07-27
+
+Runtime 002 implements curved graph-domain catchments in the terrain source and preview exporter. Generated evidence under `Images/TerrainPreview/005/` keeps coast/beach/ocean gates clean and reduces polar ridge/gully lock from `0.97187` to `0.08188`, but the terrain is not final: color relief still shows blocky catchment domains and a broad center-owned shield, and `catchment_angular_concentration_score` remains high at `0.95995`. `SELF-ITERATIVE/003_catchment_domain_smoothing_and_relief_breakup.md` is the next runtime file if runtime 002 lands cleanly.
