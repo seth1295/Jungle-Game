@@ -132,16 +132,26 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
     region_east_terrace = math.exp(-(((world_x_m - 28200.0) / 16000.0) ** 2 + ((world_y_m + 1800.0) / 25000.0) ** 2))
     region_west_bench = math.exp(-(((world_x_m + 31800.0) / 12800.0) ** 2 + ((world_y_m + 22600.0) / 13400.0) ** 2))
     region_south_plain = math.exp(-(((world_x_m - 1600.0) / 26000.0) ** 2 + ((world_y_m + 34200.0) / 10400.0) ** 2))
-    basement_height_m = coastal_protection * (245.0 + math.sin(world_x_m * 0.000040 + 1.1) * 180.0 + math.sin(world_y_m * 0.000036 - 0.4) * 142.0 + math.sin((world_x_m - world_y_m) * 0.000025 + 2.2) * 96.0)
+    basement_height_m = coastal_protection * (150.0 + math.sin(world_x_m * 0.000040 + 1.1) * 125.0 + math.sin(world_y_m * 0.000036 - 0.4) * 96.0 + math.sin((world_x_m - world_y_m) * 0.000025 + 2.2) * 72.0)
     regional_landform_height_m = coastal_protection * (
-        region_northwest * 560.0
-        + region_northeast * 420.0
-        + region_southwest * 360.0
-        + region_southeast * 235.0
-        + region_central_upland * 710.0
-        + region_east_terrace * 160.0
-        + region_west_bench * 285.0
-        + region_south_plain * 110.0
+        region_northwest * 430.0
+        + region_northeast * 320.0
+        + region_southwest * 270.0
+        + region_southeast * 185.0
+        + region_central_upland * 520.0
+        + region_east_terrace * 125.0
+        + region_west_bench * 220.0
+        + region_south_plain * 85.0
+    )
+    landform_region_weight = max(
+        region_northwest,
+        region_northeast,
+        region_southwest,
+        region_southeast,
+        region_central_upland,
+        region_east_terrace,
+        region_west_bench,
+        region_south_plain,
     )
 
     def angular_delta(a: float, b: float) -> float:
@@ -237,12 +247,13 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
     branch_angle_b = wrap_angle(warped_theta - basin_curve * 0.52 + math.cos(graph_best_t * 5.0 + float(catchment_id) * 0.7) * 0.20)
     branch_reach = smooth_step(10500.0, 18000.0, massif_distance_m) * (1.0 - smooth_step(28500.0, 39000.0, massif_distance_m)) * land_mask * (1.0 - domain_transition_mask * 0.22)
     secondary_branch_mask = max((1.0 - smooth_step(0.030, 0.110, angular_delta(graph_local_theta, branch_angle_a))) * branch_reach * 0.48, (1.0 - smooth_step(0.035, 0.120, angular_delta(graph_local_theta, branch_angle_b))) * branch_reach * 0.36)
-    gully_mask = clamp(trunk_gully_mask + secondary_branch_mask, 0.0, 1.0)
+    cross_cut_drainage_mask = smooth_step(0.40, 0.82, abs(math.sin(world_x_m * 0.000145 - world_y_m * 0.000096 + 1.3))) * mid_slope_mask * (1.0 - massif_mask * 0.35) * 0.46
+    gully_mask = clamp(trunk_gully_mask + secondary_branch_mask + cross_cut_drainage_mask, 0.0, 1.0)
     lahar_catchment = catchment_id in {2, 5, 8, 11, 13, 17, 20}
     lahar_corridor_mask = trunk_gully_mask * smooth_step(12200.0, 22500.0, massif_distance_m) * (1.0 - smooth_step(36000.0, 43500.0, massif_distance_m)) * (1.0 - domain_transition_mask * 0.25) if lahar_catchment else 0.0
     coastal_fan_mask = (1.0 - smooth_step(basin_width * 0.30, basin_width * 1.08, best_gully_delta)) * smooth_step(1200.0, 3900.0, landward_distance_m) * (1.0 - smooth_step(7200.0, 11800.0, landward_distance_m)) * land_mask * basin_strength * smooth_step(0.55, 0.98, graph_best_t) * (1.0 - domain_transition_mask * 0.22)
-    ridge_height_m = ridge_mask * lerp(38.0, 145.0, smooth_step(10500.0, 28000.0, massif_distance_m))
-    gully_incision_m = gully_mask * (lerp(34.0, 128.0, smooth_step(9000.0, 33500.0, massif_distance_m)) + lahar_corridor_mask * 72.0) * (1.0 - domain_transition_mask * 0.12)
+    ridge_height_m = ridge_mask * lerp(82.0, 245.0, smooth_step(10500.0, 28000.0, massif_distance_m))
+    gully_incision_m = gully_mask * (lerp(86.0, 258.0, smooth_step(9000.0, 33500.0, massif_distance_m)) + lahar_corridor_mask * 130.0) * (1.0 - domain_transition_mask * 0.12)
     fan_deposit_m = coastal_fan_mask * lerp(22.0, 82.0, smooth_step(1900.0, 6500.0, landward_distance_m))
 
     crater_center_x_m = massif_center_x_m + 720.0
@@ -266,21 +277,36 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
     unstable_crust_mask = clamp(vent_mask + fissure_mask + lava_crust_mask * 0.45, 0.0, 1.0)
     hard_blocker_mask = clamp(broken_rim_mask * 0.75 + vent_mask + fissure_mask * 0.85 + breach_mask * 0.35, 0.0, 1.0)
 
+    drainage_power01 = clamp(gully_mask * 0.58 + lahar_corridor_mask * 0.28 + coastal_fan_mask * 0.18 + smooth_step(0.30, 0.82, landform_region_weight) * 0.08, 0.0, 1.0)
+    divide_mask = clamp(ridge_mask * (1.0 - gully_mask * 0.65), 0.0, 1.0)
+    stream_power_incision_m = drainage_power01 * smooth_step(5200.0, 33000.0, massif_distance_m) * (68.0 + 240.0 * smooth_step(0.20, 0.90, drainage_power01))
+    hillslope_diffusion_m = divide_mask * smooth_step(0.22, 0.82, ridge_mask) * 8.0
+    hydrology_fan_deposition_m = coastal_fan_mask * drainage_power01 * lerp(28.0, 92.0, smooth_step(1700.0, 7200.0, landward_distance_m))
     long_wave_undulation_m = math.sin(world_x_m * 0.00030 + world_y_m * 0.00018) * 46.0 + math.sin(world_x_m * 0.00045 - world_y_m * 0.00027) * 32.0 + math.sin(world_x_m * 0.00012 + massif_theta * 3.0) * 24.0
+    mid_slope_scarp_m = mid_slope_mask * (1.0 - active_cone_mask * 0.65) * (
+        math.sin(world_x_m * 0.00062 + world_y_m * 0.00027 + 0.4) * 232.0
+        + math.sin(world_x_m * 0.00031 - world_y_m * 0.00058 - 1.1) * 152.0
+    )
+    highland_trim_m = smooth_step(17000.0, 29200.0, landward_distance_m) * (1.0 - smooth_step(37200.0, 45000.0, landward_distance_m)) * coastal_protection * 265.0
     terrain_process_height_m = (
         basement_height_m
         + regional_landform_height_m
         + massif_height_m
+        - highland_trim_m
         - central_saddle_cut_m
         + secondary_upland_push_m
         + shield_breakup_m
         + midland_breakup_m
         + terrace_fragment_m
         + scarp_fragment_m
+        + mid_slope_scarp_m
         + long_wave_undulation_m * land_mask
         + ridge_height_m
         - gully_incision_m
+        - stream_power_incision_m
+        - hillslope_diffusion_m
         + fan_deposit_m
+        + hydrology_fan_deposition_m
         + broken_rim_mask * 260.0
         - (crater_mask * 420.0 + vent_mask * 260.0 + breach_mask * 190.0 + fissure_mask * 110.0)
     )
