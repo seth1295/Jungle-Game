@@ -7,7 +7,7 @@ description: PR gate workflow routing and active gate pointer.
 
 ## Active gate
 
-Self-iterative Batch006 morphology loop is at final runtime `SELF-ITERATIVE/005_non_radial_detail_and_acceptance_tuning.md`. The current user-authorized loop budget is five PRs maximum; after runtime 005 lands, stop and report remaining Batch006 terrain morphology debt unless the user explicitly authorizes another loop.
+Self-iterative Batch006 morphology loop is extended beyond runtime 005 by current user instruction. Current runtime order is: 006 source/exporter parity, 007 soft catchment/domain blending, 008 morphology diagnostics, and 009 final tracked preview evidence under `Images/TerrainPreview/009/`. Run one runtime file per PR with CodeRabbit and merge gates before the next runtime.
 
 ## Completed setup gate chain
 
@@ -19,7 +19,7 @@ PR5 lifecycle state lives in `.mex`, `pr5lifecycle-precursor/**`, `pr5lifecycle-
 
 Self-iterative lifecycle state lives in `.mex/patterns/self-iterative-lifecycle.md` and `SELF-ITERATIVE/**`. It is repo-owned lifecycle state like PR5 lifecycle. When active, the agent diagnoses with available tools, writes numbered scoped runtime files into `SELF-ITERATIVE/`, implements one runtime file at a time, inspects what changed, updates `.mex`, then runs PR review and merge when authorized.
 
-Batch 005 is complete and must not be reopened unless explicitly requested. PR #60 landed a combined Batch 006 terrain calibration implementation. Future PR5 runtime work must not use a combined PR as the default execution shape. The active follow-up lane is the self-iterative Batch006 morphology loop, starting with runtime 001 diagnostics and then runtime 002 non-radial catchment graph rewrite if diagnostics prove the source cause.
+Batch 005 is complete and must not be reopened unless explicitly requested. PR #60 landed a combined Batch 006 terrain calibration implementation. Future PR5 runtime work must not use a combined PR as the default execution shape. The active follow-up lane is the extended self-iterative Batch006 morphology loop. Runtime 006 fixes C++/exporter parity first; after it lands, runtime 007 targets soft catchment/domain blending with temporary inspection output only, preserving final tracked evidence for runtime 009.
 
 Active Batch 006 precursor files:
 

@@ -657,3 +657,14 @@ reason: Runtime 004 reduced graph-domain plate visibility but made the central/m
 review_by: 2026-07-27
 
 Runtime 005 adds non-radial local midland detail, terrace fragments, and scarp fragments in source and exporter. Generated evidence under `Images/TerrainPreview/008/` preserves hard coast gates and low ridge/gully polar lock: shoreline error 0.0 m, beach continuity 100.0%, ocean below sea 100.0%, square-edge ocean violations 0, ridge/gully angular lock `0.08918`, and volcano dominance `10.8915%`. The five-PR loop did not fully solve Batch006 terrain morphology: final image is much less turbine-like than `003`, but still synthetic and broad in the highland; `catchment_angular_concentration_score` remains `0.95995`, `morphology_diagnostics_accepted` remains false, and `dem_calibration_accepted` remains false. After runtime 005 lands, stop and report remaining morphology debt unless the user explicitly extends the loop.
+
+## 2026-06-27-self-iterative-batch006-runtime-006
+
+status: confirmed
+created: 2026-06-27
+source: SELF-ITERATIVE/006_source_exporter_parity.md, PR #67
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, SELF-ITERATIVE/006_source_exporter_parity.md
+reason: User extended the self-iterative loop and clarified that each fix should PR/CodeRabbit/merge only if evidence is worth landing; runtime 006 fixes the verified C++/exporter terrain parity mismatch before further visual terrain tuning.
+review_by: 2026-07-27
+
+Runtime 006 is PR #67 on branch `si-006-source-exporter-parity`, source commit `1d51516`. It adds `MassifHeightM` to the C++ `VolcanoDisabledProcessHeightM` composition so the UE terrain source matches the preview exporter path where `massif_height_m` participates in `terrain_process_height_m`. Validation: `git diff --check` passed, `git diff --cached --check` passed, `python3 -m py_compile scripts/terrain-preview-export.py` passed, temporary 256 px preview generation to `/tmp/jungle-si-006-preview` passed, and CodeRabbit review returned no findings after a quota wait. Temporary preview evidence preserved coast gates but, as expected, did not resolve morphology: `catchment_angular_concentration_score` remained `0.95997`, `ridge_gully_angular_lock_score` remained low at `0.08923`, `morphology_diagnostics_accepted` remained false, and `dem_calibration_accepted` remained false. UBT was environment-blocked because no `Build.sh` was discoverable under `/run/media/seth` or `/mnt`. Next runtime after PR #67 lands and local `main` syncs is `SELF-ITERATIVE/007_soft_catchment_domain_blending.md`.
