@@ -22,6 +22,24 @@ Do not convert the request into a docs-only, lifecycle-only, or prompt-file-only
 7. Run relevant checks.
 8. Commit, push, open PR, and merge only when merge authority is active and gates are clean.
 
+## Runtime File Granularity Rule
+
+For PR5 runtime consumption, one canonical runtime file under `pr5lifecycle-runtimefiles/<batch>/` equals one sequential implementation PR unless the user explicitly authorizes combining specific runtime files.
+
+Do not compress a multi-file runtime batch into a single implementation PR, umbrella PR, calibration suite, acceptance suite, or summary PR. A combined PR may only happen when the user explicitly says to combine files, and that combine/skip/defer decision must be recorded in `.mex/context/active-memory.md` before completion is claimed.
+
+After each runtime-file PR lands, update `.mex/context/active-memory.md` with:
+
+- consumed runtime file
+- PR number, branch, and commit/merge state when known
+- implemented source/tool/evidence scope
+- validation results and blockers
+- next runtime file or handoff requirement
+
+A batch is complete only when every expected runtime file has either landed through its own PR lifecycle step or has an explicit user-approved combine, skip, or defer record in `.mex`. A merged PR proves that PR landed; it does not by itself prove the runtime batch is complete.
+
+Agents must preserve the canonical runtime files as execution authority. Do not replace them with copied docs, summaries, handoff prose, or the agent's own compressed interpretation.
+
 ## PR5 Batch 004 Current Meaning
 
 Batch 004 is not a docs packaging batch. It is terrain implementation work:

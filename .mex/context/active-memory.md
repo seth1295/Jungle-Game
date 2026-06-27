@@ -578,3 +578,36 @@ reason: PR5 Batch 006 runtime files require DEM calibration, offline/runtime bri
 review_by: 2026-07-27
 
 PR5 Batch 006 is GitHub PR #60 on branch `pr5-batch006-terrain-calibration-suite`. Source commit `19947f2` adds `FJungleTerrainBatch006Calibration`, DEM benchmark metrics, offline/runtime bridge metrics, morphology preview metrics, and final Batch006 acceptance metrics/log tokens. The terrain authority now uses Batch006 generator identity `JG_TERRAIN_BATCH006_DEM_CALIBRATION`, lowers active volcano dominance, and keeps the 97.536 km x6 island scale. The preview exporter now generates a tracked Batch006 suite under `Images/TerrainPreview/003/`: color relief, height, slope, beach/ridge/hazard atlas, catchment ID, radial diagnostic, volcano-disabled height, manifest JSON, and README. Accepted 1024 px manifest evidence: shoreline error 0.0 m, beach continuity 100.0%, ocean below sea 100.0%, square-edge ocean violations 0, height max 3955.9975 m, volcano-disabled peak 3435.9975 m, active volcano land area 1.4292%, volcano dominance 13.1446%, catchment entropy 0.98685, radial artifact score 0.39714, and `dem_calibration_accepted: true`. Validation passed: `git diff --check`, `git diff --cached --check`, Python exporter syntax, 1024 px preview export, and `JungleGameEditor Linux Development` UBT via `/run/media/seth/UE5_WORKSPACE/UnrealEngine/Engine/Build/BatchFiles/Linux/Build.sh`. Next action after PR #60 lands is local `main` sync and then either visual/manual review of `Images/TerrainPreview/003/` or a new PR5 batch/lane only if explicitly requested.
+
+## 2026-06-27-pr5-runtime-granularity-rule
+
+status: confirmed
+created: 2026-06-27
+source: user
+target: AGENTS.md, .mex/context/pr-gates.md, .mex/patterns/pr5-implementation-workflow.md
+reason: PR5 runtime batches need strict file-to-PR execution state.
+review_by: 2026-07-27
+
+PR5 runtime execution rule: one runtime file under `pr5lifecycle-runtimefiles/<batch>/` equals one sequential implementation PR unless the user records a combine/defer decision. After each runtime-file PR lands, update `.mex/context/active-memory.md` with consumed runtime file, PR/branch/commit state, validation, blockers, and next runtime file. A batch is not complete merely because one combined PR landed related source/evidence work.
+
+## 2026-06-27-self-iterative-lifecycle-workflow
+
+status: confirmed
+created: 2026-06-27
+source: user
+target: AGENTS.md, .mex/ROUTER.md, .mex/context/pr-gates.md, .mex/patterns/INDEX.md, .mex/patterns/self-iterative-lifecycle.md, SELF-ITERATIVE/**
+reason: User defined a new repo-owned lifecycle, saved like PR5 lifecycle, where the agent diagnoses with available tools, writes scoped numbered runtime files, implements, inspects results, iterates, updates .mex, then PRs through CodeRabbit and merge.
+review_by: 2026-07-27
+
+`self-iterative-lifecycle` is repo-owned workflow state, not chat-only memory. Runtime files live under `SELF-ITERATIVE/` as numbered scoped files (`001`, `002`, and so on). The lifecycle requires the agent to find what is broken using relevant available tools, not just image review; write planned scoped runtime files; implement one runtime file at a time; inspect what the changes did with generated evidence/tool output; update `.mex`; then run PR, CodeRabbit, valid in-scope fixes, merge, and local sync when authorized. Dirty repo state must be understood in project terms before mutation and must not be reset/reverted/deleted/dodged when it is valid workflow/project state.
+
+## 2026-06-27-self-iterative-batch006-runtime-001
+
+status: active-unreviewed
+created: 2026-06-27
+source: Images/TerrainPreview/003 visual/tool review and user instruction
+target: SELF-ITERATIVE/001_batch006_radial_morphology_diagnosis.md
+reason: Batch006 preview evidence passed manifest coast/beach/ocean gates while visual and diagnostic review showed radial, turbine-like interior morphology that must be diagnosed with tools before terrain repair implementation.
+review_by: 2026-07-27
+
+First self-iterative runtime file is `SELF-ITERATIVE/001_batch006_radial_morphology_diagnosis.md`. Scope: diagnose the Batch006 radial morphology failure using terrain source, Batch006 calibration source, preview exporter, manifest metrics, repo image viewing, generated diagnostics, checks/builds where available, and CodeRabbit during PR lifecycle. The first runtime unit is diagnostic/gate-focused: make the current failure measurable so a later terrain math rewrite targets the verified cause rather than guessing from images alone. New terrain preview evidence must use the next numbered `Images/TerrainPreview/` folder and must not overwrite `001`, `002`, or `003`.
