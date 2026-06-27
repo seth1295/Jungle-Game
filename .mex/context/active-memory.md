@@ -511,4 +511,15 @@ target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/
 reason: PR5 Batch 005 runtime file 001 requires the terrain authority to move from crater-owned island math toward a geomorphology-first foundation where volcano-disabled terrain remains structurally meaningful.
 review_by: 2026-07-27
 
-PR5 Batch 005 / 001 is GitHub PR #55 on branch `pr5-batch005-001-geomorphology-core`, source commit `72e0a8a`. It adds basement and regional landform height fields, eight deterministic landform region weights/IDs, a volcano-disabled height evidence path using the same coast clamp, a separated bounded active-volcano contribution, updated generator identity `JG_TERRAIN_MATH_CORE_005_001`, and acceptance fields for volcano-disabled terrain and landform-region authority. Validation so far: `git diff --check` passed for source changes. PR body includes `@coderabbitai ignore` and `@coderabbit ignore`; manual CodeRabbit review is required before merge. Next target after PR #55 merges and local `main` syncs is PR5 Batch 005 / 002 hydrology, erosion, and catchment solver.
+PR5 Batch 005 / 001 is GitHub PR #55 on branch `pr5-batch005-001-geomorphology-core`, source commit `72e0a8a`. It adds basement and regional landform height fields, eight deterministic landform region weights/IDs, a volcano-disabled height evidence path using the same coast clamp, a separated bounded active-volcano contribution, updated generator identity `JG_TERRAIN_MATH_CORE_005_001`, and acceptance fields for volcano-disabled terrain and landform-region authority. Validation: `git diff --check` passed, CodeRabbit status passed, and `JungleGameEditor Linux Development` UBT succeeded. PR #55 landed on `main` as merge commit `b558c06`. Next target is PR5 Batch 005 / 002 hydrology, erosion, and catchment solver.
+
+## 2026-06-27-pr5-batch005-002-hydrology-erosion
+
+status: confirmed
+created: 2026-06-27
+source: pr5lifecycle-runtimefiles/005/002_hydrology_erosion_catchment_solver_research.md
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.h, Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp
+reason: PR5 Batch 005 runtime file 002 requires graph/solver-style drainage evidence and bounded erosion/deposition shaping instead of crater-centered radial drainage.
+review_by: 2026-07-27
+
+PR5 Batch 005 / 002 is GitHub PR #56 on branch `pr5-batch005-002-hydrology-erosion`, source commit `f191fd5`. It adds source-owned hydrology evidence fields for flow accumulation, trunk/tributary stream masks, watershed divide masks, stream order, outlet IDs, stream-power incision, hillslope diffusion, hydrology fan deposition, hydrology solver config identity `JG_HYDROLOGY_EROSION_005_002`, and hydrology acceptance gates while preserving locked coast/beach/ocean constraints. Validation so far: `git diff --check` passed and `JungleGameEditor Linux Development` UBT succeeded after an initial DevSpace timeout/retry; manual CodeRabbit review is required before merge. Next target after PR #56 merges and local `main` syncs is PR5 Batch 005 / 003 ridge-valley graph and landform regions.
