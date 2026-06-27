@@ -479,3 +479,25 @@ reason: Batch 004 required actual game/source implementation, not docs-only pack
 review_by: 2026-07-27
 
 PR5 Batch 004 implementation changes the canonical volcanic island terrain authority from 16.256 km to 97.536 km world size, mean island radius from 7 km to 42 km, max island radius from 7.35 km to 44.1 km, target peak from 1400 m to 3800 m, and primary catchments from 14 equal radial sectors to 23 deterministic irregular basin anchors. The ridge/gully model now uses warped basin angles, per-basin width/curve/strength data, branch gullies, basin-specific lahar corridors, irregular coastal fans, larger crater/vent/fissure scale, and scaled runtime shell/smoke-view extents. The terrain preview exporter mirrors the Batch 004 x6 terrain math and generated `Images/TerrainPreview/PR5_Batch004_X6_Island_1024px_*`; manifest reports world_size_m 97536.0, height_max_m 4593.8807, shoreline_error_max_m 0.0, beach_continuity_pct 100.0, ocean_below_sea_pct 100.0, square_edge_ocean_violations 0, linear scale 6.0, area scale 36.0, and morphology `x6-irregular-basin-graph-anti-radial`. Validation: `git diff --check` passed, Python exporter syntax passed, 1024px preview generation passed, live workflow references no longer point at deleted `docs/` / `Docs/` paths, and PR #53 merged to `main` as `cfbc679` from source commit `f107b7a`. UE Build.sh remains environment-blocked because documented local Build.sh paths are absent.
+
+## 2026-06-27-pr5-batch005-batch006-precursor-setup
+
+status: active-unreviewed
+created: 2026-06-27
+source: user
+target: pr5lifecycle-precursor/005, pr5lifecycle-precursor/006
+reason: User requested ambitious new terrain math precursor batches after Batch 004 preview review.
+review_by: 2026-07-27
+
+Batch 004 is complete historical evidence and must not be extended unless explicitly requested. Its preview passed coast/scale metrics but failed morphology review because the island still reads as volcano-owned and procedural-radial. New terrain math work starts in Batch 005. Batch 005 contains five terrain-only precursor prompts for geomorphology math core, hydrology/erosion solver, ridge-valley landform graph, volcanic subsystem math, and multi-scale feature grammar. Batch 006 contains five overflow precursor prompts for real volcanic island DEM calibration, offline generator/runtime bridge architecture, morphology preview validation, implementation sequence, and final terrain math acceptance/handoff. Run Batch 005 before Batch 006.
+
+## 2026-06-27-pr5-lifecycle-images-tracked
+
+status: confirmed
+created: 2026-06-27
+source: user
+target: pr5lifecycle-precursor/**, pr5lifecycle-runtimefiles/**, Images/TerrainPreview/**
+reason: User explicitly confirmed PR5 lifecycle folders and terrain preview image evidence must be tracked on GitHub, then authorized a PR/merge with no CodeRabbit review loop.
+review_by: 2026-07-27
+
+PR5 lifecycle prompt/runtime folders and terrain preview image evidence are repo-owned tracked state, not local scratch. Current tracking change moves terrain preview evidence into numbered run folders under `Images/TerrainPreview/001/` and `Images/TerrainPreview/002/`, tracks Batch 005 and Batch 006 precursor/runtime files, preserves broad `docs/` and `Docs/` removal intent, and records that this tracking PR is intentionally run without a CodeRabbit review loop by explicit user instruction.

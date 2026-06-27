@@ -1,0 +1,29 @@
+{
+  "version": "PR5_BATCH004_X6_ANTI_RADIAL_TERRAIN_PREVIEW",
+  "resolution_px": 1024,
+  "world_size_m": 97536.0,
+  "pixel_spacing_m": 95.34310850439883,
+  "height_min_m": -145.0,
+  "height_max_m": 4593.8807,
+  "peak_xy_m": [
+    -1859.191,
+    1382.475
+  ],
+  "shoreline_error_max_m": 0.0,
+  "beach_continuity_pct": 100.0,
+  "ocean_below_sea_pct": 100.0,
+  "square_edge_ocean_violations": 0,
+  "square_edge_samples": 4092,
+  "slope_max_deg_preview": 78.5144,
+  "elapsed_seconds": 121.478,
+  "linear_scale_multiplier_vs_batch003": 6.0,
+  "area_scale_multiplier_vs_batch003": 36.0,
+  "morphology": "x6-irregular-basin-graph-anti-radial",
+  "outputs": {
+    "color_relief_png": "Images/TerrainPreview/002/PR5_Batch004_X6_Island_1024px_ColorRelief.png",
+    "height_png": "Images/TerrainPreview/002/PR5_Batch004_X6_Island_1024px_Height.png",
+    "slope_png": "Images/TerrainPreview/002/PR5_Batch004_X6_Island_1024px_Slope.png",
+    "mask_atlas_png": "Images/TerrainPreview/002/PR5_Batch004_X6_Island_1024px_MaskAtlas_BeachR_RidgeGullyG_HazardB.png"
+  },
+  "note": "Tracked preview evidence generated from deterministic PR5 Batch 004 x6 anti-radial terrain math. Not an AI-generated image and not full 8129x8129 export."
+}
