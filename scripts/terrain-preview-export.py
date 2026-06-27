@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Export real PR5 Batch 004 x6 island preview images from deterministic terrain data.
+"""Export real PR5 Batch 006 terrain-calibration preview images from deterministic terrain data.
 
 This tool is deliberately not AI/image-generation. It mirrors the landed
-`FJungleVolcanicIslandTerrainModel` terrain math and writes labelled PNG evidence
-files from sampled height/mask data.
+`FJungleVolcanicIslandTerrainModel` terrain math closely enough for tracked
+preview evidence and writes labelled PNG/JSON files from sampled height/mask data.
 
 Default output is tracked terrain evidence under:
 `Images/TerrainPreview/`
@@ -27,9 +27,9 @@ HALF_EXTENT_M = WORLD_SIZE_M * 0.5
 SEA_LEVEL_M = 0.0
 MEAN_ISLAND_RADIUS_M = 42000.0
 MAX_ISLAND_RADIUS_M = 44100.0
-TARGET_PEAK_HEIGHT_M = 3800.0
+TARGET_PEAK_HEIGHT_M = 1600.0
 PRIMARY_CATCHMENT_COUNT = 23
-VERSION = "PR5_BATCH004_X6_ANTI_RADIAL_TERRAIN_PREVIEW"
+VERSION = "PR5_BATCH006_DEM_CALIBRATION_MORPHOLOGY_PREVIEW"
 
 
 def clamp(value: float, low: float, high: float) -> float:
@@ -100,6 +100,25 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
     coastal_protection = smooth_step(6200.0, 11800.0, landward_distance_m) * land_mask
     massif_mask = clamp(smooth_step(0.035, 0.84, 1.0 - massif_normalized) * coastal_protection, 0.0, 1.0)
     massif_height_m = (TARGET_PEAK_HEIGHT_M * concave_shield + upper_steepening + shoulder_bench + asymmetry) * coastal_protection
+    region_northwest = math.exp(-(((world_x_m + 22600.0) / 25500.0) ** 2 + ((world_y_m - 19800.0) / 18800.0) ** 2))
+    region_northeast = math.exp(-(((world_x_m - 18800.0) / 21400.0) ** 2 + ((world_y_m - 16600.0) / 16600.0) ** 2))
+    region_southwest = math.exp(-(((world_x_m + 17200.0) / 23600.0) ** 2 + ((world_y_m + 9800.0) / 21400.0) ** 2))
+    region_southeast = math.exp(-(((world_x_m - 13800.0) / 19000.0) ** 2 + ((world_y_m + 20800.0) / 24800.0) ** 2))
+    region_central_upland = math.exp(-(((world_x_m + 4200.0) / 31000.0) ** 2 + ((world_y_m - 4000.0) / 27000.0) ** 2))
+    region_east_terrace = math.exp(-(((world_x_m - 28200.0) / 16000.0) ** 2 + ((world_y_m + 1800.0) / 25000.0) ** 2))
+    region_west_bench = math.exp(-(((world_x_m + 31800.0) / 12800.0) ** 2 + ((world_y_m + 22600.0) / 13400.0) ** 2))
+    region_south_plain = math.exp(-(((world_x_m - 1600.0) / 26000.0) ** 2 + ((world_y_m + 34200.0) / 10400.0) ** 2))
+    basement_height_m = coastal_protection * (245.0 + math.sin(world_x_m * 0.000040 + 1.1) * 180.0 + math.sin(world_y_m * 0.000036 - 0.4) * 142.0 + math.sin((world_x_m - world_y_m) * 0.000025 + 2.2) * 96.0)
+    regional_landform_height_m = coastal_protection * (
+        region_northwest * 560.0
+        + region_northeast * 420.0
+        + region_southwest * 360.0
+        + region_southeast * 235.0
+        + region_central_upland * 710.0
+        + region_east_terrace * 160.0
+        + region_west_bench * 285.0
+        + region_south_plain * 110.0
+    )
 
     def angular_delta(a: float, b: float) -> float:
         return abs(math.atan2(math.sin(a - b), math.cos(a - b)))
@@ -167,6 +186,7 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
     breach_delta = angular_delta(warped_theta, -0.82)
     breach_mask = (1.0 - smooth_step(0.040, 0.135, breach_delta)) * smooth_step(1850.0, 4200.0, massif_distance_m) * (1.0 - smooth_step(11800.0, 17800.0, massif_distance_m)) * massif_mask
     fissure_mask = (1.0 - smooth_step(0.014, 0.045, breach_delta)) * smooth_step(5600.0, 8200.0, massif_distance_m) * (1.0 - smooth_step(18500.0, 26000.0, massif_distance_m)) * massif_mask
+    active_cone_mask = clamp((1.0 - smooth_step(3600.0, 4550.0, massif_distance_m)) * massif_mask, 0.0, 1.0)
     broken_rim_mask = rim_mask * (1.0 - breach_mask)
     lava_crust_mask = clamp(crater_mask * 0.70 + vent_mask + breach_mask * 0.45 + fissure_mask * 0.60, 0.0, 1.0)
     unstable_crust_mask = clamp(vent_mask + fissure_mask + lava_crust_mask * 0.45, 0.0, 1.0)
@@ -174,7 +194,9 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
 
     long_wave_undulation_m = math.sin(world_x_m * 0.00030 + world_y_m * 0.00018) * 46.0 + math.sin(world_x_m * 0.00045 - world_y_m * 0.00027) * 32.0 + math.sin(world_x_m * 0.00012 + massif_theta * 3.0) * 24.0
     terrain_process_height_m = (
-        massif_height_m
+        basement_height_m
+        + regional_landform_height_m
+        + massif_height_m
         + long_wave_undulation_m * land_mask
         + ridge_height_m
         - gully_incision_m
@@ -203,6 +225,7 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
         "massif_mask": massif_mask,
         "ridge_mask": ridge_mask,
         "gully_mask": gully_mask,
+        "active_cone_mask": active_cone_mask,
         "crater_mask": crater_mask,
         "rim_mask": broken_rim_mask,
         "vent_mask": vent_mask,
@@ -300,6 +323,9 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
     height_rows: list[bytearray] = []
     slope_rows: list[bytearray] = []
     mask_rows: list[bytearray] = []
+    catchment_rows: list[bytearray] = []
+    radial_rows: list[bytearray] = []
+    volcano_disabled_rows: list[bytearray] = []
 
     min_h = float("inf")
     max_h = float("-inf")
@@ -312,6 +338,18 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
     ocean_below = 0
     square_edge_samples = 0
     square_edge_violations = 0
+    land_samples = 0
+    active_volcano_samples = 0
+    coastal_lowland_samples = 0
+    highland_samples = 0
+    gentle_slope_samples = 0
+    moderate_slope_samples = 0
+    steep_slope_samples = 0
+    drainage_samples = 0
+    land_height_total = 0.0
+    volcano_disabled_height_total = 0.0
+    volcano_disabled_max_h = 0.0
+    catchment_counts = [0 for _ in range(PRIMARY_CATCHMENT_COUNT)]
 
     for py in range(resolution):
         y = HALF_EXTENT_M - float(py) * step_m
@@ -319,6 +357,9 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
         height_row = bytearray()
         slope_row = bytearray()
         mask_row = bytearray()
+        catchment_row = bytearray()
+        radial_row = bytearray()
+        volcano_disabled_row = bytearray()
 
         for px in range(resolution):
             x = -HALF_EXTENT_M + float(px) * step_m
@@ -365,45 +406,123 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
                 if h > SEA_LEVEL_M - 0.5:
                     square_edge_violations += 1
 
+            active_mask = max(float(s0["active_cone_mask"]), float(s0["crater_mask"]), float(s0["vent_mask"]), float(s0["breach_mask"]), float(s0["lava_crust_mask"]), float(s0["hard_blocker_mask"]))
+            land = float(s0["ocean_mask"]) <= 0.5 and h > SEA_LEVEL_M
+            volcano_disabled_h = max(0.0, h - active_mask * 520.0)
+            if land:
+                land_samples += 1
+                land_height_total += h
+                volcano_disabled_height_total += volcano_disabled_h
+                volcano_disabled_max_h = max(volcano_disabled_max_h, volcano_disabled_h)
+                catchment_id = int(s0["catchment_id"])
+                if 0 <= catchment_id < PRIMARY_CATCHMENT_COUNT:
+                    catchment_counts[catchment_id] += 1
+                if active_mask > 0.25:
+                    active_volcano_samples += 1
+                if signed <= 5000.0 and h <= 150.0:
+                    coastal_lowland_samples += 1
+                if h >= 600.0 and active_mask < 0.25:
+                    highland_samples += 1
+                if sl < 10.0:
+                    gentle_slope_samples += 1
+                elif sl < 28.0:
+                    moderate_slope_samples += 1
+                else:
+                    steep_slope_samples += 1
+                if max(float(s0["gully_mask"]), float(s0["ridge_mask"])) > 0.45:
+                    drainage_samples += 1
+
             color = relief_color(s0, shade, contour)
             if coast_line:
                 color = (240.0, 238.0, 211.0)
             color_row.extend(rgb_to_byte(color))
 
-            h_norm = clamp((h + 145.0) / (4500.0 + 145.0), 0.0, 1.0)
+            h_norm = clamp((h + 145.0) / (3600.0 + 145.0), 0.0, 1.0)
             height_row.extend(rgb_to_byte((h_norm * 255.0, h_norm * 255.0, h_norm * 255.0)))
             s_norm = clamp(sl / 55.0, 0.0, 1.0)
             slope_row.extend(rgb_to_byte((s_norm * 255.0, s_norm * 255.0, s_norm * 255.0)))
+            ridge_gully = max(float(s0["ridge_mask"]), float(s0["gully_mask"]))
             mask_row.extend(
                 rgb_to_byte(
                     (
                         float(s0["beach_ring_mask"]) * 255.0,
-                        max(float(s0["ridge_mask"]), float(s0["gully_mask"])) * 255.0,
+                        ridge_gully * 255.0,
                         float(s0["hazard_mask"]) * 255.0,
                     )
                 )
             )
+            catchment_id = int(s0["catchment_id"])
+            if catchment_id >= 0:
+                catchment_row.extend(rgb_to_byte(((catchment_id * 53) % 255, (catchment_id * 97 + 40) % 255, (catchment_id * 151 + 80) % 255)))
+            else:
+                catchment_row.extend(rgb_to_byte((16.0, 58.0, 92.0)))
+            radial_artifact = ridge_gully * (1.0 - min(1.0, active_mask))
+            radial_row.extend(rgb_to_byte((radial_artifact * 255.0, (1.0 - radial_artifact) * 180.0, active_mask * 255.0)))
+            vd_norm = clamp((volcano_disabled_h + 145.0) / (3600.0 + 145.0), 0.0, 1.0)
+            volcano_disabled_row.extend(rgb_to_byte((vd_norm * 255.0, vd_norm * 255.0, vd_norm * 255.0)))
 
         color_rows.append(color_row)
         height_rows.append(height_row)
         slope_rows.append(slope_row)
         mask_rows.append(mask_row)
+        catchment_rows.append(catchment_row)
+        radial_rows.append(radial_row)
+        volcano_disabled_rows.append(volcano_disabled_row)
 
-    prefix = f"PR5_Batch004_X6_Island_{resolution}px"
+    prefix = f"PR5_Batch006_TerrainCalibration_{resolution}px"
     outputs = {
         "color_relief_png": output_dir / f"{prefix}_ColorRelief.png",
         "height_png": output_dir / f"{prefix}_Height.png",
         "slope_png": output_dir / f"{prefix}_Slope.png",
         "mask_atlas_png": output_dir / f"{prefix}_MaskAtlas_BeachR_RidgeGullyG_HazardB.png",
+        "catchment_id_png": output_dir / f"{prefix}_CatchmentId.png",
+        "radial_diagnostic_png": output_dir / f"{prefix}_RadialDiagnostic.png",
+        "volcano_disabled_height_png": output_dir / f"{prefix}_VolcanoDisabledHeight.png",
     }
     write_png(outputs["color_relief_png"], resolution, resolution, color_rows)
     write_png(outputs["height_png"], resolution, resolution, height_rows)
     write_png(outputs["slope_png"], resolution, resolution, slope_rows)
     write_png(outputs["mask_atlas_png"], resolution, resolution, mask_rows)
+    write_png(outputs["catchment_id_png"], resolution, resolution, catchment_rows)
+    write_png(outputs["radial_diagnostic_png"], resolution, resolution, radial_rows)
+    write_png(outputs["volcano_disabled_height_png"], resolution, resolution, volcano_disabled_rows)
 
     elapsed = time.time() - started
     beach_pct = 100.0 * beach_pass / beach_samples if beach_samples else 0.0
     ocean_pct = 100.0 * ocean_below / ocean_samples if ocean_samples else 0.0
+    land_mean_h = land_height_total / land_samples if land_samples else 0.0
+    volcano_disabled_mean_h = volcano_disabled_height_total / land_samples if land_samples else 0.0
+    hypsometry = land_mean_h / max_h if max_h > 0.0 else 0.0
+    volcano_disabled_hypsometry = volcano_disabled_mean_h / volcano_disabled_max_h if volcano_disabled_max_h > 0.0 else 0.0
+    active_volcano_pct = 100.0 * active_volcano_samples / land_samples if land_samples else 0.0
+    coastal_lowland_pct = 100.0 * coastal_lowland_samples / land_samples if land_samples else 0.0
+    highland_pct = 100.0 * highland_samples / land_samples if land_samples else 0.0
+    gentle_pct = 100.0 * gentle_slope_samples / land_samples if land_samples else 0.0
+    moderate_pct = 100.0 * moderate_slope_samples / land_samples if land_samples else 0.0
+    steep_pct = 100.0 * steep_slope_samples / land_samples if land_samples else 0.0
+    drainage_density_proxy = drainage_samples / land_samples if land_samples else 0.0
+    nonzero_catchments = [count for count in catchment_counts if count > 0]
+    catchment_mean = sum(nonzero_catchments) / len(nonzero_catchments) if nonzero_catchments else 0.0
+    catchment_variance = sum((count - catchment_mean) ** 2 for count in nonzero_catchments) / len(nonzero_catchments) if nonzero_catchments else 0.0
+    catchment_cv = math.sqrt(catchment_variance) / catchment_mean if catchment_mean > 0.0 else 0.0
+    entropy = 0.0
+    for count in nonzero_catchments:
+        p = count / land_samples if land_samples else 0.0
+        if p > 0.0:
+            entropy -= p * math.log(p)
+    catchment_entropy = entropy / math.log(len(nonzero_catchments)) if len(nonzero_catchments) > 1 else 0.0
+    radial_artifact_score = clamp(1.0 - (catchment_entropy * 0.34 + catchment_cv * 0.18 + drainage_density_proxy * 0.18 + highland_pct * 0.002), 0.0, 1.0)
+    volcano_dominance_pct = 100.0 * (max_h - volcano_disabled_max_h) / max_h if max_h > 0.0 else 0.0
+    dem_calibration_accepted = (
+        2400.0 <= max_h <= 4050.0
+        and 0.25 <= hypsometry <= 0.58
+        and 0.20 <= volcano_disabled_hypsometry <= 0.55
+        and 1.0 <= active_volcano_pct <= 20.0
+        and volcano_dominance_pct <= 45.0
+        and catchment_entropy >= 0.72
+        and catchment_cv >= 0.10
+        and radial_artifact_score <= 0.62
+    )
     manifest = {
         "version": VERSION,
         "resolution_px": resolution,
@@ -418,12 +537,28 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
         "square_edge_ocean_violations": square_edge_violations,
         "square_edge_samples": square_edge_samples,
         "slope_max_deg_preview": round(max_slope, 4),
+        "land_sample_count": land_samples,
+        "volcano_disabled_peak_m": round(volcano_disabled_max_h, 4),
+        "hypsometric_integral_full_island": round(hypsometry, 5),
+        "hypsometric_integral_volcano_disabled": round(volcano_disabled_hypsometry, 5),
+        "active_volcano_land_area_pct": round(active_volcano_pct, 4),
+        "volcano_dominance_pct": round(volcano_dominance_pct, 4),
+        "coastal_lowland_land_area_pct": round(coastal_lowland_pct, 4),
+        "highland_land_area_pct": round(highland_pct, 4),
+        "slope_pct_gentle_moderate_steep": [round(gentle_pct, 4), round(moderate_pct, 4), round(steep_pct, 4)],
+        "drainage_density_proxy": round(drainage_density_proxy, 5),
+        "catchment_count": PRIMARY_CATCHMENT_COUNT,
+        "catchment_nonzero_count": len(nonzero_catchments),
+        "catchment_area_coefficient_of_variation": round(catchment_cv, 5),
+        "catchment_entropy_01": round(catchment_entropy, 5),
+        "radial_alignment_artifact_score": round(radial_artifact_score, 5),
+        "dem_calibration_accepted": dem_calibration_accepted,
         "elapsed_seconds": round(elapsed, 3),
         "linear_scale_multiplier_vs_batch003": 6.0,
         "area_scale_multiplier_vs_batch003": 36.0,
-        "morphology": "x6-irregular-basin-graph-anti-radial",
+        "morphology": "batch006-dem-calibrated-morphology-preview-suite",
         "outputs": {key: str(path.as_posix()) for key, path in outputs.items()},
-        "note": "Tracked preview evidence generated from deterministic PR5 Batch 004 x6 anti-radial terrain math. Not an AI-generated image and not full 8129x8129 export.",
+        "note": "Tracked preview evidence generated from deterministic PR5 Batch 006 terrain calibration math. Not an AI-generated image and not full 8129x8129 export.",
     }
     manifest_path = output_dir / f"{prefix}_Manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
@@ -431,8 +566,8 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
 
     readme = output_dir / "README.md"
     readme.write_text(
-        "# PR5 Batch 004 X6 Terrain Preview Images\n\n"
-        "These files are labelled, tracked terrain evidence generated from the deterministic PR5 Batch 004 x6 anti-radial terrain model. "
+        "# PR5 Batch 006 Terrain Calibration Preview Images\n\n"
+        "These files are labelled, tracked terrain evidence generated from the deterministic PR5 Batch 006 terrain calibration model. "
         "They are not AI art, prompt renders, broad documentation, or UE screenshots.\n\n"
         f"Latest generated preview: `{prefix}`.\n\n"
         "## Files\n\n"
@@ -440,6 +575,9 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
         f"- `{outputs['height_png'].name}` — grayscale sampled height image.\n"
         f"- `{outputs['slope_png'].name}` — grayscale preview slope image.\n"
         f"- `{outputs['mask_atlas_png'].name}` — RGB mask atlas: red = beach, green = ridge/gully, blue = hazard.\n"
+        f"- `{outputs['catchment_id_png'].name}` — catchment identity preview for basin diversity review.\n"
+        f"- `{outputs['radial_diagnostic_png'].name}` — radial-artifact diagnostic: red = ridge/gully alignment pressure, green = anti-artifact signal, blue = active volcano.\n"
+        f"- `{outputs['volcano_disabled_height_png'].name}` — grayscale approximated volcano-disabled height evidence.\n"
         f"- `{manifest_path.name}` — metrics and provenance for the generated preview.\n\n"
         "## Regenerate\n\n"
         "```bash\n"
@@ -453,7 +591,7 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Export deterministic PR5 Batch 004 x6 anti-radial island preview PNGs.")
+    parser = argparse.ArgumentParser(description="Export deterministic PR5 Batch 006 terrain calibration preview PNGs.")
     parser.add_argument("--resolution", type=int, default=1024, help="Preview resolution per side. Default: 1024.")
     parser.add_argument("--output-dir", type=Path, default=Path("Images/TerrainPreview"), help="Output directory for tracked terrain preview evidence.")
     args = parser.parse_args()

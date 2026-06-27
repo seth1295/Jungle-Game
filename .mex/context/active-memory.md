@@ -556,3 +556,25 @@ reason: PR5 Batch 005 runtime file 005 completes the terrain math batch by addin
 review_by: 2026-07-27
 
 PR5 Batch 005 / 005 was GitHub PR #59 on branch `pr5-batch005-005-feature-grammar`, source commit `55a942d`. It adds feature grammar, domain warp magnitude, large feature stamp, mesoscale detail, traversal-scale detail, detail support height, radial artifact suppression fields/metrics, generator identity `JG_FEATURE_GRAMMAR_005_005`, and final 5/5 acceptance wiring while preserving coast/beach/ocean constraints. Validation: `git diff --check` passed, CodeRabbit status passed, and `JungleGameEditor Linux Development` UBT succeeded after fixing duplicate retry definitions. PR #59 landed on `main` as merge commit `5c61b62`. PR5 Batch 005 is complete; future terrain math continuation should start from Batch 006 unless the user explicitly reopens Batch 005.
+
+## 2026-06-27-pr5-batch006-ready-to-run
+
+status: confirmed
+created: 2026-06-27
+source: user preparation instruction after replacing duplicate runtime file 001
+target: .mex/context/pr-gates.md, handoffs/2026-06-27-pr5-batch-006-ready-to-run.md, pr5lifecycle-runtimefiles/006/**, Images/TerrainPreview/003/
+reason: User removed duplicate Batch 006 runtime file 001, created the correct replacement, and requested the repo be prepared so a fresh DevSpace chat can say `@devspace chatgpt GO` and run Batch 006 through finished merged state without starting implementation in this preparation chat.
+review_by: 2026-07-27
+
+Batch 006 was prepared for a later explicit `GO` instruction and then carried deliberately onto branch `pr5-batch006-terrain-calibration-suite` when the user issued `@devspace chatgpt GO`. Valid Batch 006 runtime inputs are `001_dem_benchmarking_real_volcanic_islands_research.md`, `002_offline_generator_runtime_bridge_architecture_research.md`, `003_morphology_validation_preview_suite_research.md`, `004_terrain_math_implementation_pr_sequence_research.md`, and `005_full_terrain_math_acceptance_handoff_research.md`. The removed duplicate `001_geomorphology_math_core_foundation_research(1).md` must not be restored. Batch 006 implementation must remain actual source/tool/evidence work, not docs-only work. At Batch 006 completion, tracked terrain preview/manifest evidence belongs under `Images/TerrainPreview/003/` without overwriting `Images/TerrainPreview/001/` or `Images/TerrainPreview/002/`.
+
+## 2026-06-27-pr5-batch006-terrain-calibration-suite
+
+status: confirmed
+created: 2026-06-27
+source: pr5lifecycle-runtimefiles/006/**, PR #60
+target: Source/JungleGame/JungleTerrainBatch006Calibration.*, Source/JungleGame/JungleVolcanicIslandTerrainModel.*, Source/JungleGame/JungleFullSizeTerrainShellActor.cpp, scripts/terrain-preview-export.py, Images/TerrainPreview/003/**, handoffs/2026-06-27-pr5-batch-006-complete.md
+reason: PR5 Batch 006 runtime files require DEM calibration, offline/runtime bridge identity, morphology preview validation, terrain math acceptance, and tracked preview evidence after Batch 005 terrain math foundations.
+review_by: 2026-07-27
+
+PR5 Batch 006 is GitHub PR #60 on branch `pr5-batch006-terrain-calibration-suite`. Source commit `19947f2` adds `FJungleTerrainBatch006Calibration`, DEM benchmark metrics, offline/runtime bridge metrics, morphology preview metrics, and final Batch006 acceptance metrics/log tokens. The terrain authority now uses Batch006 generator identity `JG_TERRAIN_BATCH006_DEM_CALIBRATION`, lowers active volcano dominance, and keeps the 97.536 km x6 island scale. The preview exporter now generates a tracked Batch006 suite under `Images/TerrainPreview/003/`: color relief, height, slope, beach/ridge/hazard atlas, catchment ID, radial diagnostic, volcano-disabled height, manifest JSON, and README. Accepted 1024 px manifest evidence: shoreline error 0.0 m, beach continuity 100.0%, ocean below sea 100.0%, square-edge ocean violations 0, height max 3955.9975 m, volcano-disabled peak 3435.9975 m, active volcano land area 1.4292%, volcano dominance 13.1446%, catchment entropy 0.98685, radial artifact score 0.39714, and `dem_calibration_accepted: true`. Validation passed: `git diff --check`, `git diff --cached --check`, Python exporter syntax, 1024 px preview export, and `JungleGameEditor Linux Development` UBT via `/run/media/seth/UE5_WORKSPACE/UnrealEngine/Engine/Build/BatchFiles/Linux/Build.sh`. Next action after PR #60 lands is local `main` sync and then either visual/manual review of `Images/TerrainPreview/003/` or a new PR5 batch/lane only if explicitly requested.

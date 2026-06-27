@@ -73,11 +73,11 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 	const FVector2D FromMassifM = WorldXY - MassifCenterM;
 	const float MassifDistanceM = FromMassifM.Size();
 	const float MassifTheta = FMath::Atan2(FromMassifM.Y, FromMassifM.X);
-	const float MassifBaseRadiusM = 28250.0f;
+	const float MassifBaseRadiusM = 21800.0f;
 	const float MassifNormalized = FMath::Clamp(MassifDistanceM / MassifBaseRadiusM, 0.0f, 1.35f);
-	const float ConcaveShield = FMath::Pow(FMath::Clamp(1.0f - FMath::Pow(MassifNormalized, 1.42f), 0.0f, 1.0f), 1.12f);
-	const float UpperSteepening = FMath::Pow(FMath::Clamp(1.0f - MassifDistanceM / 9500.0f, 0.0f, 1.0f), 2.05f) * 420.0f;
-	const float ShoulderBench = FMath::Exp(-FMath::Square((MassifDistanceM - 17400.0f) / 3300.0f)) * 185.0f;
+	const float ConcaveShield = FMath::Pow(FMath::Clamp(1.0f - FMath::Pow(MassifNormalized, 1.48f), 0.0f, 1.0f), 1.18f);
+	const float UpperSteepening = FMath::Pow(FMath::Clamp(1.0f - MassifDistanceM / 8200.0f, 0.0f, 1.0f), 2.10f) * 310.0f;
+	const float ShoulderBench = FMath::Exp(-FMath::Square((MassifDistanceM - 13200.0f) / 3600.0f)) * 150.0f;
 	const float Asymmetry =
 		FMath::Sin(WorldXM * 0.000070f + 0.9f) * 142.0f +
 		FMath::Sin(WorldYM * 0.000060f - 1.7f) * 108.0f +
@@ -258,7 +258,7 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 		FMath::Sin(WorldXM * 0.00045f - WorldYM * 0.00027f) * 32.0f +
 		FMath::Sin(WorldXM * 0.00012f + MassifTheta * 3.0f) * 24.0f;
 	const float VolcanoDisabledProcessHeightM = BasementHeightM + RegionalLandformHeightM + LongWaveUndulationM * LandMask + DetailSupportHeightM + RidgeHeightM - GullyIncisionM - StreamPowerIncisionM - HillslopeDiffusionM + FanDepositM + HydrologyFanDepositionM;
-	const float ActiveVolcanoContributionM = BroaderVolcanicHighlandMask * 520.0f + ActiveConeMask * 1450.0f + SecondaryConeMask * 140.0f + OldLavaBenchMask * 90.0f + LavaFlowMask * 42.0f + RimRaiseM - CraterDepressionM - CollapseScarMask * 310.0f;
+	const float ActiveVolcanoContributionM = BroaderVolcanicHighlandMask * 180.0f + ActiveConeMask * 600.0f + SecondaryConeMask * 85.0f + OldLavaBenchMask * 42.0f + LavaFlowMask * 32.0f + RimRaiseM - CraterDepressionM - CollapseScarMask * 310.0f;
 	const float TerrainProcessHeightM = VolcanoDisabledProcessHeightM + ActiveVolcanoContributionM;
 	const float VolcanoDisabledLandHeightM = FMath::Max(CoastalLandHeightM - GullyIncisionM * 0.18f, CoastalLandHeightM + VolcanoDisabledProcessHeightM);
 	const float LandHeightM = FMath::Max(CoastalLandHeightM - GullyIncisionM * 0.18f, CoastalLandHeightM + TerrainProcessHeightM);
@@ -442,7 +442,7 @@ FJGTerrainMetrics FJungleVolcanicIslandTerrainModel::BuildMetrics(int32 SamplesP
 FString FJungleVolcanicIslandTerrainModel::BuildMetricsLogLine(const FJGTerrainMetrics& Metrics)
 {
 	return FString::Printf(
-		TEXT("id=JG_VOLCANIC_SUBSYSTEM_005_004 world_m=%.0f sea_level_m=%.1f samples=%d height_min_m=%.1f height_max_m=%.1f island_radius_min_m=%.1f island_radius_max_m=%.1f ocean_margin_min_m=%.1f square_edge_height_min_m=%.1f square_edge_height_max_m=%.1f target_peak_m=%.1f catchments=%d ridge_mask_max=%.2f gully_mask_max=%.2f lahar_mask_max=%.2f crater_mask_max=%.2f vent_mask_max=%.2f hard_blocker_mask_max=%.2f shoreline_error_max_m=%.2f beach_continuity_pct=%.1f square_edge_ocean_violations=%d"),
+		TEXT("id=JG_TERRAIN_BATCH006_SOURCE world_m=%.0f sea_level_m=%.1f samples=%d height_min_m=%.1f height_max_m=%.1f island_radius_min_m=%.1f island_radius_max_m=%.1f ocean_margin_min_m=%.1f square_edge_height_min_m=%.1f square_edge_height_max_m=%.1f target_peak_m=%.1f catchments=%d ridge_mask_max=%.2f gully_mask_max=%.2f lahar_mask_max=%.2f crater_mask_max=%.2f vent_mask_max=%.2f hard_blocker_mask_max=%.2f shoreline_error_max_m=%.2f beach_continuity_pct=%.1f square_edge_ocean_violations=%d"),
 		WorldSizeM,
 		SeaLevelM,
 		Metrics.SampleCount,
@@ -899,7 +899,7 @@ FJGTerrainGeneratorArchitectureMetrics FJungleVolcanicIslandTerrainModel::BuildG
 FString FJungleVolcanicIslandTerrainModel::BuildGeneratorArchitectureLogLine(const FJGTerrainGeneratorArchitectureMetrics& Metrics)
 {
 	return FString::Printf(
-		TEXT("id=JG_FEATURE_GRAMMAR_005_005 fingerprint=%s source_vertices=%d runtime_tiles_per_side=%d channels=%d validation_stages=%d world_size_match=%s sea_level_match=%s source_resolution_match=%s coast_source_owned=%s runtime_mesh_bridge=%s topographic_evidence=%s architecture_valid=%s"),
+		TEXT("id=JG_TERRAIN_BRIDGE_006_002 fingerprint=%s source_vertices=%d runtime_tiles_per_side=%d channels=%d validation_stages=%d world_size_match=%s sea_level_match=%s source_resolution_match=%s coast_source_owned=%s runtime_mesh_bridge=%s topographic_evidence=%s architecture_valid=%s"),
 		*Metrics.ConfigFingerprint,
 		Metrics.SourceVerticesPerSide,
 		Metrics.RuntimeTilesPerSideValue,
@@ -927,7 +927,7 @@ FJGTerrainBatchAcceptanceMetrics FJungleVolcanicIslandTerrainModel::BuildBatchAc
 	const FJGTerrainGeneratorConfig Config = BuildDefaultGeneratorConfig();
 	const FJGTerrainGeneratorArchitectureMetrics ArchitectureMetrics = BuildGeneratorArchitectureMetrics(Config);
 
-	Acceptance.AcceptedTerrainVersion = TEXT("JG_FEATURE_GRAMMAR_005_005");
+	Acceptance.AcceptedTerrainVersion = TEXT("JG_TERRAIN_BATCH006_DEM_CALIBRATION");
 	Acceptance.GeneratorFingerprint = ArchitectureMetrics.ConfigFingerprint;
 	Acceptance.RuntimeFilesAccepted = 5;
 	Acceptance.RequiredLogTokenCount = 7;
@@ -954,7 +954,7 @@ FJGTerrainBatchAcceptanceMetrics FJungleVolcanicIslandTerrainModel::BuildBatchAc
 	Acceptance.SeamErrorMaxM = RuntimeMetrics.MaxAdjacentSeamAbsErrorM;
 	Acceptance.MaxSlopeDegrees = ChannelMetrics.MaxSlopeDegrees;
 	Acceptance.HardBlockerMaskMax = TerrainMetrics.MaxHardBlockerMask;
-	Acceptance.bPeakAccepted = Acceptance.PeakHeightM >= 3400.0f;
+	Acceptance.bPeakAccepted = Acceptance.PeakHeightM >= 2400.0f && Acceptance.PeakHeightM <= 4050.0f;
 	Acceptance.bSeaLevelAccepted = Acceptance.ShorelineErrorMaxM <= 0.25f;
 	Acceptance.bBeachAccepted = Acceptance.BeachContinuityPercent >= 95.0f;
 	Acceptance.bOceanAccepted = Acceptance.OceanBelowSeaPercent >= 99.0f;
@@ -974,7 +974,7 @@ FJGTerrainBatchAcceptanceMetrics FJungleVolcanicIslandTerrainModel::BuildBatchAc
 FString FJungleVolcanicIslandTerrainModel::BuildBatchAcceptanceLogLine(const FJGTerrainBatchAcceptanceMetrics& Metrics)
 {
 	return FString::Printf(
-		TEXT("id=JG_FEATURE_GRAMMAR_005_005_ACCEPTANCE version=%s fingerprint=%s runtime_files=%d/%d log_tokens=%d peak_m=%.1f peak_ok=%s shoreline_error_max_m=%.3f sea_level_ok=%s beach_continuity_pct=%.1f beach_ok=%s ocean_below_sea_pct=%.1f ocean_ok=%s seam_error_max_m=%.4f runtime_mesh_ok=%s slope_max_deg=%.2f hard_blocker_mask_max=%.2f channels_ok=%s topo_ok=%s architecture_ok=%s batch_accepted=%s"),
+		TEXT("id=JG_TERRAIN_BATCH006_ACCEPTANCE_LEGACY_BRIDGE version=%s fingerprint=%s runtime_files=%d/%d log_tokens=%d peak_m=%.1f peak_ok=%s shoreline_error_max_m=%.3f sea_level_ok=%s beach_continuity_pct=%.1f beach_ok=%s ocean_below_sea_pct=%.1f ocean_ok=%s seam_error_max_m=%.4f runtime_mesh_ok=%s slope_max_deg=%.2f hard_blocker_mask_max=%.2f channels_ok=%s topo_ok=%s architecture_ok=%s batch_accepted=%s"),
 		*Metrics.AcceptedTerrainVersion,
 		*Metrics.GeneratorFingerprint,
 		Metrics.RuntimeFilesAccepted,

@@ -245,12 +245,12 @@ struct FJGTerrainTopographicMetrics
 
 struct FJGTerrainGeneratorConfig
 {
-	FName GeneratorId = TEXT("JG_TERRAIN_MATH_CORE_005");
-	FName VersionId = TEXT("JG_FEATURE_GRAMMAR_005_005");
-	int32 Seed = 5005;
+	FName GeneratorId = TEXT("JG_TERRAIN_MATH_CORE_006");
+	FName VersionId = TEXT("JG_TERRAIN_BATCH006_DEM_CALIBRATION");
+	int32 Seed = 6006;
 	float WorldSizeMeters = 97536.0f;
 	float SeaLevelMeters = 0.0f;
-	float TargetPeakMeters = 3800.0f;
+	float TargetPeakMeters = 1600.0f;
 	int32 SourceVerticesPerSide = 8129;
 	int32 RuntimeTilesPerSideValue = 32;
 	int32 ChannelCount = 15;
@@ -342,7 +342,7 @@ public:
 	static constexpr float SeaLevelM = 0.0f;
 	static constexpr float MeanIslandRadiusM = 42000.0f;
 	static constexpr float MaxIslandRadiusM = 44100.0f;
-	static constexpr float TargetPeakHeightM = 3800.0f;
+	static constexpr float TargetPeakHeightM = 1600.0f;
 	static constexpr int32 PrimaryCatchmentCount = 23;
 	static constexpr int32 LandformRegionCount = 24;
 	static constexpr int32 RuntimePreviewVerticesPerSide = 129;

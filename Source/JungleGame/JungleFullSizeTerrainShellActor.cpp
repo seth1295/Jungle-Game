@@ -6,6 +6,7 @@
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "JungleGame.h"
+#include "JungleTerrainBatch006Calibration.h"
 #include "JungleVolcanicIslandTerrainModel.h"
 #include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInterface.h"
@@ -87,6 +88,14 @@ void AJungleFullSizeTerrainShellActor::BuildProceduralTerrainMesh()
 	UE_LOG(LogJungleGame, Display, TEXT("Terrain generator architecture metrics: %s"), *FJungleVolcanicIslandTerrainModel::BuildGeneratorArchitectureLogLine(ArchitectureMetrics));
 	const FJGTerrainBatchAcceptanceMetrics BatchAcceptanceMetrics = FJungleVolcanicIslandTerrainModel::BuildBatchAcceptanceMetrics();
 	UE_LOG(LogJungleGame, Display, TEXT("Terrain batch acceptance metrics: %s"), *FJungleVolcanicIslandTerrainModel::BuildBatchAcceptanceLogLine(BatchAcceptanceMetrics));
+	const FJGBatch006DemBenchmarkMetrics DemBenchmarkMetrics = FJungleTerrainBatch006Calibration::BuildDemBenchmarkMetrics(FJungleVolcanicIslandTerrainModel::RuntimePreviewVerticesPerSide);
+	UE_LOG(LogJungleGame, Display, TEXT("Batch006 DEM benchmark metrics: %s"), *FJungleTerrainBatch006Calibration::BuildDemBenchmarkLogLine(DemBenchmarkMetrics));
+	const FJGBatch006OfflineBridgeMetrics OfflineBridgeMetrics = FJungleTerrainBatch006Calibration::BuildOfflineBridgeMetrics();
+	UE_LOG(LogJungleGame, Display, TEXT("Batch006 offline/runtime bridge metrics: %s"), *FJungleTerrainBatch006Calibration::BuildOfflineBridgeLogLine(OfflineBridgeMetrics));
+	const FJGBatch006PreviewValidationMetrics PreviewValidationMetrics = FJungleTerrainBatch006Calibration::BuildPreviewValidationMetrics(FJungleVolcanicIslandTerrainModel::RuntimePreviewVerticesPerSide);
+	UE_LOG(LogJungleGame, Display, TEXT("Batch006 morphology preview metrics: %s"), *FJungleTerrainBatch006Calibration::BuildPreviewValidationLogLine(PreviewValidationMetrics));
+	const FJGBatch006AcceptanceMetrics Batch006AcceptanceMetrics = FJungleTerrainBatch006Calibration::BuildAcceptanceMetrics();
+	UE_LOG(LogJungleGame, Display, TEXT("Batch006 terrain acceptance metrics: %s"), *FJungleTerrainBatch006Calibration::BuildAcceptanceLogLine(Batch006AcceptanceMetrics));
 }
 
 void AJungleFullSizeTerrainShellActor::BuildRuntimeTileMeshSection(int32 SectionIndex, const FJGTerrainRuntimeTileDesc& TileDesc)
