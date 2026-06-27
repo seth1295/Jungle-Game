@@ -7,7 +7,7 @@ description: PR gate workflow routing and active gate pointer.
 
 ## Active gate
 
-Self-iterative Batch006 morphology loop is extended beyond runtime 005 by current user instruction. Runtime 006 source/exporter parity is complete and runtime 007 soft catchment/domain blending is in merge gate. Next runtime after PR #68 lands is 008 morphology diagnostics, followed by 009 final tracked preview evidence under `Images/TerrainPreview/009/`. Run one runtime file per PR with CodeRabbit and merge gates before the next runtime.
+Self-iterative Batch006 morphology loop is extended beyond runtime 005 by current user instruction. Runtimes 006 and 007 are complete, and runtime 008 morphology diagnostics is in merge gate. Next runtime after PR #69 lands is 009 final morphology tuning plus tracked preview evidence under `Images/TerrainPreview/009/`. Run one runtime file per PR with CodeRabbit and merge gates before the next runtime.
 
 ## Completed setup gate chain
 
@@ -19,7 +19,7 @@ PR5 lifecycle state lives in `.mex`, `pr5lifecycle-precursor/**`, `pr5lifecycle-
 
 Self-iterative lifecycle state lives in `.mex/patterns/self-iterative-lifecycle.md` and `SELF-ITERATIVE/**`. It is repo-owned lifecycle state like PR5 lifecycle. When active, the agent diagnoses with available tools, writes numbered scoped runtime files into `SELF-ITERATIVE/`, implements one runtime file at a time, inspects what changed, updates `.mex`, then runs PR review and merge when authorized.
 
-Batch 005 is complete and must not be reopened unless explicitly requested. PR #60 landed a combined Batch 006 terrain calibration implementation. Future PR5 runtime work must not use a combined PR as the default execution shape. The active follow-up lane is the extended self-iterative Batch006 morphology loop. Runtime 008 should update morphology diagnostics and shape metrics with temporary inspection output only, preserving final tracked evidence for runtime 009.
+Batch 005 is complete and must not be reopened unless explicitly requested. PR #60 landed a combined Batch 006 terrain calibration implementation. Future PR5 runtime work must not use a combined PR as the default execution shape. The active follow-up lane is the extended self-iterative Batch006 morphology loop. Runtime 009 should tune the final terrain shape against runtime 008's failed highland/drainage/slope gates and export tracked evidence to `Images/TerrainPreview/009/`.
 
 Active Batch 006 precursor files:
 

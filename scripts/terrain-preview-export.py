@@ -615,16 +615,26 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
     ridge_gully_angular_lock_score = ridge_gully_angular_lock_total / ridge_gully_angular_lock_weight if ridge_gully_angular_lock_weight > 0.0 else 1.0
     radial_artifact_score = clamp(1.0 - (catchment_entropy * 0.34 + catchment_cv * 0.18 + drainage_density_proxy * 0.18 + highland_pct * 0.002), 0.0, 1.0)
     volcano_dominance_pct = 100.0 * (max_h - volcano_disabled_max_h) / max_h if max_h > 0.0 else 0.0
-    morphology_diagnostics_accepted = catchment_angular_concentration_score <= 0.82 and ridge_gully_angular_lock_score <= 0.38
+    hard_coast_gates_accepted = shore_error <= 0.25 and beach_pct >= 99.0 and ocean_pct >= 99.0 and square_edge_violations == 0
+    morphology_radial_lock_accepted = ridge_gully_angular_lock_score <= 0.38 and radial_artifact_score <= 0.62
+    morphology_highland_area_accepted = 28.0 <= highland_pct <= 55.0
+    morphology_drainage_density_accepted = 0.24 <= drainage_density_proxy <= 0.44
+    morphology_slope_balance_accepted = 18.0 <= moderate_pct <= 46.0 and steep_pct <= 8.0 and gentle_pct <= 78.0
+    morphology_volcano_dominance_accepted = 1.0 <= active_volcano_pct <= 20.0 and volcano_dominance_pct <= 45.0
+    morphology_domain_debug_accepted = catchment_entropy >= 0.72 and catchment_cv >= 0.10 and catchment_angular_concentration_score <= 0.98
+    morphology_diagnostics_accepted = (
+        hard_coast_gates_accepted
+        and morphology_radial_lock_accepted
+        and morphology_highland_area_accepted
+        and morphology_drainage_density_accepted
+        and morphology_slope_balance_accepted
+        and morphology_volcano_dominance_accepted
+        and morphology_domain_debug_accepted
+    )
     dem_calibration_accepted = (
         2400.0 <= max_h <= 4050.0
         and 0.25 <= hypsometry <= 0.58
         and 0.20 <= volcano_disabled_hypsometry <= 0.55
-        and 1.0 <= active_volcano_pct <= 20.0
-        and volcano_dominance_pct <= 45.0
-        and catchment_entropy >= 0.72
-        and catchment_cv >= 0.10
-        and radial_artifact_score <= 0.62
         and morphology_diagnostics_accepted
     )
     manifest = {
@@ -658,6 +668,13 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
         "radial_alignment_artifact_score": round(radial_artifact_score, 5),
         "catchment_angular_concentration_score": round(catchment_angular_concentration_score, 5),
         "ridge_gully_angular_lock_score": round(ridge_gully_angular_lock_score, 5),
+        "morphology_hard_coast_gates_accepted": hard_coast_gates_accepted,
+        "morphology_radial_lock_accepted": morphology_radial_lock_accepted,
+        "morphology_highland_area_accepted": morphology_highland_area_accepted,
+        "morphology_drainage_density_accepted": morphology_drainage_density_accepted,
+        "morphology_slope_balance_accepted": morphology_slope_balance_accepted,
+        "morphology_volcano_dominance_accepted": morphology_volcano_dominance_accepted,
+        "morphology_domain_debug_accepted": morphology_domain_debug_accepted,
         "morphology_diagnostics_accepted": morphology_diagnostics_accepted,
         "dem_calibration_accepted": dem_calibration_accepted,
         "elapsed_seconds": round(elapsed, 3),
