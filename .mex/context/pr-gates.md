@@ -7,7 +7,7 @@ description: PR gate workflow routing and active gate pointer.
 
 ## Active gate
 
-PR5 Batch 006 terrain calibration suite is complete in PR #60; next implementation gate is unset until user review or explicit next-lane instruction.
+Self-iterative lifecycle workflow save is active. Current gate: save the repo-owned self-iterative lifecycle routing and runtime folder, preserve the existing workflow-rule patch, then land it through PR review and merge when tool access allows.
 
 ## Completed setup gate chain
 
@@ -17,7 +17,9 @@ Historical setup gates were removed with the intentionally deleted broad `docs/`
 
 PR5 lifecycle state lives in `.mex`, `pr5lifecycle-precursor/**`, `pr5lifecycle-runtimefiles/**`, `handoffs/**`, `Source/**`, `scripts/**`, and `Images/**`.
 
-Batch 005 is complete and must not be reopened unless explicitly requested. Batch 006 terrain calibration suite is implemented in PR #60 from runtime files 001 through 005. Do not reopen Batch 006 unless the user explicitly asks for a fix or follow-up review. The next implementation gate is intentionally unset after PR #60 until user review or a new explicit PR5 batch/lane instruction.
+Self-iterative lifecycle state lives in `.mex/patterns/self-iterative-lifecycle.md` and `SELF-ITERATIVE/**`. It is repo-owned lifecycle state like PR5 lifecycle. When active, the agent diagnoses with available tools, writes numbered scoped runtime files into `SELF-ITERATIVE/`, implements one runtime file at a time, inspects what changed, updates `.mex`, then runs PR review and merge when authorized.
+
+Batch 005 is complete and must not be reopened unless explicitly requested. PR #60 landed a combined Batch 006 terrain calibration implementation. Future PR5 runtime work must not use a combined PR as the default execution shape. The next implementation gate is intentionally unset until user review or a new explicit PR5 batch/lane instruction.
 
 Active Batch 006 precursor files:
 
@@ -51,7 +53,9 @@ Before any PR lifecycle, load:
 4. `.mex/context/project.md`
 5. `.mex/context/pr-gates.md`
 6. `.mex/patterns/pr5-implementation-workflow.md`
-7. relevant active PR5 lifecycle precursor/runtime files
+7. `.mex/patterns/self-iterative-lifecycle.md` when self-iterative lifecycle is active
+8. relevant active PR5 lifecycle precursor/runtime files
+9. relevant `SELF-ITERATIVE/**` runtime files when self-iterative lifecycle is active
 
 ## Enforcement rules
 
@@ -64,6 +68,9 @@ Before any PR lifecycle, load:
 - After a gate merges, read the next gate before starting the next PR.
 - Only one gate should be active at a time.
 - Execute PRs sequentially; do not run normal UE implementation PRs in parallel.
+- For PR5 runtime work, one canonical runtime file equals one sequential implementation PR unless the user explicitly approves a combine, skip, or defer.
+- Do not compress multiple runtime files into one umbrella implementation PR.
+- For self-iterative lifecycle work, one `SELF-ITERATIVE/<number>_*.md` runtime file equals one scoped diagnose/implement/inspect/PR iteration unless the user explicitly approves combining, skipping, or deferring runtime files.
 - Plan up to four PRs ahead, but implement and merge one PR at a time.
 - Every completed PR must update `.mex/context/active-memory.md`; do not start the next implementation PR from stale `.mex` state.
 - PR5 workflow authority means actual game/source implementation unless the user explicitly asks for Markdown-only lifecycle files.
@@ -72,3 +79,7 @@ Before any PR lifecycle, load:
 ## Completion policy
 
 A gate is complete only when its exit criteria pass, CodeRabbit is clean or valid findings are resolved, `.mex/context/active-memory.md` is updated for the completed PR, and the PR is merged to `main` with local `main` synced cleanly.
+
+For PR5 runtime batches, completion also requires every expected runtime file to have a landed sequential PR or a recorded user-approved combine/skip/defer state in `.mex`.
+
+For self-iterative lifecycle runs, completion also requires the numbered `SELF-ITERATIVE/**` runtime file state, tool evidence, generated-result inspection, PR/review/merge state, and next-runtime decision to be recorded in `.mex/context/active-memory.md`.

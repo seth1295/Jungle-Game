@@ -18,7 +18,9 @@ Before any PR lifecycle, also load:
 
 - `.mex/context/pr-gates.md` — active gate pointer and gate enforcement rules.
 - `.mex/patterns/pr5-implementation-workflow.md` — PR5 implementation rule: build actual game/source scope, not docs-only PRs unless explicitly requested.
-- the relevant `pr5lifecycle-precursor/**` and `pr5lifecycle-runtimefiles/**` files for the active batch.
+- `.mex/patterns/self-iterative-lifecycle.md` — tool-driven diagnose/write-runtime/implement/inspect/iterate workflow when invoked.
+- for PR5 lifecycle only, the relevant `pr5lifecycle-precursor/**` and `pr5lifecycle-runtimefiles/**` files for the active batch.
+- for self-iterative lifecycle only, the relevant `SELF-ITERATIVE/**` numbered runtime files for the active batch.
 
 If the requested task conflicts with the active gate, stop and ask whether to change gates before editing files.
 
@@ -38,6 +40,7 @@ Project-local skills live under `.agents/skills/`:
 
 - `.mex/patterns/INDEX.md` — reusable workflow patterns.
 - `.mex/patterns/local-devspace-workflow.md` — safe local-folder workflow.
+- `.mex/patterns/self-iterative-lifecycle.md` — repo-owned lifecycle for diagnosing with tools, writing numbered runtime files under `SELF-ITERATIVE/`, implementing scoped changes, inspecting results, and iterating through PR/CodeRabbit/merge.
 
 ## Routing Rules
 
@@ -46,3 +49,4 @@ Project-local skills live under `.agents/skills/`:
 - For memory/skill/workflow edits, load `.agents/skills/project-memory-maintenance/SKILL.md`.
 - For git initialization, load `.agents/skills/local-git-bootstrap/SKILL.md` only after explicit user approval.
 - For PR/CodeRabbit/merge work, stop unless the user explicitly authorizes creating or using git for this project, then follow the active PR gate.
+- For `self-iterative-lifecycle`, load `.mex/patterns/self-iterative-lifecycle.md` and route scoped runtime work through `SELF-ITERATIVE/` numbered files only, not PR5 lifecycle runtime files.

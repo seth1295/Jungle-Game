@@ -22,7 +22,9 @@ Load `.mex/context/active-memory.md` first, then only the additional `.mex/conte
 
 Before any PR lifecycle, load `.mex/context/pr-gates.md`, `.mex/patterns/pr5-implementation-workflow.md`, and any relevant `pr5lifecycle-precursor/**` / `pr5lifecycle-runtimefiles/**` files for the active batch.
 
-PR work is sequential. Plan up to four PRs ahead, execute one PR at a time, update `.mex/context/active-memory.md` for every completed PR, and after the fourth PR in a batch create a tracked fresh-chat handoff under `handoffs/` before starting the next batch. PR5 workflow authority means actual game/source implementation unless the user explicitly asks for Markdown-only lifecycle files.
+When the user invokes `self-iterative-lifecycle`, load `.mex/patterns/self-iterative-lifecycle.md` and use `SELF-ITERATIVE/` numbered runtime files as repo-owned scoped implementation inputs. The agent must diagnose with available tools, write/update numbered runtime files, implement one runtime file at a time, inspect generated results, update `.mex`, then run PR, CodeRabbit, and merge when authorized.
+
+PR work is sequential. Plan up to four PRs ahead, execute one PR at a time, update `.mex/context/active-memory.md` for every completed PR, and after the fourth PR in a batch create a tracked fresh-chat handoff under `handoffs/` before starting the next batch. PR5 workflow authority means actual game/source implementation unless the user explicitly asks for Markdown-only lifecycle files. For PR5 runtime consumption, one canonical runtime file equals one sequential implementation PR unless the user explicitly authorizes combining runtime files; do not compress multiple runtime files into one PR or mark a batch complete from a combined summary PR.
 
 ## Current Project State
 
