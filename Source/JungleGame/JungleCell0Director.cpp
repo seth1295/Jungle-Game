@@ -236,9 +236,16 @@ void AJungleCell0Director::TakeVisualSmokeShot()
 			TrackedEvidencePath = FPaths::Combine(FPaths::ProjectDir(), TrackedEvidencePath);
 		}
 
-		IFileManager::Get().MakeDirectory(*FPaths::GetPath(TrackedEvidencePath), true);
-		UE_LOG(LogJungleGame, Display, TEXT("Cell 0 tracked visual smoke shot requested: %s."), *TrackedEvidencePath);
-		FScreenshotRequest::RequestScreenshot(TrackedEvidencePath, false, false);
+		const FString EvidenceDirectory = FPaths::GetPath(TrackedEvidencePath);
+		if (EvidenceDirectory.IsEmpty() || !IFileManager::Get().MakeDirectory(*EvidenceDirectory, true))
+		{
+			UE_LOG(LogJungleGame, Warning, TEXT("Cell 0 tracked visual smoke shot skipped: could not create evidence directory for %s."), *TrackedEvidencePath);
+		}
+		else
+		{
+			UE_LOG(LogJungleGame, Display, TEXT("Cell 0 tracked visual smoke shot requested: %s."), *TrackedEvidencePath);
+			FScreenshotRequest::RequestScreenshot(TrackedEvidencePath, false, false);
+		}
 	}
 	else
 	{

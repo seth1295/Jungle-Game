@@ -7,6 +7,7 @@ This folder contains tracked in-game visual evidence for the Cell 0 surface-spaw
 ## Evidence
 
 - `Cell0SurfaceSpawn_After.png` — captured from Unreal with `-RenderOffscreen`, `-JungleVisualSmoke`, and `-JungleTrackedVisualEvidence=Images/InGameEvidence/010/Cell0SurfaceSpawn_After.png` after aligning Cell 0 to the deterministic terrain surface.
+- `Cell0SurfaceSpawn_After2.png` — post-review rerun after hardening tracked evidence directory handling; confirms the same accepted surface-view path still captures correctly.
 
 ## Acceptance
 
