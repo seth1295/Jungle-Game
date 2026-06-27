@@ -7,7 +7,7 @@ description: PR gate workflow routing and active gate pointer.
 
 ## Active gate
 
-Self-iterative runtime 010 is active for the in-game Cell 0 surface-spawn regression. Runtime 010 acceptance is limited to visible terrain with the player/camera on the playable surface. It must use `SELF-ITERATIVE/010_cell0_surface_spawn_alignment.md`, compile with UBT, inspect in-game visual-smoke evidence, track accepted evidence under `Images/InGameEvidence/010/`, then PR/CodeRabbit/merge when clean.
+Self-iterative runtime 010 is in final merge gate on PR #71. Runtime 010 acceptance is limited to visible terrain with the player/camera on the playable surface. UBT, offscreen visual smoke, tracked evidence under `Images/InGameEvidence/010/`, repo image inspection, and CodeRabbit rerun are clean. Merge PR #71 when repository checks allow, then sync local `main` and wait for explicit user instruction before starting another runtime.
 
 ## Completed setup gate chain
 

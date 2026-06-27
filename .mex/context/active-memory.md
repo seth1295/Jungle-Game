@@ -704,11 +704,11 @@ Runtime 009 is PR #70 on branch `si-009-final-morphology-evidence`, source commi
 
 ## 2026-06-27-self-iterative-runtime-010-cell0-surface-spawn
 
-status: active-unreviewed
+status: confirmed
 created: 2026-06-27
 source: user in-game screenshot evidence and `SELF-ITERATIVE/010_cell0_surface_spawn_alignment.md`
 target: Source/JungleGame/JungleCell0Director.*, Images/InGameEvidence/010/**, SELF-ITERATIVE/010_cell0_surface_spawn_alignment.md
 reason: User accepted only an end state where visible terrain is present and the player/camera is on the playable surface. The screenshot showed the player view below the terrain/cell surface.
 review_by: 2026-07-27
 
-Runtime 010 aligns Cell 0's fallback placed-world Z to the deterministic terrain surface sampled at the player entry X/Y before spawning Cell 0 actors or moving the player. It also adds an explicit tracked visual-smoke evidence path behind `-JungleTrackedVisualEvidence=` so accepted in-game screenshots can be committed under `Images/`. Validation so far: `git diff --check` passed; `JungleGameEditor Linux Development` UBT passed; offscreen visual smoke logged surface alignment from requested Z `1200.0` cm to aligned Z `295832.375` cm, `down_hit=true`, radial visibility hits, and saved `Images/InGameEvidence/010/Cell0SurfaceSpawn_After.png`. Repo image inspection confirmed the accepted visual state: visible terrain/surface with the player view no longer under the terrain shell.
+Runtime 010 is PR #71 on branch `si-010-cell0-surface-spawn`, source commits `b072bd6` and `5ba3122`. It aligns Cell 0's fallback placed-world Z to the deterministic terrain surface sampled at the player entry X/Y before spawning Cell 0 actors or moving the player. It also adds an explicit tracked visual-smoke evidence path behind `-JungleTrackedVisualEvidence=` so accepted in-game screenshots can be committed under `Images/`, with directory-creation failure handling added from a valid CodeRabbit finding. Validation passed: `git diff --check`, `git diff --cached --check`, `JungleGameEditor Linux Development` UBT, offscreen visual smoke, and CodeRabbit rerun with no findings. Offscreen visual smoke logged surface alignment from requested Z `1200.0` cm to aligned Z `295832.375` cm, `down_hit=true`, radial visibility hits, and tracked screenshots under `Images/InGameEvidence/010/`. Repo image inspection confirmed the accepted visual state: visible terrain/surface with the player view no longer under the terrain shell.
