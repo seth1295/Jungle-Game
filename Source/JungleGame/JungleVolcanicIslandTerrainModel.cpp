@@ -327,7 +327,7 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 		FMath::Sin(WorldXM * 0.00030f + WorldYM * 0.00018f) * 46.0f +
 		FMath::Sin(WorldXM * 0.00045f - WorldYM * 0.00027f) * 32.0f +
 		FMath::Sin(WorldXM * 0.00012f + MassifTheta * 3.0f) * 24.0f;
-	const float VolcanoDisabledProcessHeightM = BasementHeightM + RegionalLandformHeightM - CentralSaddleCutM + SecondaryUplandPushM + ShieldBreakupM + MidlandBreakupM + TerraceFragmentM + ScarpFragmentM + LongWaveUndulationM * LandMask + DetailSupportHeightM + RidgeHeightM - GullyIncisionM - StreamPowerIncisionM - HillslopeDiffusionM + FanDepositM + HydrologyFanDepositionM;
+	const float VolcanoDisabledProcessHeightM = BasementHeightM + RegionalLandformHeightM + MassifHeightM - CentralSaddleCutM + SecondaryUplandPushM + ShieldBreakupM + MidlandBreakupM + TerraceFragmentM + ScarpFragmentM + LongWaveUndulationM * LandMask + DetailSupportHeightM + RidgeHeightM - GullyIncisionM - StreamPowerIncisionM - HillslopeDiffusionM + FanDepositM + HydrologyFanDepositionM;
 	const float ActiveVolcanoContributionM = BroaderVolcanicHighlandMask * 180.0f + ActiveConeMask * 600.0f + SecondaryConeMask * 85.0f + OldLavaBenchMask * 42.0f + LavaFlowMask * 32.0f + RimRaiseM - CraterDepressionM - CollapseScarMask * 310.0f;
 	const float TerrainProcessHeightM = VolcanoDisabledProcessHeightM + ActiveVolcanoContributionM;
 	const float VolcanoDisabledLandHeightM = FMath::Max(CoastalLandHeightM - GullyIncisionM * 0.18f, CoastalLandHeightM + VolcanoDisabledProcessHeightM);
