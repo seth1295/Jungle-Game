@@ -242,29 +242,34 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 		}
 	}
 	WarpedTheta = WrapAngle(GraphBestTangent);
+	const float GraphCostGap = FMath::Max(0.0f, GraphSecondCost - GraphBestCost);
+	const float DomainTransitionMask = (1.0f - SmoothStep(0.10f, 0.62f, GraphCostGap)) * LandMask * SmoothStep(0.12f, 0.98f, GraphBestT);
+	const float DomainReliefDamping = 1.0f - DomainTransitionMask * 0.30f;
+	const float GraphLocalTheta = FMath::Atan2(WorldYM - GraphSourceY[CatchmentId], WorldXM - GraphSourceX[CatchmentId]);
 	BestGullyDelta = FMath::Clamp((GraphBestPerpM / GraphWidthM[CatchmentId]) * 0.16f, 0.0f, 0.45f);
-	BestRidgeDelta = FMath::Clamp((GraphSecondCost - GraphBestCost) * 0.18f, 0.0f, 0.45f);
+	BestRidgeDelta = FMath::Clamp(GraphCostGap * 0.18f, 0.0f, 0.45f);
 
-	const float BasinWidth = BasinWidths[CatchmentId];
-	const float BasinStrength = BasinStrengths[CatchmentId];
+	const float BasinWidth = BasinWidths[CatchmentId] + DomainTransitionMask * 0.095f;
+	const float BasinStrength = BasinStrengths[CatchmentId] * (1.0f - DomainTransitionMask * 0.18f);
+	const float BasinCurve = BasinCurves[CatchmentId] * (1.0f - DomainTransitionMask * 0.35f);
 	const float MidSlopeMask = SmoothStep(5200.0f, 14800.0f, MassifDistanceM) * (1.0f - SmoothStep(35000.0f, 40500.0f, MassifDistanceM)) * LandMask;
 	const float RidgeBreakup = FMath::Clamp(0.56f + 0.26f * FMath::Sin(MassifDistanceM * 0.00029f + WarpedTheta * 5.3f) + 0.20f * FMath::Sin(WorldXM * 0.000083f + WorldYM * 0.000051f) + 0.12f * FMath::Sin((WorldXM - WorldYM) * 0.000117f + GraphBestT * 6.0f), 0.22f, 1.0f);
 	const float GullyBreakup = FMath::Clamp(0.70f + 0.20f * FMath::Sin(MassifDistanceM * 0.00034f - WarpedTheta * 3.7f) + 0.16f * FMath::Sin(WorldXM * 0.000047f - WorldYM * 0.000089f), 0.34f, 1.0f);
-	const float RidgeMask = (1.0f - SmoothStep(0.030f, 0.240f + BasinWidth * 0.24f, BestRidgeDelta)) * MidSlopeMask * SmoothStep(5400.0f, 10400.0f, LandwardDistanceM) * RidgeBreakup * (0.62f + 0.38f * SmoothStep(0.08f, 0.26f, BestGullyDelta));
+	const float RidgeMask = (1.0f - SmoothStep(0.030f, 0.240f + BasinWidth * 0.24f, BestRidgeDelta)) * MidSlopeMask * SmoothStep(5400.0f, 10400.0f, LandwardDistanceM) * RidgeBreakup * (0.62f + 0.38f * SmoothStep(0.08f, 0.26f, BestGullyDelta)) * DomainReliefDamping;
 	const float GullyReachMask = SmoothStep(6500.0f, 13200.0f, MassifDistanceM) * SmoothStep(3300.0f, 7400.0f, LandwardDistanceM) * (1.0f - SmoothStep(36500.0f, 43000.0f, MassifDistanceM)) * LandMask;
-	const float TrunkGullyMask = (1.0f - SmoothStep(BasinWidth * 0.20f, BasinWidth * 0.72f, BestGullyDelta)) * GullyReachMask * BasinStrength * GullyBreakup;
-	const float BranchAngleA = WrapAngle(WarpedTheta + BasinCurves[CatchmentId] * 0.58f + FMath::Sin(GraphBestT * 6.0f + static_cast<float>(CatchmentId)) * 0.18f);
-	const float BranchAngleB = WrapAngle(WarpedTheta - BasinCurves[CatchmentId] * 0.52f + FMath::Cos(GraphBestT * 5.0f + static_cast<float>(CatchmentId) * 0.7f) * 0.20f);
-	const float BranchReach = SmoothStep(10500.0f, 18000.0f, MassifDistanceM) * (1.0f - SmoothStep(28500.0f, 39000.0f, MassifDistanceM)) * LandMask;
+	const float TrunkGullyMask = (1.0f - SmoothStep(BasinWidth * 0.20f, BasinWidth * 0.82f, BestGullyDelta)) * GullyReachMask * BasinStrength * GullyBreakup * (1.0f - DomainTransitionMask * 0.18f);
+	const float BranchAngleA = WrapAngle(WarpedTheta + BasinCurve * 0.58f + FMath::Sin(GraphBestT * 6.0f + static_cast<float>(CatchmentId)) * 0.18f);
+	const float BranchAngleB = WrapAngle(WarpedTheta - BasinCurve * 0.52f + FMath::Cos(GraphBestT * 5.0f + static_cast<float>(CatchmentId) * 0.7f) * 0.20f);
+	const float BranchReach = SmoothStep(10500.0f, 18000.0f, MassifDistanceM) * (1.0f - SmoothStep(28500.0f, 39000.0f, MassifDistanceM)) * LandMask * (1.0f - DomainTransitionMask * 0.22f);
 	const float SecondaryBranchMask = FMath::Max(
-		(1.0f - SmoothStep(0.030f, 0.085f, AngularDelta(WarpedTheta, BranchAngleA))) * BranchReach * 0.55f,
-		(1.0f - SmoothStep(0.035f, 0.095f, AngularDelta(WarpedTheta, BranchAngleB))) * BranchReach * 0.42f);
+		(1.0f - SmoothStep(0.030f, 0.110f, AngularDelta(GraphLocalTheta, BranchAngleA))) * BranchReach * 0.48f,
+		(1.0f - SmoothStep(0.035f, 0.120f, AngularDelta(GraphLocalTheta, BranchAngleB))) * BranchReach * 0.36f);
 	const float GullyMask = FMath::Clamp(TrunkGullyMask + SecondaryBranchMask, 0.0f, 1.0f);
 	const bool bLaharCatchment = CatchmentId == 2 || CatchmentId == 5 || CatchmentId == 8 || CatchmentId == 11 || CatchmentId == 13 || CatchmentId == 17 || CatchmentId == 20;
-	const float LaharCorridorMask = bLaharCatchment ? TrunkGullyMask * SmoothStep(12200.0f, 22500.0f, MassifDistanceM) * (1.0f - SmoothStep(36000.0f, 43500.0f, MassifDistanceM)) : 0.0f;
-	const float CoastalFanMask = (1.0f - SmoothStep(BasinWidth * 0.30f, BasinWidth * 0.95f, BestGullyDelta)) * SmoothStep(1200.0f, 3900.0f, LandwardDistanceM) * (1.0f - SmoothStep(7200.0f, 11800.0f, LandwardDistanceM)) * LandMask * BasinStrength * SmoothStep(0.55f, 0.98f, GraphBestT);
+	const float LaharCorridorMask = bLaharCatchment ? TrunkGullyMask * SmoothStep(12200.0f, 22500.0f, MassifDistanceM) * (1.0f - SmoothStep(36000.0f, 43500.0f, MassifDistanceM)) * (1.0f - DomainTransitionMask * 0.25f) : 0.0f;
+	const float CoastalFanMask = (1.0f - SmoothStep(BasinWidth * 0.30f, BasinWidth * 1.08f, BestGullyDelta)) * SmoothStep(1200.0f, 3900.0f, LandwardDistanceM) * (1.0f - SmoothStep(7200.0f, 11800.0f, LandwardDistanceM)) * LandMask * BasinStrength * SmoothStep(0.55f, 0.98f, GraphBestT) * (1.0f - DomainTransitionMask * 0.22f);
 	const float RidgeHeightM = RidgeMask * FMath::Lerp(38.0f, 145.0f, SmoothStep(10500.0f, 28000.0f, MassifDistanceM));
-	const float GullyIncisionM = GullyMask * (FMath::Lerp(34.0f, 128.0f, SmoothStep(9000.0f, 33500.0f, MassifDistanceM)) + LaharCorridorMask * 72.0f);
+	const float GullyIncisionM = GullyMask * (FMath::Lerp(34.0f, 128.0f, SmoothStep(9000.0f, 33500.0f, MassifDistanceM)) + LaharCorridorMask * 72.0f) * (1.0f - DomainTransitionMask * 0.12f);
 	const float FanDepositM = CoastalFanMask * FMath::Lerp(22.0f, 82.0f, SmoothStep(1900.0f, 6500.0f, LandwardDistanceM));
 	const float WatershedDivideMask = FMath::Clamp(RidgeMask * (1.0f - GullyMask * 0.65f), 0.0f, 1.0f);
 	const float FlowAccumulation01 = FMath::Clamp(GullyMask * 0.58f + LaharCorridorMask * 0.28f + CoastalFanMask * 0.18f + SmoothStep(0.30f, 0.82f, LandformRegionWeight) * 0.08f, 0.0f, 1.0f);

@@ -91,11 +91,11 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
     massif_delta_y_m = world_y_m - massif_center_y_m
     massif_distance_m = math.hypot(massif_delta_x_m, massif_delta_y_m)
     massif_theta = math.atan2(massif_delta_y_m, massif_delta_x_m)
-    massif_normalized = clamp(massif_distance_m / 28250.0, 0.0, 1.35)
+    massif_normalized = clamp(massif_distance_m / 21800.0, 0.0, 1.35)
 
-    concave_shield = math.pow(clamp(1.0 - math.pow(massif_normalized, 1.42), 0.0, 1.0), 1.12)
-    upper_steepening = math.pow(clamp(1.0 - massif_distance_m / 9500.0, 0.0, 1.0), 2.05) * 420.0
-    shoulder_bench = math.exp(-math.pow((massif_distance_m - 17400.0) / 3300.0, 2.0)) * 185.0
+    concave_shield = math.pow(clamp(1.0 - math.pow(massif_normalized, 1.48), 0.0, 1.0), 1.18)
+    upper_steepening = math.pow(clamp(1.0 - massif_distance_m / 8200.0, 0.0, 1.0), 2.10) * 310.0
+    shoulder_bench = math.exp(-math.pow((massif_distance_m - 13200.0) / 3600.0, 2.0)) * 150.0
     asymmetry = math.sin(world_x_m * 0.000070 + 0.9) * 142.0 + math.sin(world_y_m * 0.000060 - 1.7) * 108.0 + math.sin((world_x_m + world_y_m) * 0.000040 + 2.1) * 70.0
     coastal_protection = smooth_step(6200.0, 11800.0, landward_distance_m) * land_mask
     massif_mask = clamp(smooth_step(0.035, 0.84, 1.0 - massif_normalized) * coastal_protection, 0.0, 1.0)
@@ -217,27 +217,32 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
         elif cost < graph_second_cost:
             graph_second_cost = cost
     warped_theta = wrap_angle(graph_best_tangent)
+    graph_cost_gap = max(0.0, graph_second_cost - graph_best_cost)
+    domain_transition_mask = (1.0 - smooth_step(0.10, 0.62, graph_cost_gap)) * land_mask * smooth_step(0.12, 0.98, graph_best_t)
+    domain_relief_damping = 1.0 - domain_transition_mask * 0.30
+    graph_local_theta = math.atan2(world_y_m - graph_source_y[catchment_id], world_x_m - graph_source_x[catchment_id])
     best_gully_delta = clamp((graph_best_perp_m / graph_width_m[catchment_id]) * 0.16, 0.0, 0.45)
-    best_ridge_delta = clamp((graph_second_cost - graph_best_cost) * 0.18, 0.0, 0.45)
+    best_ridge_delta = clamp(graph_cost_gap * 0.18, 0.0, 0.45)
 
-    basin_width = basin_widths[catchment_id]
-    basin_strength = basin_strengths[catchment_id]
+    basin_width = basin_widths[catchment_id] + domain_transition_mask * 0.095
+    basin_strength = basin_strengths[catchment_id] * (1.0 - domain_transition_mask * 0.18)
+    basin_curve = basin_curves[catchment_id] * (1.0 - domain_transition_mask * 0.35)
     mid_slope_mask = smooth_step(5200.0, 14800.0, massif_distance_m) * (1.0 - smooth_step(35000.0, 40500.0, massif_distance_m)) * land_mask
     ridge_breakup = clamp(0.56 + 0.26 * math.sin(massif_distance_m * 0.00029 + warped_theta * 5.3) + 0.20 * math.sin(world_x_m * 0.000083 + world_y_m * 0.000051) + 0.12 * math.sin((world_x_m - world_y_m) * 0.000117 + graph_best_t * 6.0), 0.22, 1.0)
     gully_breakup = clamp(0.70 + 0.20 * math.sin(massif_distance_m * 0.00034 - warped_theta * 3.7) + 0.16 * math.sin(world_x_m * 0.000047 - world_y_m * 0.000089), 0.34, 1.0)
-    ridge_mask = (1.0 - smooth_step(0.030, 0.240 + basin_width * 0.24, best_ridge_delta)) * mid_slope_mask * smooth_step(5400.0, 10400.0, landward_distance_m) * ridge_breakup * (0.62 + 0.38 * smooth_step(0.08, 0.26, best_gully_delta))
+    ridge_mask = (1.0 - smooth_step(0.030, 0.240 + basin_width * 0.24, best_ridge_delta)) * mid_slope_mask * smooth_step(5400.0, 10400.0, landward_distance_m) * ridge_breakup * (0.62 + 0.38 * smooth_step(0.08, 0.26, best_gully_delta)) * domain_relief_damping
     gully_reach_mask = smooth_step(6500.0, 13200.0, massif_distance_m) * smooth_step(3300.0, 7400.0, landward_distance_m) * (1.0 - smooth_step(36500.0, 43000.0, massif_distance_m)) * land_mask
-    trunk_gully_mask = (1.0 - smooth_step(basin_width * 0.20, basin_width * 0.72, best_gully_delta)) * gully_reach_mask * basin_strength * gully_breakup
-    branch_angle_a = wrap_angle(warped_theta + basin_curves[catchment_id] * 0.58 + math.sin(graph_best_t * 6.0 + float(catchment_id)) * 0.18)
-    branch_angle_b = wrap_angle(warped_theta - basin_curves[catchment_id] * 0.52 + math.cos(graph_best_t * 5.0 + float(catchment_id) * 0.7) * 0.20)
-    branch_reach = smooth_step(10500.0, 18000.0, massif_distance_m) * (1.0 - smooth_step(28500.0, 39000.0, massif_distance_m)) * land_mask
-    secondary_branch_mask = max((1.0 - smooth_step(0.030, 0.085, angular_delta(warped_theta, branch_angle_a))) * branch_reach * 0.55, (1.0 - smooth_step(0.035, 0.095, angular_delta(warped_theta, branch_angle_b))) * branch_reach * 0.42)
+    trunk_gully_mask = (1.0 - smooth_step(basin_width * 0.20, basin_width * 0.82, best_gully_delta)) * gully_reach_mask * basin_strength * gully_breakup * (1.0 - domain_transition_mask * 0.18)
+    branch_angle_a = wrap_angle(warped_theta + basin_curve * 0.58 + math.sin(graph_best_t * 6.0 + float(catchment_id)) * 0.18)
+    branch_angle_b = wrap_angle(warped_theta - basin_curve * 0.52 + math.cos(graph_best_t * 5.0 + float(catchment_id) * 0.7) * 0.20)
+    branch_reach = smooth_step(10500.0, 18000.0, massif_distance_m) * (1.0 - smooth_step(28500.0, 39000.0, massif_distance_m)) * land_mask * (1.0 - domain_transition_mask * 0.22)
+    secondary_branch_mask = max((1.0 - smooth_step(0.030, 0.110, angular_delta(graph_local_theta, branch_angle_a))) * branch_reach * 0.48, (1.0 - smooth_step(0.035, 0.120, angular_delta(graph_local_theta, branch_angle_b))) * branch_reach * 0.36)
     gully_mask = clamp(trunk_gully_mask + secondary_branch_mask, 0.0, 1.0)
     lahar_catchment = catchment_id in {2, 5, 8, 11, 13, 17, 20}
-    lahar_corridor_mask = trunk_gully_mask * smooth_step(12200.0, 22500.0, massif_distance_m) * (1.0 - smooth_step(36000.0, 43500.0, massif_distance_m)) if lahar_catchment else 0.0
-    coastal_fan_mask = (1.0 - smooth_step(basin_width * 0.30, basin_width * 0.95, best_gully_delta)) * smooth_step(1200.0, 3900.0, landward_distance_m) * (1.0 - smooth_step(7200.0, 11800.0, landward_distance_m)) * land_mask * basin_strength * smooth_step(0.55, 0.98, graph_best_t)
+    lahar_corridor_mask = trunk_gully_mask * smooth_step(12200.0, 22500.0, massif_distance_m) * (1.0 - smooth_step(36000.0, 43500.0, massif_distance_m)) * (1.0 - domain_transition_mask * 0.25) if lahar_catchment else 0.0
+    coastal_fan_mask = (1.0 - smooth_step(basin_width * 0.30, basin_width * 1.08, best_gully_delta)) * smooth_step(1200.0, 3900.0, landward_distance_m) * (1.0 - smooth_step(7200.0, 11800.0, landward_distance_m)) * land_mask * basin_strength * smooth_step(0.55, 0.98, graph_best_t) * (1.0 - domain_transition_mask * 0.22)
     ridge_height_m = ridge_mask * lerp(38.0, 145.0, smooth_step(10500.0, 28000.0, massif_distance_m))
-    gully_incision_m = gully_mask * (lerp(34.0, 128.0, smooth_step(9000.0, 33500.0, massif_distance_m)) + lahar_corridor_mask * 72.0)
+    gully_incision_m = gully_mask * (lerp(34.0, 128.0, smooth_step(9000.0, 33500.0, massif_distance_m)) + lahar_corridor_mask * 72.0) * (1.0 - domain_transition_mask * 0.12)
     fan_deposit_m = coastal_fan_mask * lerp(22.0, 82.0, smooth_step(1900.0, 6500.0, landward_distance_m))
 
     crater_center_x_m = massif_center_x_m + 720.0
