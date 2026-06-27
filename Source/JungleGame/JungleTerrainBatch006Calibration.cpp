@@ -78,11 +78,28 @@ FJGBatch006DemBenchmarkMetrics FJungleTerrainBatch006Calibration::BuildDemBenchm
 	const float StepM = FJungleVolcanicIslandTerrainModel::WorldSizeM / static_cast<float>(ClampedSamplesPerSide - 1);
 	TArray<int32> CatchmentCounts;
 	CatchmentCounts.Init(0, FJungleVolcanicIslandTerrainModel::PrimaryCatchmentCount);
+	TArray<float> CatchmentCosSums;
+	TArray<float> CatchmentSinSums;
+	CatchmentCosSums.Init(0.0f, FJungleVolcanicIslandTerrainModel::PrimaryCatchmentCount);
+	CatchmentSinSums.Init(0.0f, FJungleVolcanicIslandTerrainModel::PrimaryCatchmentCount);
+
+	static constexpr float BasinAngles[23] =
+	{
+		-3.04f, -2.73f, -2.48f, -2.13f, -1.86f, -1.57f, -1.20f, -0.98f,
+		-0.61f, -0.33f, -0.05f, 0.29f, 0.57f, 0.92f, 1.13f, 1.46f,
+		1.73f, 2.03f, 2.34f, 2.57f, 2.82f, 3.03f, 3.13f
+	};
+	const auto AngularDelta = [](float A, float B)
+	{
+		return FMath::Abs(FMath::Atan2(FMath::Sin(A - B), FMath::Cos(A - B)));
+	};
 
 	float LandHeightTotal = 0.0f;
 	float VolcanoDisabledHeightTotal = 0.0f;
 	float RadialSuppressionTotal = 0.0f;
 	float RegionWeightTotal = 0.0f;
+	float RidgeGullyAngularLockTotal = 0.0f;
+	float RidgeGullyAngularLockWeight = 0.0f;
 	int32 ActiveVolcanoSamples = 0;
 	int32 CoastalLowlandSamples = 0;
 	int32 HighlandSamples = 0;
@@ -97,6 +114,8 @@ FJGBatch006DemBenchmarkMetrics FJungleTerrainBatch006Calibration::BuildDemBenchm
 		{
 			const float WorldXM = -FJungleVolcanicIslandTerrainModel::HalfExtentM + static_cast<float>(X) * StepM;
 			const float WorldYM = -FJungleVolcanicIslandTerrainModel::HalfExtentM + static_cast<float>(Y) * StepM;
+			const FVector2D FromMassifM(WorldXM + 1320.0f, WorldYM - 1080.0f);
+			const float MassifTheta = FMath::Atan2(FromMassifM.Y, FromMassifM.X);
 			const FJGTerrainChannelSample Channels = FJungleVolcanicIslandTerrainModel::SampleTerrainChannelsMeters(WorldXM, WorldYM, FJungleVolcanicIslandTerrainModel::SourceReferenceSpacingM);
 			const FJGTerrainSample& Sample = Channels.Terrain;
 			++Metrics.SampleCount;
@@ -146,6 +165,16 @@ FJGBatch006DemBenchmarkMetrics FJungleTerrainBatch006Calibration::BuildDemBenchm
 			if (CatchmentCounts.IsValidIndex(Sample.CatchmentId))
 			{
 				++CatchmentCounts[Sample.CatchmentId];
+				CatchmentCosSums[Sample.CatchmentId] += FMath::Cos(MassifTheta);
+				CatchmentSinSums[Sample.CatchmentId] += FMath::Sin(MassifTheta);
+
+				const float RidgeGullyMask = FMath::Max(Sample.RidgeMask, Sample.GullyMask);
+				if (RidgeGullyMask > 0.25f && Sample.CatchmentId < UE_ARRAY_COUNT(BasinAngles))
+				{
+					const float BasinLock = 1.0f - FMath::Clamp(AngularDelta(MassifTheta, BasinAngles[Sample.CatchmentId]) / 0.30f, 0.0f, 1.0f);
+					RidgeGullyAngularLockTotal += BasinLock * RidgeGullyMask;
+					RidgeGullyAngularLockWeight += RidgeGullyMask;
+				}
 			}
 		}
 	}
@@ -161,6 +190,20 @@ FJGBatch006DemBenchmarkMetrics FJungleTerrainBatch006Calibration::BuildDemBenchm
 	Metrics.DrainageDensityProxy = SafeRatio(static_cast<float>(DrainageSamples), static_cast<float>(Metrics.LandSampleCount));
 	Metrics.CatchmentAreaCoefficientOfVariation = CoefficientOfVariation(CatchmentCounts);
 	Metrics.CatchmentEntropy01 = ShannonEntropy01(CatchmentCounts, Metrics.LandSampleCount);
+	float AngularConcentrationTotal = 0.0f;
+	int32 AngularConcentrationBins = 0;
+	for (int32 CatchmentIndex = 0; CatchmentIndex < CatchmentCounts.Num(); ++CatchmentIndex)
+	{
+		if (CatchmentCounts[CatchmentIndex] > 0)
+		{
+			const float Count = static_cast<float>(CatchmentCounts[CatchmentIndex]);
+			AngularConcentrationTotal += FMath::Sqrt(FMath::Square(CatchmentCosSums[CatchmentIndex]) + FMath::Square(CatchmentSinSums[CatchmentIndex])) / Count;
+			++AngularConcentrationBins;
+		}
+	}
+	Metrics.CatchmentAngularConcentrationScore = SafeRatio(AngularConcentrationTotal, static_cast<float>(AngularConcentrationBins));
+	const bool bHasRidgeGullyAngularLockSamples = RidgeGullyAngularLockWeight > SMALL_NUMBER;
+	Metrics.RidgeGullyAngularLockScore = bHasRidgeGullyAngularLockSamples ? RidgeGullyAngularLockTotal / RidgeGullyAngularLockWeight : 1.0f;
 	const float MeanRadialSuppression = SafeRatio(RadialSuppressionTotal, static_cast<float>(Metrics.LandSampleCount));
 	const float MeanRegionWeight = SafeRatio(RegionWeightTotal, static_cast<float>(Metrics.LandSampleCount));
 	Metrics.RadialAlignmentArtifactScore = FMath::Clamp(1.0f - (Metrics.CatchmentEntropy01 * 0.34f + Metrics.CatchmentAreaCoefficientOfVariation * 0.18f + MeanRadialSuppression * 0.26f + MeanRegionWeight * 0.18f), 0.0f, 1.0f);
@@ -174,14 +217,16 @@ FJGBatch006DemBenchmarkMetrics FJungleTerrainBatch006Calibration::BuildDemBenchm
 	Metrics.bSlopeEnvelopeAccepted = Metrics.GentleSlopePercent >= 15.0f && Metrics.SteepSlopePercent <= 45.0f;
 	Metrics.bCatchmentDiversityAccepted = Metrics.CatchmentEntropy01 >= 0.72f && Metrics.CatchmentAreaCoefficientOfVariation >= 0.10f;
 	Metrics.bRadialArtifactAccepted = Metrics.RadialAlignmentArtifactScore <= 0.62f && Metrics.ContourIrregularityProxy >= 0.20f;
-	Metrics.bAccepted = Metrics.bWorldScaleAccepted && Metrics.bPeakEnvelopeAccepted && Metrics.bVolcanoFootprintAccepted && Metrics.bHypsometryAccepted && Metrics.bSlopeEnvelopeAccepted && Metrics.bCatchmentDiversityAccepted && Metrics.bRadialArtifactAccepted;
+	Metrics.bCatchmentGeometryAccepted = Metrics.CatchmentAngularConcentrationScore <= 0.82f;
+	Metrics.bRidgeGullyGeometryAccepted = bHasRidgeGullyAngularLockSamples && Metrics.RidgeGullyAngularLockScore <= 0.38f;
+	Metrics.bAccepted = Metrics.bWorldScaleAccepted && Metrics.bPeakEnvelopeAccepted && Metrics.bVolcanoFootprintAccepted && Metrics.bHypsometryAccepted && Metrics.bSlopeEnvelopeAccepted && Metrics.bCatchmentDiversityAccepted && Metrics.bRadialArtifactAccepted && Metrics.bCatchmentGeometryAccepted && Metrics.bRidgeGullyGeometryAccepted;
 	return Metrics;
 }
 
 FString FJungleTerrainBatch006Calibration::BuildDemBenchmarkLogLine(const FJGBatch006DemBenchmarkMetrics& Metrics)
 {
 	return FString::Printf(
-		TEXT("id=%s samples=%d land_samples=%d world_m=%.0f source_spacing_m=%.2f reference_families=%d peak_m=%.1f volcano_disabled_peak_m=%.1f hypsometry=%.3f volcano_disabled_hypsometry=%.3f active_volcano_land_pct=%.2f coastal_lowland_pct=%.2f highland_pct=%.2f slope_pct_gentle_moderate_steep=%.1f/%.1f/%.1f drainage_density_proxy=%.3f catchment_cv=%.3f catchment_entropy=%.3f radial_artifact_score=%.3f contour_irregularity=%.3f volcano_dominance_pct=%.2f accepted=%s"),
+		TEXT("id=%s samples=%d land_samples=%d world_m=%.0f source_spacing_m=%.2f reference_families=%d peak_m=%.1f volcano_disabled_peak_m=%.1f hypsometry=%.3f volcano_disabled_hypsometry=%.3f active_volcano_land_pct=%.2f coastal_lowland_pct=%.2f highland_pct=%.2f slope_pct_gentle_moderate_steep=%.1f/%.1f/%.1f drainage_density_proxy=%.3f catchment_cv=%.3f catchment_entropy=%.3f radial_artifact_score=%.3f contour_irregularity=%.3f catchment_angular_concentration=%.3f ridge_gully_angular_lock=%.3f volcano_dominance_pct=%.2f accepted=%s"),
 		*Metrics.CalibrationId.ToString(),
 		Metrics.SampleCount,
 		Metrics.LandSampleCount,
@@ -203,6 +248,8 @@ FString FJungleTerrainBatch006Calibration::BuildDemBenchmarkLogLine(const FJGBat
 		Metrics.CatchmentEntropy01,
 		Metrics.RadialAlignmentArtifactScore,
 		Metrics.ContourIrregularityProxy,
+		Metrics.CatchmentAngularConcentrationScore,
+		Metrics.RidgeGullyAngularLockScore,
 		Metrics.VolcanoDominancePercent,
 		Metrics.bAccepted ? TEXT("true") : TEXT("false"));
 }
@@ -214,7 +261,7 @@ FJGBatch006OfflineBridgeMetrics FJungleTerrainBatch006Calibration::BuildOfflineB
 	Metrics.SourceFingerprint = FJungleVolcanicIslandTerrainModel::BuildGeneratorConfigFingerprint(Config);
 	Metrics.SourceVerticesPerSide = FJungleVolcanicIslandTerrainModel::SourceReferenceVerticesPerSide;
 	Metrics.RuntimeTilesPerSide = FJungleVolcanicIslandTerrainModel::RuntimeTilesPerSide;
-	Metrics.RequiredManifestFieldCount = 26;
+	Metrics.RequiredManifestFieldCount = 29;
 	Metrics.bCanonicalSourceOwned = Config.bCanonicalCoastline && Config.bDeterministicSampling;
 	Metrics.bRuntimeSampleParity = Config.bRuntimeMeshBridgeEnabled && Metrics.RuntimeTilesPerSide == FJungleVolcanicIslandTerrainModel::RuntimeTilesPerSide;
 	Metrics.bPreviewExporterParity = Config.bTopographicEvidenceEnabled && Metrics.SourceVerticesPerSide == FJungleVolcanicIslandTerrainModel::SourceReferenceVerticesPerSide;
@@ -255,8 +302,10 @@ FJGBatch006PreviewValidationMetrics FJungleTerrainBatch006Calibration::BuildPrev
 	Metrics.RadialAlignmentArtifactScore = DemMetrics.RadialAlignmentArtifactScore;
 	Metrics.CatchmentAreaCoefficientOfVariation = DemMetrics.CatchmentAreaCoefficientOfVariation;
 	Metrics.CatchmentEntropy01 = DemMetrics.CatchmentEntropy01;
+	Metrics.CatchmentAngularConcentrationScore = DemMetrics.CatchmentAngularConcentrationScore;
+	Metrics.RidgeGullyAngularLockScore = DemMetrics.RidgeGullyAngularLockScore;
 	Metrics.bCoastAccepted = Metrics.ShorelineErrorMaxM <= 0.25f && Metrics.BeachContinuityPercent >= 99.0f && Metrics.OceanBelowSeaPercent >= 99.0f && Metrics.SquareEdgeOceanViolationCount <= 0.0f;
-	Metrics.bMorphologyAccepted = Metrics.ActiveVolcanoLandAreaPercent <= 20.0f && Metrics.RadialAlignmentArtifactScore <= 0.62f && Metrics.CatchmentAreaCoefficientOfVariation >= 0.10f && Metrics.CatchmentEntropy01 >= 0.72f;
+	Metrics.bMorphologyAccepted = Metrics.ActiveVolcanoLandAreaPercent <= 20.0f && Metrics.RadialAlignmentArtifactScore <= 0.62f && Metrics.CatchmentAreaCoefficientOfVariation >= 0.10f && Metrics.CatchmentEntropy01 >= 0.72f && Metrics.CatchmentAngularConcentrationScore <= 0.82f && Metrics.RidgeGullyAngularLockScore <= 0.38f;
 	Metrics.bPreviewEvidenceAccepted = Metrics.bCoastAccepted && Metrics.bMorphologyAccepted;
 	return Metrics;
 }
@@ -264,7 +313,7 @@ FJGBatch006PreviewValidationMetrics FJungleTerrainBatch006Calibration::BuildPrev
 FString FJungleTerrainBatch006Calibration::BuildPreviewValidationLogLine(const FJGBatch006PreviewValidationMetrics& Metrics)
 {
 	return FString::Printf(
-		TEXT("id=%s expected_outputs=%d manifest_metrics=%d world_m=%.0f pixel_spacing_1024_m=%.2f shoreline_error_max_m=%.3f beach_continuity_pct=%.1f ocean_below_sea_pct=%.1f square_edge_violations=%.0f active_volcano_land_pct=%.2f radial_artifact_score=%.3f catchment_cv=%.3f catchment_entropy=%.3f coast_ok=%s morphology_ok=%s accepted=%s"),
+		TEXT("id=%s expected_outputs=%d manifest_metrics=%d world_m=%.0f pixel_spacing_1024_m=%.2f shoreline_error_max_m=%.3f beach_continuity_pct=%.1f ocean_below_sea_pct=%.1f square_edge_violations=%.0f active_volcano_land_pct=%.2f radial_artifact_score=%.3f catchment_cv=%.3f catchment_entropy=%.3f catchment_angular_concentration=%.3f ridge_gully_angular_lock=%.3f coast_ok=%s morphology_ok=%s accepted=%s"),
 		*Metrics.PreviewSuiteId.ToString(),
 		Metrics.ExpectedPreviewOutputCount,
 		Metrics.RequiredManifestMetricCount,
@@ -278,6 +327,8 @@ FString FJungleTerrainBatch006Calibration::BuildPreviewValidationLogLine(const F
 		Metrics.RadialAlignmentArtifactScore,
 		Metrics.CatchmentAreaCoefficientOfVariation,
 		Metrics.CatchmentEntropy01,
+		Metrics.CatchmentAngularConcentrationScore,
+		Metrics.RidgeGullyAngularLockScore,
 		Metrics.bCoastAccepted ? TEXT("true") : TEXT("false"),
 		Metrics.bMorphologyAccepted ? TEXT("true") : TEXT("false"),
 		Metrics.bPreviewEvidenceAccepted ? TEXT("true") : TEXT("false"));
@@ -298,7 +349,7 @@ FJGBatch006AcceptanceMetrics FJungleTerrainBatch006Calibration::BuildAcceptanceM
 	Metrics.bPreviewValidationAccepted = PreviewMetrics.bPreviewEvidenceAccepted;
 	Metrics.bCoastAccepted = PreviewMetrics.bCoastAccepted;
 	Metrics.bScaleAccepted = DemMetrics.bWorldScaleAccepted;
-	Metrics.bTerrainMorphologyAccepted = DemMetrics.bRadialArtifactAccepted && DemMetrics.bCatchmentDiversityAccepted && DemMetrics.bVolcanoFootprintAccepted;
+	Metrics.bTerrainMorphologyAccepted = DemMetrics.bRadialArtifactAccepted && DemMetrics.bCatchmentDiversityAccepted && DemMetrics.bVolcanoFootprintAccepted && DemMetrics.bCatchmentGeometryAccepted && DemMetrics.bRidgeGullyGeometryAccepted;
 	Metrics.bRuntimeShellAccepted = RuntimeMetrics.TileCount > 0 && FJungleVolcanicIslandTerrainModel::RuntimeTilesPerSide >= 32 && FJungleVolcanicIslandTerrainModel::RuntimePreviewVerticesPerSide >= 129 && RuntimeMetrics.MaxAdjacentSeamAbsErrorM <= 0.001f;
 	Metrics.bBatchAccepted = Metrics.bDemCalibrationAccepted && Metrics.bOfflineBridgeAccepted && Metrics.bPreviewValidationAccepted && Metrics.bCoastAccepted && Metrics.bScaleAccepted && Metrics.bTerrainMorphologyAccepted && Metrics.bRuntimeShellAccepted;
 	return Metrics;

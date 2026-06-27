@@ -2,7 +2,7 @@
 
 ## Status
 
-planned-runtime
+diagnosed-runtime
 
 ## Goal
 
@@ -70,6 +70,19 @@ Before PR completion:
 - generated images must be inspected through `repo_image_view`;
 - `.mex/context/active-memory.md` must record the evidence and next runtime decision.
 
+## Result
+
+Runtime 001 verified the cause is not merely image interpretation. The source and exporter assign catchments and ridge/gully masks from a shared warped polar-angle field around the massif center. Existing entropy/CV metrics allowed this to pass because angular sectors can be numerous and area-balanced while still visually reading as turbine/fan-blade terrain.
+
+Generated evidence in `Images/TerrainPreview/004/` preserves the previous terrain shape but adds failing diagnostics:
+
+- `catchment_angular_concentration_score: 0.98963`
+- `ridge_gully_angular_lock_score: 0.97187`
+- `morphology_diagnostics_accepted: false`
+- `dem_calibration_accepted: false`
+
+Coast/beach/ocean gates remain clean, so the failure is isolated to interior morphology.
+
 ## Next Runtime Trigger
 
-Write `SELF-ITERATIVE/002_<scope>.md` after this runtime if diagnostics prove the cause requires terrain math changes. The next file should target the smallest source/tool change that directly attacks the verified cause.
+`SELF-ITERATIVE/002_non_radial_catchment_graph_rewrite.md` is required. It must target the verified cause: catchment identity and ridge/gully structure must stop being owned by a polar-sector field around the massif center.

@@ -7,7 +7,7 @@ description: PR gate workflow routing and active gate pointer.
 
 ## Active gate
 
-Self-iterative lifecycle workflow save is active. Current gate: save the repo-owned self-iterative lifecycle routing and runtime folder, preserve the existing workflow-rule patch, then land it through PR review and merge when tool access allows.
+Self-iterative Batch006 morphology loop is active. Current runtime file is `SELF-ITERATIVE/001_batch006_radial_morphology_diagnosis.md`; max loop budget is five PRs or until generated terrain preview images look good by tool inspection. Runtime 001 is diagnostic/gate-focused and must land before implementing runtime 002.
 
 ## Completed setup gate chain
 
@@ -19,7 +19,7 @@ PR5 lifecycle state lives in `.mex`, `pr5lifecycle-precursor/**`, `pr5lifecycle-
 
 Self-iterative lifecycle state lives in `.mex/patterns/self-iterative-lifecycle.md` and `SELF-ITERATIVE/**`. It is repo-owned lifecycle state like PR5 lifecycle. When active, the agent diagnoses with available tools, writes numbered scoped runtime files into `SELF-ITERATIVE/`, implements one runtime file at a time, inspects what changed, updates `.mex`, then runs PR review and merge when authorized.
 
-Batch 005 is complete and must not be reopened unless explicitly requested. PR #60 landed a combined Batch 006 terrain calibration implementation. Future PR5 runtime work must not use a combined PR as the default execution shape. The next implementation gate is intentionally unset until user review or a new explicit PR5 batch/lane instruction.
+Batch 005 is complete and must not be reopened unless explicitly requested. PR #60 landed a combined Batch 006 terrain calibration implementation. Future PR5 runtime work must not use a combined PR as the default execution shape. The active follow-up lane is the self-iterative Batch006 morphology loop, starting with runtime 001 diagnostics and then runtime 002 non-radial catchment graph rewrite if diagnostics prove the source cause.
 
 Active Batch 006 precursor files:
 

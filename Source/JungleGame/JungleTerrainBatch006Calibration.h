@@ -25,6 +25,8 @@ struct FJGBatch006DemBenchmarkMetrics
 	float CatchmentEntropy01 = 0.0f;
 	float RadialAlignmentArtifactScore = 1.0f;
 	float ContourIrregularityProxy = 0.0f;
+	float CatchmentAngularConcentrationScore = 1.0f;
+	float RidgeGullyAngularLockScore = 1.0f;
 	float VolcanoDominancePercent = 0.0f;
 	bool bWorldScaleAccepted = false;
 	bool bPeakEnvelopeAccepted = false;
@@ -33,6 +35,8 @@ struct FJGBatch006DemBenchmarkMetrics
 	bool bSlopeEnvelopeAccepted = false;
 	bool bCatchmentDiversityAccepted = false;
 	bool bRadialArtifactAccepted = false;
+	bool bCatchmentGeometryAccepted = false;
+	bool bRidgeGullyGeometryAccepted = false;
 	bool bAccepted = false;
 };
 
@@ -55,7 +59,7 @@ struct FJGBatch006PreviewValidationMetrics
 {
 	FName PreviewSuiteId = TEXT("JG_MORPHOLOGY_PREVIEW_SUITE_006_003");
 	int32 ExpectedPreviewOutputCount = 8;
-	int32 RequiredManifestMetricCount = 26;
+	int32 RequiredManifestMetricCount = 29;
 	float WorldSizeM = 0.0f;
 	float PixelSpacing1024M = 0.0f;
 	float ShorelineErrorMaxM = 0.0f;
@@ -66,6 +70,8 @@ struct FJGBatch006PreviewValidationMetrics
 	float RadialAlignmentArtifactScore = 1.0f;
 	float CatchmentAreaCoefficientOfVariation = 0.0f;
 	float CatchmentEntropy01 = 0.0f;
+	float CatchmentAngularConcentrationScore = 1.0f;
+	float RidgeGullyAngularLockScore = 1.0f;
 	bool bCoastAccepted = false;
 	bool bMorphologyAccepted = false;
 	bool bPreviewEvidenceAccepted = false;

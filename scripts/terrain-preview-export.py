@@ -215,9 +215,15 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
     beach_accepted_height_m = clamp(shore_locked_height_m, -0.25, 9.75)
     height_m = lerp(shore_locked_height_m, beach_accepted_height_m, beach_acceptance_mask)
 
+    ridge_gully_mask = max(ridge_mask, gully_mask)
+    angular_lock_delta = min(best_gully_delta, best_ridge_delta)
+    ridge_gully_angular_lock = 1.0 - smooth_step(0.035, 0.220, angular_lock_delta)
+
     return {
         "height_m": height_m,
         "signed_shoreline_distance_m": signed_shoreline_distance_m,
+        "massif_theta": massif_theta,
+        "ridge_gully_angular_lock": ridge_gully_angular_lock,
         "ocean_mask": 1.0 - land_mask,
         "coastal_shelf_mask": ring_mask(signed_shoreline_distance_m, -350.0, 420.0),
         "beach_ring_mask": ring_mask(signed_shoreline_distance_m, 55.0, 145.0),
@@ -350,6 +356,10 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
     volcano_disabled_height_total = 0.0
     volcano_disabled_max_h = 0.0
     catchment_counts = [0 for _ in range(PRIMARY_CATCHMENT_COUNT)]
+    catchment_cos_sums = [0.0 for _ in range(PRIMARY_CATCHMENT_COUNT)]
+    catchment_sin_sums = [0.0 for _ in range(PRIMARY_CATCHMENT_COUNT)]
+    ridge_gully_angular_lock_total = 0.0
+    ridge_gully_angular_lock_weight = 0.0
 
     for py in range(resolution):
         y = HALF_EXTENT_M - float(py) * step_m
@@ -417,6 +427,12 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
                 catchment_id = int(s0["catchment_id"])
                 if 0 <= catchment_id < PRIMARY_CATCHMENT_COUNT:
                     catchment_counts[catchment_id] += 1
+                    catchment_cos_sums[catchment_id] += math.cos(float(s0["massif_theta"]))
+                    catchment_sin_sums[catchment_id] += math.sin(float(s0["massif_theta"]))
+                    ridge_gully_mask = max(float(s0["ridge_mask"]), float(s0["gully_mask"]))
+                    if ridge_gully_mask > 0.25:
+                        ridge_gully_angular_lock_total += float(s0["ridge_gully_angular_lock"]) * ridge_gully_mask
+                        ridge_gully_angular_lock_weight += ridge_gully_mask
                 if active_mask > 0.25:
                     active_volcano_samples += 1
                 if signed <= 5000.0 and h <= 150.0:
@@ -511,8 +527,15 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
         if p > 0.0:
             entropy -= p * math.log(p)
     catchment_entropy = entropy / math.log(len(nonzero_catchments)) if len(nonzero_catchments) > 1 else 0.0
+    angular_concentrations = []
+    for idx, count in enumerate(catchment_counts):
+        if count > 0:
+            angular_concentrations.append(math.hypot(catchment_cos_sums[idx], catchment_sin_sums[idx]) / count)
+    catchment_angular_concentration_score = sum(angular_concentrations) / len(angular_concentrations) if angular_concentrations else 1.0
+    ridge_gully_angular_lock_score = ridge_gully_angular_lock_total / ridge_gully_angular_lock_weight if ridge_gully_angular_lock_weight > 0.0 else 1.0
     radial_artifact_score = clamp(1.0 - (catchment_entropy * 0.34 + catchment_cv * 0.18 + drainage_density_proxy * 0.18 + highland_pct * 0.002), 0.0, 1.0)
     volcano_dominance_pct = 100.0 * (max_h - volcano_disabled_max_h) / max_h if max_h > 0.0 else 0.0
+    morphology_diagnostics_accepted = catchment_angular_concentration_score <= 0.82 and ridge_gully_angular_lock_score <= 0.38
     dem_calibration_accepted = (
         2400.0 <= max_h <= 4050.0
         and 0.25 <= hypsometry <= 0.58
@@ -522,6 +545,7 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
         and catchment_entropy >= 0.72
         and catchment_cv >= 0.10
         and radial_artifact_score <= 0.62
+        and morphology_diagnostics_accepted
     )
     manifest = {
         "version": VERSION,
@@ -552,6 +576,9 @@ def derive_and_render(resolution: int, output_dir: Path) -> dict[str, object]:
         "catchment_area_coefficient_of_variation": round(catchment_cv, 5),
         "catchment_entropy_01": round(catchment_entropy, 5),
         "radial_alignment_artifact_score": round(radial_artifact_score, 5),
+        "catchment_angular_concentration_score": round(catchment_angular_concentration_score, 5),
+        "ridge_gully_angular_lock_score": round(ridge_gully_angular_lock_score, 5),
+        "morphology_diagnostics_accepted": morphology_diagnostics_accepted,
         "dem_calibration_accepted": dem_calibration_accepted,
         "elapsed_seconds": round(elapsed, 3),
         "linear_scale_multiplier_vs_batch003": 6.0,
