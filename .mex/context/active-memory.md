@@ -689,4 +689,15 @@ target: scripts/terrain-preview-export.py, SELF-ITERATIVE/008_morphology_diagnos
 reason: Runtime 007 improved transition behavior but the image still failed visually; runtime 008 makes the manifest diagnose actual shape debt instead of over-weighting hard catchment-domain concentration.
 review_by: 2026-07-27
 
-Runtime 008 is PR #69 on branch `si-008-morphology-diagnostics`, source commit `49cdc8c`. It adds explicit morphology manifest sub-gates for hard coast gates, radial lock, highland area, drainage density, slope balance, volcano dominance, and domain debug. Temporary 512 px evidence preserved hard coast/radial/volcano/domain gates but truthfully failed highland area (`61.0856%`), drainage density (`0.20252`), and slope balance (`[86.5674, 13.2322, 0.2005]` gentle/moderate/steep). GitHub PR status showed CodeRabbit success. Next runtime after PR #69 lands and local `main` syncs is `SELF-ITERATIVE/009_final_morphology_tuning_and_tracked_evidence.md`, with final tracked evidence under `Images/TerrainPreview/009/`.
+Runtime 008 is PR #69 on branch `si-008-morphology-diagnostics`, source commit `49cdc8c`. It adds explicit morphology manifest sub-gates for hard coast gates, radial lock, highland area, drainage density, slope balance, volcano dominance, and domain debug. Temporary 512 px evidence preserved hard coast/radial/volcano/domain gates but truthfully failed highland area (`61.0856%`), drainage density (`0.20252`), and slope balance (`[86.5674, 13.2322, 0.2005]` gentle/moderate/steep). GitHub PR status showed CodeRabbit success. PR #69 landed on `main` as merge commit `b6d72a7`. Next runtime is `SELF-ITERATIVE/009_final_morphology_tuning_and_tracked_evidence.md`, with final tracked evidence under `Images/TerrainPreview/009/`.
+
+## 2026-06-27-self-iterative-batch006-runtime-009
+
+status: confirmed
+created: 2026-06-27
+source: SELF-ITERATIVE/009_final_morphology_tuning_and_tracked_evidence.md, PR #70
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, scripts/terrain-preview-export.py, Images/TerrainPreview/009/**, SELF-ITERATIVE/009_final_morphology_tuning_and_tracked_evidence.md
+reason: Runtime 008 made the remaining visual debt explicit; runtime 009 tunes final terrain shape and commits tracked public image evidence under the numbered preview folder.
+review_by: 2026-07-27
+
+Runtime 009 is PR #70 on branch `si-009-final-morphology-evidence`, source commits `a27b6c7` and `da6c4f2`. It reduces broad highland uplift, adds highland trim, strengthens non-radial drainage/ridge/gully incision, removes the rejected high-frequency fingerprint scarp field, and exports tracked 1024 px evidence under `Images/TerrainPreview/009/`. Final manifest gates are all true: `morphology_diagnostics_accepted` and `dem_calibration_accepted` are true, highland area is `50.5142%`, drainage density proxy is `0.38698`, gentle/moderate/steep slope split is `[76.1115, 22.932, 0.9565]`, ridge/gully angular lock is `0.09098`, shoreline error is `0.0 m`, beach continuity is `100.0%`, ocean below sea is `100.0%`, and square-edge ocean violations are `0`. Visual inspection accepted the final color relief as public evidence for this loop. CodeRabbit found two minor docs/status issues; both were fixed, and rerun returned no findings.
