@@ -38,6 +38,13 @@ struct FJGTerrainSample
 	float LavaFlowMask = 0.0f;
 	float OldLavaBenchMask = 0.0f;
 	float SecondaryConeMask = 0.0f;
+	float FeatureGrammarMask = 0.0f;
+	float DomainWarpMagnitudeM = 0.0f;
+	float LargeFeatureStampMask = 0.0f;
+	float MesoscaleDetailMask = 0.0f;
+	float TraversalScaleDetailMask = 0.0f;
+	float DetailSupportHeightM = 0.0f;
+	float RadialArtifactSuppressionMask = 0.0f;
 	float RidgeMask = 0.0f;
 	float GullyMask = 0.0f;
 	float LaharCorridorMask = 0.0f;
@@ -99,6 +106,13 @@ struct FJGTerrainMetrics
 	float MaxLavaFlowMask = 0.0f;
 	float MaxOldLavaBenchMask = 0.0f;
 	float MaxSecondaryConeMask = 0.0f;
+	float MaxFeatureGrammarMask = 0.0f;
+	float MaxDomainWarpMagnitudeM = 0.0f;
+	float MaxLargeFeatureStampMask = 0.0f;
+	float MaxMesoscaleDetailMask = 0.0f;
+	float MaxTraversalScaleDetailMask = 0.0f;
+	float MaxDetailSupportHeightM = 0.0f;
+	float MaxRadialArtifactSuppressionMask = 0.0f;
 	int32 MaxStreamOrder = 0;
 	int32 SampleCount = 0;
 	int32 CatchmentCount = 14;
@@ -232,8 +246,8 @@ struct FJGTerrainTopographicMetrics
 struct FJGTerrainGeneratorConfig
 {
 	FName GeneratorId = TEXT("JG_TERRAIN_MATH_CORE_005");
-	FName VersionId = TEXT("JG_VOLCANIC_SUBSYSTEM_005_004");
-	int32 Seed = 5004;
+	FName VersionId = TEXT("JG_FEATURE_GRAMMAR_005_005");
+	int32 Seed = 5005;
 	float WorldSizeMeters = 97536.0f;
 	float SeaLevelMeters = 0.0f;
 	float TargetPeakMeters = 3800.0f;
@@ -249,6 +263,7 @@ struct FJGTerrainGeneratorConfig
 	bool bHydrologySolverEnabled = true;
 	bool bRidgeValleyGraphEnabled = true;
 	bool bCompactVolcanicSubsystemEnabled = true;
+	bool bFeatureGrammarEnabled = true;
 };
 
 struct FJGTerrainGeneratorArchitectureMetrics
@@ -269,6 +284,7 @@ struct FJGTerrainGeneratorArchitectureMetrics
 	bool bHydrologySolverEnabled = false;
 	bool bRidgeValleyGraphEnabled = false;
 	bool bCompactVolcanicSubsystemEnabled = false;
+	bool bFeatureGrammarEnabled = false;
 	bool bArchitectureValid = false;
 };
 
@@ -290,6 +306,10 @@ struct FJGTerrainBatchAcceptanceMetrics
 	float CollapseScarMaskMax = 0.0f;
 	float RiftLineMaskMax = 0.0f;
 	float LavaFlowMaskMax = 0.0f;
+	float FeatureGrammarMaskMax = 0.0f;
+	float DomainWarpMagnitudeMaxM = 0.0f;
+	float DetailSupportHeightMaxM = 0.0f;
+	float RadialArtifactSuppressionMax = 0.0f;
 	int32 MaxStreamOrder = 0;
 	int32 DrainageOutletCount = 0;
 	float ShorelineErrorMaxM = 0.0f;
@@ -310,6 +330,7 @@ struct FJGTerrainBatchAcceptanceMetrics
 	bool bLandformRegionAuthorityAccepted = false;
 	bool bHydrologyAccepted = false;
 	bool bCompactVolcanicSubsystemAccepted = false;
+	bool bFeatureGrammarAccepted = false;
 	bool bBatchAccepted = false;
 };
 
