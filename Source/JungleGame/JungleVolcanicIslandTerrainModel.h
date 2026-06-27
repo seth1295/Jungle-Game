@@ -28,6 +28,15 @@ struct FJGTerrainSample
 	float GullyMask = 0.0f;
 	float LaharCorridorMask = 0.0f;
 	float CoastalFanMask = 0.0f;
+	float FlowAccumulation01 = 0.0f;
+	float TrunkStreamMask = 0.0f;
+	float TributaryStreamMask = 0.0f;
+	float WatershedDivideMask = 0.0f;
+	float StreamPowerIncisionM = 0.0f;
+	float HillslopeDiffusionM = 0.0f;
+	float HydrologyFanDepositionM = 0.0f;
+	int32 StreamOrder = 0;
+	int32 OutletId = INDEX_NONE;
 	float CraterMask = 0.0f;
 	float RimMask = 0.0f;
 	float VentMask = 0.0f;
@@ -62,9 +71,17 @@ struct FJGTerrainMetrics
 	float MaxVolcanoDisabledHeightM = TNumericLimits<float>::Lowest();
 	float MaxActiveVolcanoContributionM = 0.0f;
 	float MaxLandformRegionWeight = 0.0f;
+	float MaxFlowAccumulation01 = 0.0f;
+	float MaxTrunkStreamMask = 0.0f;
+	float MaxTributaryStreamMask = 0.0f;
+	float MaxWatershedDivideMask = 0.0f;
+	float MaxStreamPowerIncisionM = 0.0f;
+	float MaxHydrologyFanDepositionM = 0.0f;
+	int32 MaxStreamOrder = 0;
 	int32 SampleCount = 0;
 	int32 CatchmentCount = 14;
 	int32 LandformRegionCount = 0;
+	int32 DrainageOutletCount = 0;
 	int32 OceanEdgeSampleCount = 0;
 	int32 ShorelineSampleCount = 0;
 	int32 BeachSampleCount = 0;
@@ -193,8 +210,8 @@ struct FJGTerrainTopographicMetrics
 struct FJGTerrainGeneratorConfig
 {
 	FName GeneratorId = TEXT("JG_TERRAIN_MATH_CORE_005");
-	FName VersionId = TEXT("JG_TERRAIN_MATH_CORE_005_001");
-	int32 Seed = 5001;
+	FName VersionId = TEXT("JG_HYDROLOGY_EROSION_005_002");
+	int32 Seed = 5002;
 	float WorldSizeMeters = 97536.0f;
 	float SeaLevelMeters = 0.0f;
 	float TargetPeakMeters = 3800.0f;
@@ -207,6 +224,7 @@ struct FJGTerrainGeneratorConfig
 	bool bTopographicEvidenceEnabled = true;
 	bool bGeomorphologyCoreEnabled = true;
 	bool bActiveVolcanoBounded = true;
+	bool bHydrologySolverEnabled = true;
 };
 
 struct FJGTerrainGeneratorArchitectureMetrics
@@ -224,6 +242,7 @@ struct FJGTerrainGeneratorArchitectureMetrics
 	bool bTopographicEvidenceEnabled = false;
 	bool bGeomorphologyCoreEnabled = false;
 	bool bActiveVolcanoBounded = false;
+	bool bHydrologySolverEnabled = false;
 	bool bArchitectureValid = false;
 };
 
@@ -238,6 +257,10 @@ struct FJGTerrainBatchAcceptanceMetrics
 	float PeakHeightM = 0.0f;
 	float VolcanoDisabledPeakM = 0.0f;
 	float ActiveVolcanoContributionMaxM = 0.0f;
+	float FlowAccumulationMax01 = 0.0f;
+	float StreamPowerIncisionMaxM = 0.0f;
+	int32 MaxStreamOrder = 0;
+	int32 DrainageOutletCount = 0;
 	float ShorelineErrorMaxM = 0.0f;
 	float BeachContinuityPercent = 0.0f;
 	float OceanBelowSeaPercent = 0.0f;
@@ -254,6 +277,7 @@ struct FJGTerrainBatchAcceptanceMetrics
 	bool bArchitectureAccepted = false;
 	bool bVolcanoDisabledTerrainAccepted = false;
 	bool bLandformRegionAuthorityAccepted = false;
+	bool bHydrologyAccepted = false;
 	bool bBatchAccepted = false;
 };
 
