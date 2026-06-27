@@ -243,8 +243,9 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 	}
 	WarpedTheta = WrapAngle(GraphBestTangent);
 	const float GraphCostGap = FMath::Max(0.0f, GraphSecondCost - GraphBestCost);
-	const float DomainTransitionMask = (1.0f - SmoothStep(0.10f, 0.62f, GraphCostGap)) * CoastalProtection * SmoothStep(0.12f, 0.98f, GraphBestT);
+	const float DomainTransitionMask = (1.0f - SmoothStep(0.10f, 0.62f, GraphCostGap)) * LandMask * SmoothStep(0.12f, 0.98f, GraphBestT);
 	const float DomainReliefDamping = 1.0f - DomainTransitionMask * 0.30f;
+	const float GraphLocalTheta = FMath::Atan2(WorldYM - GraphSourceY[CatchmentId], WorldXM - GraphSourceX[CatchmentId]);
 	BestGullyDelta = FMath::Clamp((GraphBestPerpM / GraphWidthM[CatchmentId]) * 0.16f, 0.0f, 0.45f);
 	BestRidgeDelta = FMath::Clamp(GraphCostGap * 0.18f, 0.0f, 0.45f);
 
@@ -261,8 +262,8 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 	const float BranchAngleB = WrapAngle(WarpedTheta - BasinCurve * 0.52f + FMath::Cos(GraphBestT * 5.0f + static_cast<float>(CatchmentId) * 0.7f) * 0.20f);
 	const float BranchReach = SmoothStep(10500.0f, 18000.0f, MassifDistanceM) * (1.0f - SmoothStep(28500.0f, 39000.0f, MassifDistanceM)) * LandMask * (1.0f - DomainTransitionMask * 0.22f);
 	const float SecondaryBranchMask = FMath::Max(
-		(1.0f - SmoothStep(0.030f, 0.110f, AngularDelta(WarpedTheta, BranchAngleA))) * BranchReach * 0.48f,
-		(1.0f - SmoothStep(0.035f, 0.120f, AngularDelta(WarpedTheta, BranchAngleB))) * BranchReach * 0.36f);
+		(1.0f - SmoothStep(0.030f, 0.110f, AngularDelta(GraphLocalTheta, BranchAngleA))) * BranchReach * 0.48f,
+		(1.0f - SmoothStep(0.035f, 0.120f, AngularDelta(GraphLocalTheta, BranchAngleB))) * BranchReach * 0.36f);
 	const float GullyMask = FMath::Clamp(TrunkGullyMask + SecondaryBranchMask, 0.0f, 1.0f);
 	const bool bLaharCatchment = CatchmentId == 2 || CatchmentId == 5 || CatchmentId == 8 || CatchmentId == 11 || CatchmentId == 13 || CatchmentId == 17 || CatchmentId == 20;
 	const float LaharCorridorMask = bLaharCatchment ? TrunkGullyMask * SmoothStep(12200.0f, 22500.0f, MassifDistanceM) * (1.0f - SmoothStep(36000.0f, 43500.0f, MassifDistanceM)) * (1.0f - DomainTransitionMask * 0.25f) : 0.0f;

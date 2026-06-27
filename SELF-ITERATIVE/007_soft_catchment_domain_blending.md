@@ -67,7 +67,7 @@ Runtime 007 added soft catchment/domain transition damping in both C++ and the p
 
 This runtime also found and fixed additional exporter/source constant drift in the massif shape path: exporter massif base radius, concave shield exponents, upper steepening, and shoulder bench constants now match the C++ source.
 
-Temporary 512 px inspection output was generated under `Images/TerrainPreview/_scratch/007/` and inspected through `repo_image_view`, then removed before staging. Results:
+Temporary 512 px inspection output was generated under `Images/TerrainPreview/_scratch/007/` and then under `Images/TerrainPreview/_scratch/007-fix/` after CodeRabbit fixes; both were inspected through `repo_image_view` and removed before final staging. Final temporary results after CodeRabbit fixes:
 
 - `shoreline_error_max_m: 0.0`
 - `beach_continuity_pct: 100.0`
@@ -75,9 +75,12 @@ Temporary 512 px inspection output was generated under `Images/TerrainPreview/_s
 - `square_edge_ocean_violations: 0`
 - `height_max_m: 3467.8707`
 - `volcano_disabled_peak_m: 3074.403`
-- `ridge_gully_angular_lock_score: 0.0932`
+- `drainage_density_proxy: 0.20252`
+- `ridge_gully_angular_lock_score: 0.08646`
 - `catchment_angular_concentration_score: 0.95994`
 - `morphology_diagnostics_accepted: false`
 - `dem_calibration_accepted: false`
+
+CodeRabbit initially found two valid issues and both were fixed in source/exporter parity: coastal-fan transition damping now uses land-mask graph transition rather than coast-protected transition, and secondary branch localization now compares against local graph-source bearing rather than comparing branch angles back to the same tangent used to derive them.
 
 Visual inspection: color relief is less hard-plate obvious than `008`, but not final-realistic. It still reads as a broad synthetic highland with weak natural drainage incision. Runtime 008 should improve the morphology diagnostics and shape criteria so later evidence stops over-weighting hard catchment angular concentration and starts measuring the visible terrain issues directly.

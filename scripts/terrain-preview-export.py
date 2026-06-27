@@ -218,8 +218,9 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
             graph_second_cost = cost
     warped_theta = wrap_angle(graph_best_tangent)
     graph_cost_gap = max(0.0, graph_second_cost - graph_best_cost)
-    domain_transition_mask = (1.0 - smooth_step(0.10, 0.62, graph_cost_gap)) * coastal_protection * smooth_step(0.12, 0.98, graph_best_t)
+    domain_transition_mask = (1.0 - smooth_step(0.10, 0.62, graph_cost_gap)) * land_mask * smooth_step(0.12, 0.98, graph_best_t)
     domain_relief_damping = 1.0 - domain_transition_mask * 0.30
+    graph_local_theta = math.atan2(world_y_m - graph_source_y[catchment_id], world_x_m - graph_source_x[catchment_id])
     best_gully_delta = clamp((graph_best_perp_m / graph_width_m[catchment_id]) * 0.16, 0.0, 0.45)
     best_ridge_delta = clamp(graph_cost_gap * 0.18, 0.0, 0.45)
 
@@ -235,7 +236,7 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
     branch_angle_a = wrap_angle(warped_theta + basin_curve * 0.58 + math.sin(graph_best_t * 6.0 + float(catchment_id)) * 0.18)
     branch_angle_b = wrap_angle(warped_theta - basin_curve * 0.52 + math.cos(graph_best_t * 5.0 + float(catchment_id) * 0.7) * 0.20)
     branch_reach = smooth_step(10500.0, 18000.0, massif_distance_m) * (1.0 - smooth_step(28500.0, 39000.0, massif_distance_m)) * land_mask * (1.0 - domain_transition_mask * 0.22)
-    secondary_branch_mask = max((1.0 - smooth_step(0.030, 0.110, angular_delta(warped_theta, branch_angle_a))) * branch_reach * 0.48, (1.0 - smooth_step(0.035, 0.120, angular_delta(warped_theta, branch_angle_b))) * branch_reach * 0.36)
+    secondary_branch_mask = max((1.0 - smooth_step(0.030, 0.110, angular_delta(graph_local_theta, branch_angle_a))) * branch_reach * 0.48, (1.0 - smooth_step(0.035, 0.120, angular_delta(graph_local_theta, branch_angle_b))) * branch_reach * 0.36)
     gully_mask = clamp(trunk_gully_mask + secondary_branch_mask, 0.0, 1.0)
     lahar_catchment = catchment_id in {2, 5, 8, 11, 13, 17, 20}
     lahar_corridor_mask = trunk_gully_mask * smooth_step(12200.0, 22500.0, massif_distance_m) * (1.0 - smooth_step(36000.0, 43500.0, massif_distance_m)) * (1.0 - domain_transition_mask * 0.25) if lahar_catchment else 0.0
