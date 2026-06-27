@@ -96,6 +96,9 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 	const float ShieldBreakupM = MassifMask * CoastalProtection * (
 		FMath::Sin(WorldXM * 0.00021f + WorldYM * 0.00013f + 0.7f) * 115.0f +
 		FMath::Sin(WorldXM * 0.00011f - WorldYM * 0.00019f - 1.3f) * 88.0f);
+	const float MidlandBreakupM = CoastalProtection * SmoothStep(5200.0f, 12800.0f, LandwardDistanceM) * (1.0f - SmoothStep(33500.0f, 43000.0f, LandwardDistanceM)) * (
+		FMath::Sin(WorldXM * 0.000155f - WorldYM * 0.000091f + 2.2f) * 78.0f +
+		FMath::Sin(WorldXM * 0.000097f + WorldYM * 0.000173f - 0.4f) * 56.0f);
 	const float RegionNorthwest = FMath::Exp(-(FMath::Square((WorldXM + 22600.0f) / 25500.0f) + FMath::Square((WorldYM - 19800.0f) / 18800.0f)));
 	const float RegionNortheast = FMath::Exp(-(FMath::Square((WorldXM - 18800.0f) / 21400.0f) + FMath::Square((WorldYM - 16600.0f) / 16600.0f)));
 	const float RegionSouthwest = FMath::Exp(-(FMath::Square((WorldXM + 17200.0f) / 23600.0f) + FMath::Square((WorldYM + 9800.0f) / 21400.0f)));
@@ -256,8 +259,8 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 	const bool bLaharCatchment = CatchmentId == 2 || CatchmentId == 5 || CatchmentId == 8 || CatchmentId == 11 || CatchmentId == 13 || CatchmentId == 17 || CatchmentId == 20;
 	const float LaharCorridorMask = bLaharCatchment ? TrunkGullyMask * SmoothStep(12200.0f, 22500.0f, MassifDistanceM) * (1.0f - SmoothStep(36000.0f, 43500.0f, MassifDistanceM)) : 0.0f;
 	const float CoastalFanMask = (1.0f - SmoothStep(BasinWidth * 0.30f, BasinWidth * 0.95f, BestGullyDelta)) * SmoothStep(1200.0f, 3900.0f, LandwardDistanceM) * (1.0f - SmoothStep(7200.0f, 11800.0f, LandwardDistanceM)) * LandMask * BasinStrength * SmoothStep(0.55f, 0.98f, GraphBestT);
-	const float RidgeHeightM = RidgeMask * FMath::Lerp(85.0f, 310.0f, SmoothStep(10500.0f, 28000.0f, MassifDistanceM));
-	const float GullyIncisionM = GullyMask * (FMath::Lerp(65.0f, 260.0f, SmoothStep(9000.0f, 33500.0f, MassifDistanceM)) + LaharCorridorMask * 145.0f);
+	const float RidgeHeightM = RidgeMask * FMath::Lerp(38.0f, 145.0f, SmoothStep(10500.0f, 28000.0f, MassifDistanceM));
+	const float GullyIncisionM = GullyMask * (FMath::Lerp(34.0f, 128.0f, SmoothStep(9000.0f, 33500.0f, MassifDistanceM)) + LaharCorridorMask * 72.0f);
 	const float FanDepositM = CoastalFanMask * FMath::Lerp(22.0f, 82.0f, SmoothStep(1900.0f, 6500.0f, LandwardDistanceM));
 	const float WatershedDivideMask = FMath::Clamp(RidgeMask * (1.0f - GullyMask * 0.65f), 0.0f, 1.0f);
 	const float FlowAccumulation01 = FMath::Clamp(GullyMask * 0.58f + LaharCorridorMask * 0.28f + CoastalFanMask * 0.18f + SmoothStep(0.30f, 0.82f, LandformRegionWeight) * 0.08f, 0.0f, 1.0f);
@@ -320,7 +323,7 @@ FJGTerrainSample FJungleVolcanicIslandTerrainModel::SampleTerrainMeters(float Wo
 		FMath::Sin(WorldXM * 0.00030f + WorldYM * 0.00018f) * 46.0f +
 		FMath::Sin(WorldXM * 0.00045f - WorldYM * 0.00027f) * 32.0f +
 		FMath::Sin(WorldXM * 0.00012f + MassifTheta * 3.0f) * 24.0f;
-	const float VolcanoDisabledProcessHeightM = BasementHeightM + RegionalLandformHeightM - CentralSaddleCutM + SecondaryUplandPushM + ShieldBreakupM + LongWaveUndulationM * LandMask + DetailSupportHeightM + RidgeHeightM - GullyIncisionM - StreamPowerIncisionM - HillslopeDiffusionM + FanDepositM + HydrologyFanDepositionM;
+	const float VolcanoDisabledProcessHeightM = BasementHeightM + RegionalLandformHeightM - CentralSaddleCutM + SecondaryUplandPushM + ShieldBreakupM + MidlandBreakupM + LongWaveUndulationM * LandMask + DetailSupportHeightM + RidgeHeightM - GullyIncisionM - StreamPowerIncisionM - HillslopeDiffusionM + FanDepositM + HydrologyFanDepositionM;
 	const float ActiveVolcanoContributionM = BroaderVolcanicHighlandMask * 180.0f + ActiveConeMask * 600.0f + SecondaryConeMask * 85.0f + OldLavaBenchMask * 42.0f + LavaFlowMask * 32.0f + RimRaiseM - CraterDepressionM - CollapseScarMask * 310.0f;
 	const float TerrainProcessHeightM = VolcanoDisabledProcessHeightM + ActiveVolcanoContributionM;
 	const float VolcanoDisabledLandHeightM = FMath::Max(CoastalLandHeightM - GullyIncisionM * 0.18f, CoastalLandHeightM + VolcanoDisabledProcessHeightM);

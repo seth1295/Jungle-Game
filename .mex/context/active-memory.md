@@ -635,3 +635,14 @@ reason: Runtime 002 removed most ridge/gully polar lock but left blocky graph-do
 review_by: 2026-07-27
 
 Runtime 003 adds asymmetric shield breakup, stronger saddle cuts, secondary upland pushes, and softened ridge/domain breakup in source and exporter. Generated evidence under `Images/TerrainPreview/006/` keeps coast/beach/ocean gates clean, drops volcano dominance to `10.3481%`, moves the peak off the old crater-center bullseye, and keeps ridge/gully angular lock low at `0.08918`. Images are improved but not final: large graph-domain plates remain visible and `catchment_angular_concentration_score` remains `0.95995`. `SELF-ITERATIVE/004_domain_blend_and_midland_landform_breakup.md` is the next runtime file if runtime 003 lands cleanly.
+
+## 2026-06-27-self-iterative-batch006-runtime-004
+
+status: active-unreviewed
+created: 2026-06-27
+source: SELF-ITERATIVE/004_domain_blend_and_midland_landform_breakup.md, Images/TerrainPreview/007
+target: Source/JungleGame/JungleVolcanicIslandTerrainModel.cpp, scripts/terrain-preview-export.py, Images/TerrainPreview/007/**
+reason: Runtime 003 improved the old radial/bullseye failure but left graph-domain plates visible, so runtime 004 reduces plate strength and adds independent midland breakup.
+review_by: 2026-07-27
+
+Runtime 004 reduces ridge/gully carving strength and adds independent midland breakup in source and exporter. Generated evidence under `Images/TerrainPreview/007/` keeps coast/beach/ocean gates clean and maintains low ridge/gully angular lock at `0.08918`. The image is less polygonal, but now too smooth in central/midland highlands; `catchment_angular_concentration_score` remains `0.95995` and `morphology_diagnostics_accepted` remains false. `SELF-ITERATIVE/005_non_radial_detail_and_acceptance_tuning.md` is the next and final runtime file allowed by the current five-PR loop.

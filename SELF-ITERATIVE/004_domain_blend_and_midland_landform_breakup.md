@@ -2,7 +2,7 @@
 
 ## Status
 
-planned-runtime
+implemented-runtime
 
 ## Goal
 
@@ -57,3 +57,17 @@ The next preview should no longer read as a set of polygon catchment plates. Num
 - image review should show broken midland relief, not a single smooth central shield.
 
 If images still look bad, write `SELF-ITERATIVE/005_<scope>.md` from the new evidence. Runtime 005 is the last allowed PR in the current user loop unless the user extends the budget.
+
+## Result
+
+Runtime 004 reduced visible polygon-domain plate strength by lowering ridge/gully carving, adding midland breakup, and keeping the graph-domain source/tool parity. Generated evidence in `Images/TerrainPreview/007/` keeps coast/beach/ocean gates clean and maintains low ridge/gully polar lock:
+
+- `shoreline_error_max_m: 0.0`
+- `beach_continuity_pct: 100.0`
+- `ocean_below_sea_pct: 100.0`
+- `square_edge_ocean_violations: 0`
+- `ridge_gully_angular_lock_score: 0.08918`
+
+The image is not final. It is less polygonal, but now too smooth and broad in the central/midland highlands. The catchment-domain metric remains high at `0.95995`, and `morphology_diagnostics_accepted` remains false.
+
+Next runtime: `SELF-ITERATIVE/005_non_radial_detail_and_acceptance_tuning.md`. This is the last allowed PR in the current five-PR loop.

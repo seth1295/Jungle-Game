@@ -114,6 +114,10 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
         math.sin(world_x_m * 0.00021 + world_y_m * 0.00013 + 0.7) * 115.0
         + math.sin(world_x_m * 0.00011 - world_y_m * 0.00019 - 1.3) * 88.0
     )
+    midland_breakup_m = coastal_protection * smooth_step(5200.0, 12800.0, landward_distance_m) * (1.0 - smooth_step(33500.0, 43000.0, landward_distance_m)) * (
+        math.sin(world_x_m * 0.000155 - world_y_m * 0.000091 + 2.2) * 78.0
+        + math.sin(world_x_m * 0.000097 + world_y_m * 0.000173 - 0.4) * 56.0
+    )
     region_northwest = math.exp(-(((world_x_m + 22600.0) / 25500.0) ** 2 + ((world_y_m - 19800.0) / 18800.0) ** 2))
     region_northeast = math.exp(-(((world_x_m - 18800.0) / 21400.0) ** 2 + ((world_y_m - 16600.0) / 16600.0) ** 2))
     region_southwest = math.exp(-(((world_x_m + 17200.0) / 23600.0) ** 2 + ((world_y_m + 9800.0) / 21400.0) ** 2))
@@ -226,8 +230,8 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
     lahar_catchment = catchment_id in {2, 5, 8, 11, 13, 17, 20}
     lahar_corridor_mask = trunk_gully_mask * smooth_step(12200.0, 22500.0, massif_distance_m) * (1.0 - smooth_step(36000.0, 43500.0, massif_distance_m)) if lahar_catchment else 0.0
     coastal_fan_mask = (1.0 - smooth_step(basin_width * 0.30, basin_width * 0.95, best_gully_delta)) * smooth_step(1200.0, 3900.0, landward_distance_m) * (1.0 - smooth_step(7200.0, 11800.0, landward_distance_m)) * land_mask * basin_strength * smooth_step(0.55, 0.98, graph_best_t)
-    ridge_height_m = ridge_mask * lerp(85.0, 310.0, smooth_step(10500.0, 28000.0, massif_distance_m))
-    gully_incision_m = gully_mask * (lerp(65.0, 260.0, smooth_step(9000.0, 33500.0, massif_distance_m)) + lahar_corridor_mask * 145.0)
+    ridge_height_m = ridge_mask * lerp(38.0, 145.0, smooth_step(10500.0, 28000.0, massif_distance_m))
+    gully_incision_m = gully_mask * (lerp(34.0, 128.0, smooth_step(9000.0, 33500.0, massif_distance_m)) + lahar_corridor_mask * 72.0)
     fan_deposit_m = coastal_fan_mask * lerp(22.0, 82.0, smooth_step(1900.0, 6500.0, landward_distance_m))
 
     crater_center_x_m = massif_center_x_m + 720.0
@@ -259,6 +263,7 @@ def sample_terrain_m(world_x_m: float, world_y_m: float) -> dict[str, float | in
         - central_saddle_cut_m
         + secondary_upland_push_m
         + shield_breakup_m
+        + midland_breakup_m
         + long_wave_undulation_m * land_mask
         + ridge_height_m
         - gully_incision_m
