@@ -6,7 +6,7 @@ project jungle-floor material instead of the engine default/debug material.
 Capture command:
 
 ```bash
-/run/media/seth/UE5_WORKSPACE/UnrealEngine/Engine/Binaries/Linux/UnrealEditor /home/seth/projects/new-project/JungleGame.uproject -game -RenderOffscreen -JungleTerrainShellSmoke -JungleTrackedVisualEvidence=Images/InGameEvidence/011/JungleFloorTerrain_Runtime_TerrainShell.png -ResX=1920 -ResY=1080 -windowed -nosplash -unattended -ddc=NoZenLocalFallback
+<UE5_ROOT>/Engine/Binaries/Linux/UnrealEditor <PROJECT_ROOT>/JungleGame.uproject -game -RenderOffscreen -JungleTerrainShellSmoke -JungleTrackedVisualEvidence=Images/InGameEvidence/011/JungleFloorTerrain_Runtime_TerrainShell.png -ResX=1920 -ResY=1080 -windowed -nosplash -unattended -ddc=NoZenLocalFallback
 ```
 
 Runtime proof from `Saved/Logs/JungleGame.log`:
