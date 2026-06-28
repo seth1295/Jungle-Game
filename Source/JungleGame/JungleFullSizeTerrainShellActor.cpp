@@ -5,7 +5,6 @@
 #include "Engine/StaticMeshActor.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
-#include "HAL/FileManager.h"
 #include "JungleGame.h"
 #include "JungleTerrainBatch006Calibration.h"
 #include "JungleVolcanicIslandTerrainModel.h"
@@ -13,11 +12,9 @@
 #include "Materials/MaterialInterface.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
-#include "Misc/Paths.h"
 #include "ProceduralMeshComponent.h"
 #include "TimerManager.h"
 #include "UObject/ConstructorHelpers.h"
-#include "UnrealClient.h"
 
 AJungleFullSizeTerrainShellActor::AJungleFullSizeTerrainShellActor()
 {
@@ -36,18 +33,10 @@ AJungleFullSizeTerrainShellActor::AJungleFullSizeTerrainShellActor()
 		CubeMesh = MeshRef.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> JungleFloorMaterialRef(TEXT("/Game/JungleGame/Materials/Ground/M_JungleFloor_LeafMud_Test.M_JungleFloor_LeafMud_Test"));
-	if (JungleFloorMaterialRef.Succeeded())
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MaterialRef(TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial"));
+	if (MaterialRef.Succeeded())
 	{
-		TerrainMaterial = JungleFloorMaterialRef.Object;
-	}
-	else
-	{
-		static ConstructorHelpers::FObjectFinder<UMaterialInterface> FallbackMaterialRef(TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial"));
-		if (FallbackMaterialRef.Succeeded())
-		{
-			TerrainMaterial = FallbackMaterialRef.Object;
-		}
+		TerrainMaterial = MaterialRef.Object;
 	}
 }
 
@@ -80,8 +69,6 @@ void AJungleFullSizeTerrainShellActor::BuildProceduralTerrainMesh()
 	}
 
 	TerrainMesh->ClearAllMeshSections();
-
-	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell material: %s"), TerrainMaterial ? *TerrainMaterial->GetPathName() : TEXT("none"));
 
 	TArray<FJGTerrainRuntimeTileDesc> TileDescs;
 	FJungleVolcanicIslandTerrainModel::BuildRuntimeValidationTileDescs(TileDescs);
@@ -274,12 +261,9 @@ void AJungleFullSizeTerrainShellActor::MovePlayerToTerrainShellSmokeView()
 		return;
 	}
 
-	const float ViewXM = -1800.0f;
-	const float ViewYM = 1800.0f;
-	const float TerrainHeightCm = CalculateTerrainHeightCm(ViewXM * 100.0f, ViewYM * 100.0f);
-	const FVector ViewLocation(ViewXM * 100.0f, ViewYM * 100.0f, TerrainHeightCm + 420.0f);
-	const FRotator PawnRotation(0.0f, -35.0f, 0.0f);
-	const FRotator ViewRotation(-18.0f, -35.0f, 0.0f);
+	const FVector ViewLocation(870000.0f, -1020000.0f, 62000.0f);
+	const FRotator PawnRotation(0.0f, 38.0f, 0.0f);
+	const FRotator ViewRotation(-12.0f, 38.0f, 0.0f);
 	PlayerPawn->SetActorLocationAndRotation(ViewLocation, PawnRotation, false, nullptr, ETeleportType::TeleportPhysics);
 	PlayerController->SetControlRotation(ViewRotation);
 	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell smoke view set at %s with rotation %s."), *ViewLocation.ToString(), *ViewRotation.ToString());
@@ -293,31 +277,8 @@ void AJungleFullSizeTerrainShellActor::TakeTerrainShellSmokeShot()
 		return;
 	}
 
-	FString TrackedEvidencePath;
-	if (FParse::Value(FCommandLine::Get(), TEXT("JungleTrackedVisualEvidence="), TrackedEvidencePath))
-	{
-		if (FPaths::IsRelative(TrackedEvidencePath))
-		{
-			TrackedEvidencePath = FPaths::Combine(FPaths::ProjectDir(), TrackedEvidencePath);
-		}
-
-		const FString EvidenceDirectory = FPaths::GetPath(TrackedEvidencePath);
-		if (EvidenceDirectory.IsEmpty() || !IFileManager::Get().MakeDirectory(*EvidenceDirectory, true))
-		{
-			UE_LOG(LogJungleGame, Warning, TEXT("Full-size terrain shell tracked smoke shot skipped: could not create evidence directory for %s."), *TrackedEvidencePath);
-		}
-		else
-		{
-			UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell tracked smoke shot requested: %s."), *TrackedEvidencePath);
-			FScreenshotRequest::RequestScreenshot(TrackedEvidencePath, false, false);
-		}
-	}
-	else
-	{
-		UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell smoke shot requested."));
-		GEngine->Exec(GetWorld(), TEXT("HighResShot 1920x1080"));
-	}
-
+	UE_LOG(LogJungleGame, Display, TEXT("Full-size terrain shell smoke shot requested."));
+	GEngine->Exec(GetWorld(), TEXT("HighResShot 1920x1080"));
 	FTimerHandle ExitTimer;
 	GetWorldTimerManager().SetTimer(ExitTimer, this, &AJungleFullSizeTerrainShellActor::ExitAfterTerrainShellSmokeShot, 1.5f, false);
 }
