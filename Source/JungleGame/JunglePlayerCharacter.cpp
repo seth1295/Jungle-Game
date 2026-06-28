@@ -3,8 +3,29 @@
 #include "Camera/CameraComponent.h"
 #include "DrawDebugHelpers.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "HAL/IConsoleManager.h"
 #include "JungleGame.h"
 #include "JungleInteractableActor.h"
+
+namespace
+{
+	void JGSetRuntimeViewCVar(const TCHAR* Name, float Value)
+	{
+		if (IConsoleVariable* CVar = IConsoleManager::Get().FindConsoleVariable(Name))
+		{
+			CVar->Set(Value, ECVF_SetByGameSetting);
+		}
+	}
+
+	void JGApplyFarViewSettings()
+	{
+		JGSetRuntimeViewCVar(TEXT("r.ViewDistanceScale"), 20.0f);
+		JGSetRuntimeViewCVar(TEXT("foliage.LODDistanceScale"), 20.0f);
+		JGSetRuntimeViewCVar(TEXT("r.StaticMeshLODDistanceScale"), 0.1f);
+		JGSetRuntimeViewCVar(TEXT("r.SkeletalMeshLODBias"), -10.0f);
+		JGSetRuntimeViewCVar(TEXT("r.HLOD.DistanceScale"), 20.0f);
+	}
+}
 
 AJunglePlayerCharacter::AJunglePlayerCharacter()
 {
@@ -18,6 +39,19 @@ AJunglePlayerCharacter::AJunglePlayerCharacter()
 	FirstPersonCamera->SetupAttachment(GetRootComponent());
 	FirstPersonCamera->SetRelativeLocation(FVector(0.0f, 0.0f, 64.0f));
 	FirstPersonCamera->bUsePawnControlRotation = true;
+}
+
+void AJunglePlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (!IsLocallyControlled() || GetNetMode() == NM_DedicatedServer)
+	{
+		return;
+	}
+
+	JGApplyFarViewSettings();
+	UE_LOG(LogJungleGame, Display, TEXT("Runtime far-view settings applied on local player client."));
 }
 
 void AJunglePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
